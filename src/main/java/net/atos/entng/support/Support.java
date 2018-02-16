@@ -37,8 +37,8 @@ import org.entcore.common.sql.SqlConfs;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.storage.StorageFactory;
 import org.entcore.common.storage.impl.PostgresqlApplicationStorage;
-import org.vertx.java.core.eventbus.EventBus;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.json.JsonObject;
 
 
 public class Support extends BaseServer {
@@ -48,7 +48,7 @@ public class Support extends BaseServer {
     public static boolean bugTrackerCommDirect;
 
 	@Override
-	public void start() {
+	public void start() throws Exception {
 		super.start();
 		final EventBus eb = getEventBus(vertx);
 
@@ -57,7 +57,7 @@ public class Support extends BaseServer {
 		final BugTracker bugTrackerType = BugTracker.REDMINE; // TODO : read bugTracker from module configuration
 		final Storage storage = new StorageFactory(vertx, config,
 				new PostgresqlApplicationStorage("support.attachments", Support.class.getSimpleName(),
-						new JsonObject().putString("id", "document_id"))).getStorage();
+						new JsonObject().put("id", "document_id"))).getStorage();
 
 		TicketServiceSql ticketServiceSql = new TicketServiceSqlImpl(bugTrackerType);
 		UserService userService = new UserServiceDirectoryImpl(eb);
@@ -70,7 +70,7 @@ public class Support extends BaseServer {
 			log.info("[Support] Escalation is desactivated");
 		}
 		EscalationService escalationService = escalationActivated ?
-				EscalationServiceFactory.makeEscalationService(bugTrackerType, vertx, container, ticketServiceSql, userService, storage) : null;
+				EscalationServiceFactory.makeEscalationService(bugTrackerType, vertx, config, ticketServiceSql, userService, storage) : null;
 
         TicketController ticketController = new TicketController(ticketServiceSql, escalationService, userService, storage);
 		addController(ticketController);

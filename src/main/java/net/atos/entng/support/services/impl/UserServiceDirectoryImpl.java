@@ -19,13 +19,14 @@
 
 package net.atos.entng.support.services.impl;
 
+import io.vertx.core.AsyncResult;
 import net.atos.entng.support.services.UserService;
 
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.EventBus;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 public class UserServiceDirectoryImpl implements UserService {
 
@@ -40,12 +41,12 @@ public class UserServiceDirectoryImpl implements UserService {
 	public void getLocalAdministrators(String structure, final Handler<JsonArray> handler) {
 
 		JsonObject action = new JsonObject()
-			.putString("action", "list-adml")
-			.putString("structureId", structure);
-		eb.send(DIRECTORY_ADDRESS, action, new Handler<Message<JsonArray>>() {
+			.put("action", "list-adml")
+			.put("structureId", structure);
+		eb.send(DIRECTORY_ADDRESS, action, new Handler<AsyncResult<Message<JsonArray>>>() {
 			@Override
-			public void handle(Message<JsonArray> res) {
-				handler.handle(res.body());
+			public void handle(AsyncResult<Message<JsonArray>> res) {
+				handler.handle(res.result().body());
 			}
 		});
 	}

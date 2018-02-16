@@ -24,13 +24,12 @@ import java.util.concurrent.ConcurrentMap;
 import net.atos.entng.support.enums.BugTracker;
 
 import org.entcore.common.user.UserInfos;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 import fr.wseduc.webutils.Either;
-import org.vertx.java.core.json.impl.Json;
 
 /**
  * Terminology used : "ticket" for tickets in ENT, "issue" for tickets in bug tracker

@@ -21,14 +21,15 @@ package net.atos.entng.support.controllers;
 
 import java.util.Map;
 
+import io.vertx.core.json.JsonObject;
 import net.atos.entng.support.Support;
 
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.http.HttpServerRequest;
+import io.vertx.core.Vertx;
+import io.vertx.core.http.HttpServerRequest;
 import org.vertx.java.core.http.RouteMatcher;
-import org.vertx.java.platform.Container;
+
 
 import fr.wseduc.rs.Get;
 import fr.wseduc.security.SecuredAction;
@@ -40,9 +41,9 @@ public class DisplayController extends BaseController {
 	private enum SupportEvent { ACCESS }
 
 	@Override
-	public void init(Vertx vertx, Container container, RouteMatcher rm,
-			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
-		super.init(vertx, container, rm, securedActions);
+	public void init(Vertx vertx, JsonObject config, RouteMatcher rm,
+					 Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
+		super.init(vertx, config, rm, securedActions);
 		eventStore = EventStoreFactory.getFactory().getEventStore(Support.class.getSimpleName());
 	}
 

@@ -43,13 +43,13 @@ import org.entcore.common.sql.SqlStatementsBuilder;
 import org.entcore.common.user.DefaultFunctions;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserInfos.Function;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 import fr.wseduc.webutils.Either;
-import org.vertx.java.core.logging.Logger;
-import org.vertx.java.core.logging.impl.LoggerFactory;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 public class TicketServiceSqlImpl extends SqlCrudService implements TicketServiceSql {
 
@@ -74,8 +74,8 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 		s.prepared(upsertUserQuery, new JsonArray().add(user.getUserId()).add(user.getUsername()));
 
 		// 2. Create ticket
-		ticket.putString("owner", user.getUserId());
-        ticket.putString("locale", locale);
+		ticket.put("owner", user.getUserId());
+        ticket.put("locale", locale);
 		String returnedFields = "id, school_id, status, created, modified, escalation_status, escalation_date";
 		s.insert(resourceTable, ticket, returnedFields);
 
@@ -97,7 +97,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 		// 2. Update ticket
 		StringBuilder sb = new StringBuilder();
 		JsonArray values = new JsonArray();
-		for (String attr : data.getFieldNames()) {
+		for (String attr : data.fieldNames()) {
 			if( !"newComment".equals(attr) && !"attachments".equals(attr) ) {
 				sb.append(attr).append(" = ?, ");
 				values.add(data.getValue(attr));
@@ -123,7 +123,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 		}
 
 		// 4. Insert attachments
-		JsonArray attachments = data.getArray("attachments", null);
+		JsonArray attachments = data.getJsonArray("attachments", null);
 		this.insertAttachments(attachments, user, s, ticketId);
 
 		// Send queries to event bus
@@ -189,18 +189,18 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 				query.append(" WHERE t.school_id IN (");
 				for (String scope : scopesList) {
 					query.append("?,");
-					values.addString(scope);
+					values.add(scope);
 				}
 				query.deleteCharAt(query.length() - 1);
 				query.append(")");
 
 				// Include tickets created by current user, and linked to a school where he is not local administrator
 				query.append(" OR t.owner = ?");
-				values.addString(user.getUserId());
+				values.add(user.getUserId());
 			}
 		} else {
             query.append(" WHERE t.school_id IN (?)");
-            values.addString(user.getStructures().get(0)); // SUPER_ADMIN, has only 1 structure.
+            values.add(user.getStructures().get(0)); // SUPER_ADMIN, has only 1 structure.
         }
 
 		sql.prepared(query.toString(), values, validResultHandler(handler));
@@ -221,7 +221,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 		String query = "SELECT t.id, t.school_id, t.owner, t.locale, t.status FROM support.tickets AS t"
 				+ " INNER JOIN support.bug_tracker_issues AS i ON t.id = i.ticket_id"
 				+ " WHERE i.id = ?";
-		JsonArray values = new JsonArray().addNumber(issueId);
+		JsonArray values = new JsonArray().add(issueId);
 
 		sql.prepared(query.toString(), values, validUniqueResultHandler(handler));
 	};
@@ -306,7 +306,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 
 			JsonArray insertValues = new JsonArray().add(issueId)
 					.add(parseId(ticketId))
-					.addObject(issue)
+					.add(issue)
 					.add(user.getUserId());
 
 			statements.prepared(insertQuery, insertValues);
@@ -341,12 +341,12 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 						JsonObject attachment = (JsonObject) o;
 						attachmentsQuery.append("(?, ?, ?, ?, ?),");
 
-						Number attachmentIdInBugTracker = attachment.getNumber("id");
-						attachmentsValues.addNumber(attachmentIdInBugTracker)
-							.addNumber(issueId)
-							.addString(attachmentMap.get(attachmentIdInBugTracker))
-							.addString(attachment.getString("filename"))
-							.addNumber(attachment.getNumber("filesize"));
+						Number attachmentIdInBugTracker = attachment.getLong("id");
+						attachmentsValues.add(attachmentIdInBugTracker)
+							.add(issueId)
+							.add(attachmentMap.get(attachmentIdInBugTracker))
+							.add(attachment.getString("filename"))
+							.add(attachment.getInteger("filesize"));
 					}
 					// remove trailing comma
 					attachmentsQuery.deleteCharAt(attachmentsQuery.length() - 1);
@@ -386,15 +386,15 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 			.append(" SELECT content").append(bugTrackerType.getStatusIdFromPostgresqlJson()).append(" AS status_id")
 			.append(" FROM support.bug_tracker_issues")
 			.append(" WHERE id = ?)");
-		values.addNumber(issueId);
+		values.add(issueId);
 
 		query.append(" UPDATE support.bug_tracker_issues")
 			.append(" SET content = ?::JSON, modified = now()")
 			.append(" WHERE id = ?")
 			.append(" RETURNING (SELECT status_id FROM old_issue)");
 
-		values.addString(content)
-			.addNumber(issueId);
+		values.add(content)
+			.add(issueId);
 
 		sql.prepared(query.toString(), values, validUniqueResultHandler(handler));
 	}
@@ -432,7 +432,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 			query.append(" WHERE i.id IN (");
 			for (Number id : issueIds) {
 				query.append("?,");
-				values.addNumber(id);
+				values.add(id);
 			}
 			query.deleteCharAt(query.length() - 1);
 			query.append(")");
@@ -478,13 +478,13 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 		String query = "INSERT INTO support.bug_tracker_attachments(id, issue_id, gridfs_id, name, size) VALUES(?, ?, ?, ?, ?)";
 
 		JsonArray values = new JsonArray();
-		JsonObject metadata = attachment.getObject("metadata");
+		JsonObject metadata = attachment.getJsonObject("metadata");
 
-		values.addNumber(attachment.getNumber("id_in_bugtracker"))
-			.addNumber(issueId)
-			.addString(attachment.getString("_id"))
-			.addString(metadata.getString("filename"))
-			.addNumber(metadata.getNumber("size"));
+		values.add(attachment.getInteger("id_in_bugtracker"))
+			.add(issueId)
+			.add(attachment.getString("_id"))
+			.add(metadata.getString("filename"))
+			.add(metadata.getLong("size"));
 
 		sql.prepared(query.toString(), values, validResultHandler(handler));
 	}
@@ -522,7 +522,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 
         for (Integer id : idList) {
             query.append("?,");
-            values.addNumber(id);
+            values.add(id);
         }
         query.deleteCharAt(query.length() - 1);
         query.append(")");

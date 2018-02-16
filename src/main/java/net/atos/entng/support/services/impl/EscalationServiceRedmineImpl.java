@@ -32,6 +32,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import fr.wseduc.webutils.Server;
 import fr.wseduc.webutils.http.Renders;
+import io.vertx.core.http.*;
+import io.vertx.core.logging.LoggerFactory;
 import net.atos.entng.support.enums.BugTracker;
 import net.atos.entng.support.services.EscalationService;
 import net.atos.entng.support.services.TicketServiceSql;
@@ -46,20 +48,15 @@ import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlResult;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.user.UserInfos;
-import org.entcore.common.utils.Config;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.buffer.Buffer;
-import org.vertx.java.core.eventbus.EventBus;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.http.HttpClient;
-import org.vertx.java.core.http.HttpClientResponse;
-import org.vertx.java.core.http.HttpHeaders;
-import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.logging.Logger;
-import org.vertx.java.platform.Container;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+
 
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
@@ -105,15 +102,15 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 	}
 
 
-	public EscalationServiceRedmineImpl(final Vertx vertx, final Container container,
+	public EscalationServiceRedmineImpl(final Vertx vertx, final JsonObject config,
                                         final TicketServiceSql ts, final UserService us, Storage storage) {
 
-		JsonObject config = container.config();
-		log = container.logger();
+		log = LoggerFactory.getLogger(EscalationServiceRedmineImpl.class);
 		EventBus eb = Server.getEventBus(vertx);
-		httpClient = vertx.createHttpClient();
+		HttpClientOptions options = new HttpClientOptions().setConnectTimeout(10000);
+		httpClient = vertx.createHttpClient(options);
 		wksHelper = new WorkspaceHelper(eb, storage);
-		notification = new TimelineHelper(vertx, eb, container);
+		notification = new TimelineHelper(vertx, eb, config);
 		ticketServiceSql = ts;
 		userService = us;
 		this.storage = storage;
@@ -132,8 +129,8 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 		}
 		redminePort = config.getInteger("bug-tracker-port", 80);
 
-		redmineResolvedStatusId = config.getNumber("bug-tracker-resolved-statusid", -1);
-		redmineClosedStatusId = config.getNumber("bug-tracker-closed-statusid", -1);
+		redmineResolvedStatusId = config.getInteger("bug-tracker-resolved-statusid", -1);
+		redmineClosedStatusId = config.getInteger("bug-tracker-closed-statusid", -1);
 		if(redmineResolvedStatusId.intValue() == -1) {
 			log.error("[Support] Error : Module property 'bug-tracker-resolved-statusid' must be defined");
 		}
@@ -143,11 +140,11 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 
 		if (proxyHost != null && !proxyHost.trim().isEmpty()) {
 			proxyIsDefined = true;
-			httpClient.setHost(proxyHost)
-				.setPort(proxyPort);
+			options.setDefaultHost(proxyHost)
+				.setDefaultPort(proxyPort);
 		} else {
-			httpClient.setHost(redmineHost)
-				.setPort(redminePort);
+			options.setDefaultHost(redmineHost)
+				.setDefaultPort(redminePort);
 		}
 		log.info("[Support] proxyHost: "+proxyHost);
 		log.info("[Support] proxyPort: "+proxyPort);
@@ -162,17 +159,11 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 			log.error("[Support] Error : Module property 'bug-tracker-projectid' must be defined");
 		}
 
-		httpClient.setMaxPoolSize(config.getInteger("escalation-httpclient-maxpoolsize",  16))
+		options.setMaxPoolSize(config.getInteger("escalation-httpclient-maxpoolsize",  16))
 			.setKeepAlive(config.getBoolean("escalation-httpclient-keepalive", false))
-			.setTryUseCompression(config.getBoolean("escalation-httpclient-tryusecompression", true))
-			.exceptionHandler(new Handler<Throwable>() {
-				@Override
-				public void handle(Throwable t) {
-					log.error("[Support] Error : exception raised by redmine escalation httpClient", t);
-				}
-			});
+			.setTryUseCompression(config.getBoolean("escalation-httpclient-tryusecompression", true));
 
-		Long delayInMinutes = config.getLong("refresh-period", 30);
+		Long delayInMinutes = config.getLong("refresh-period", 30L);
 		log.info("[Support] Data will be pulled from Redmine every "+delayInMinutes+" minutes");
 		final Long delay = TimeUnit.MILLISECONDS.convert(delayInMinutes, TimeUnit.MINUTES);
 
@@ -183,7 +174,7 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 				final DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
 				df.setTimeZone(TimeZone.getTimeZone("GMT"));
 				if(event.isRight() && event.right().getValue() != null) {
-					JsonObject jo = (JsonObject) event.right().getValue().get(0);
+					JsonObject jo = (JsonObject) event.right().getValue().getJsonObject(0);
 
 					String date = jo.getString("last_update", null);
 					if (date != null) {
@@ -254,7 +245,7 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 					public void handle(final Document file) {
 						try {
 							final String filename = file.getDocument().getString("name");
-							final String contentType = file.getDocument().getObject("metadata").getString("content-type");
+							final String contentType = file.getDocument().getJsonObject("metadata").getString("content-type");
 
 							EscalationServiceRedmineImpl.this.uploadAttachment(file.getData(), new Handler<HttpClientResponse>() {
 								@Override
@@ -266,15 +257,15 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 											if(resp.statusCode() == 201) {
 												// Example of token returned by Redmine : {"upload":{"token":"781.687411f12da55bbd5a3d991675ac2135"}}
 												JsonObject response = new JsonObject(event.toString());
-												String token = response.getObject("upload").getString("token");
+												String token = response.getJsonObject("upload").getString("token");
 												String attachmentIdInRedmine = token.substring(0, token.indexOf('.'));
 												attachmentMap.put(Integer.valueOf(attachmentIdInRedmine),
 														file.getDocument().getString("_id"));
 
-												JsonObject attachment = new JsonObject().putString("token", token)
-														.putString("filename", filename)
-														.putString("content_type", contentType);
-												attachments.addObject(attachment);
+												JsonObject attachment = new JsonObject().put("token", token)
+														.put("filename", filename)
+														.put("content_type", contentType);
+												attachments.add(attachment);
 
 												// 2) Create redmine issue only if all attachments have been uploaded successfully
 												if (successfulUploads.incrementAndGet() == attachmentsIds.size()) {
@@ -395,7 +386,7 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 				sb.append("\n\n").append(c.getString("content")).append("\n\n");
 			}
 
-			result.putString("content", sb.toString());
+			result.put("content", sb.toString());
 		}
 
 		return result;
@@ -405,6 +396,12 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 		String url = proxyIsDefined ? ("http://" + redmineHost + ":" + redminePort + REDMINE_UPLOAD_ATTACHMENT_PATH) : REDMINE_UPLOAD_ATTACHMENT_PATH;
 
 		httpClient.post(url, handler)
+				.exceptionHandler(new Handler<Throwable>() {
+					@Override
+					public void handle(Throwable t) {
+						log.error("[Support] Error : exception raised by redmine escalation httpClient", t);
+					}
+				})
 				.putHeader(HttpHeaders.HOST, redmineHost)
 				.putHeader(HttpHeaders.CONTENT_TYPE, "application/octet-stream")
 				.putHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(data.length()))
@@ -420,8 +417,8 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 		final String url = proxyIsDefined ? ("http://" + redmineHost + ":" + redminePort + REDMINE_ISSUES_PATH) : REDMINE_ISSUES_PATH;
 
 		final JsonObject data = new JsonObject()
-			.putNumber("project_id", redmineProjectId)
-			.putString("subject", ticket.getString("subject"));
+			.put("project_id", redmineProjectId)
+			.put("subject", ticket.getString("subject"));
 
 		// add fields (such as ticket id, application name ...) to description
         final String locale = I18n.acceptLanguage(request);
@@ -435,26 +432,26 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 		final String schoolId = ticket.getString("school_id");
 		final StatementsBuilder s = new StatementsBuilder();
 		s.add("MATCH (s:Structure {id : {schoolId}}) return s.name as name ",
-				new JsonObject().putString("schoolId", schoolId));
+				new JsonObject().put("schoolId", schoolId));
 		s.add("MATCH (a:Application {address : {category}}) return a.displayName as name",
-				new JsonObject().putString("category", ticket.getString("category")));
+				new JsonObject().put("category", ticket.getString("category")));
 		Neo4j.getInstance().executeTransaction(s.build(), null, true, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> message) {
 				String schoolName, category;
-				JsonArray res = message.body().getArray("results");
+				JsonArray res = message.body().getJsonArray("results");
 				if ("ok".equals(message.body().getString("status")) && res != null && res.size() == 2 &&
-						res.<JsonArray>get(0) != null && res.<JsonArray>get(1) != null) {
-					JsonArray sa = res.get(0);
+						res.<JsonArray>getJsonArray(0) != null && res.<JsonArray>getJsonArray(1) != null) {
+					JsonArray sa = res.getJsonArray(0);
 					JsonObject s;
-					if (sa != null && sa.size() == 1 && (s = sa.get(0)) != null && s.getString("name") != null) {
+					if (sa != null && sa.size() == 1 && (s = sa.getJsonObject(0)) != null && s.getString("name") != null) {
 						schoolName = s.getString("name");
 					} else {
 						schoolName = schoolId;
 					}
-					JsonArray aa = res.get(1);
+					JsonArray aa = res.getJsonArray(1);
 					JsonObject a;
-					if (aa != null && aa.size() == 1 && (a = aa.get(0)) != null && a.getString("name") != null) {
+					if (aa != null && aa.size() == 1 && (a = aa.getJsonObject(0)) != null && a.getString("name") != null) {
 						category = a.getString("name");
 					} else {
 						// Category "Other" is saved as i18n, whereas remaining categories are addresses (e.g. "/support")
@@ -475,25 +472,31 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 				final StringBuilder description = new StringBuilder();
 				appendDataToDescription(description, categoryLabel, category);
 				appendDataToDescription(description, ticketOwnerLabel, ticket.getString("owner_name"));
-				appendDataToDescription(description, ticketIdLabel, ticket.getNumber("id").toString());
+				appendDataToDescription(description, ticketIdLabel, ticket.getLong("id").toString());
 
 				appendDataToDescription(description, schoolNameLabel, schoolName);
                 appendDataToDescription(description, ManagerLabel, user.getUsername() );
                 description.append("\n").append(ticket.getString("description"));
 
-				data.putString("description", description.toString());
+				data.put("description", description.toString());
 
 
 				if (attachments != null && attachments.size() > 0) {
-					data.putArray("uploads", attachments);
+					data.put("uploads", attachments);
 				}
 
-				JsonObject issue = new JsonObject().putObject("issue", data);
+				JsonObject issue = new JsonObject().put("issue", data);
 
-				Buffer buffer = new Buffer();
+				Buffer buffer = Buffer.buffer();
 				buffer.appendString(issue.toString());
 
 				httpClient.post(url, handler)
+						.exceptionHandler(new Handler<Throwable>() {
+							@Override
+							public void handle(Throwable t) {
+								log.error("[Support] Error : exception raised by redmine escalation httpClient", t);
+							}
+						})
 						.putHeader(HttpHeaders.HOST, redmineHost)
 						.putHeader(HttpHeaders.CONTENT_TYPE, "application/json")
 						.putHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(buffer.length()))
@@ -522,17 +525,23 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 
 		JsonObject data = new JsonObject();
 		if (comment != null) {
-			data.putString("notes", comment.getString("content"));
+			data.put("notes", comment.getString("content"));
 		}
 		if (attachments != null) {
-			data.putArray("uploads", attachments);
+			data.put("uploads", attachments);
 		}
 
-		JsonObject ticket = new JsonObject().putObject("issue", data);
+		JsonObject ticket = new JsonObject().put("issue", data);
 
-		Buffer buffer = new Buffer().appendString(ticket.toString());
+		Buffer buffer = Buffer.buffer().appendString(ticket.toString());
 
 		httpClient.put(url, handler)
+				.exceptionHandler(new Handler<Throwable>() {
+					@Override
+					public void handle(Throwable t) {
+						log.error("[Support] Error : exception raised by redmine escalation httpClient", t);
+					}
+				})
 			.putHeader(HttpHeaders.HOST, redmineHost)
 			.putHeader(HttpHeaders.CONTENT_TYPE, "application/json")
 			.putHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(buffer.length()))
@@ -570,7 +579,7 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 				}
 				else {
 					try {
-						final JsonArray issues = listIssuesEvent.right().getValue().getArray("issues", null);
+						final JsonArray issues = listIssuesEvent.right().getValue().getJsonArray("issues", null);
 						if(issues == null || issues.size() == 0) {
 							log.debug("Result of listIssues is null or empty");
 							return;
@@ -588,8 +597,8 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 
 						final Number[] issueIds = new Number[issues.size()];
 						for (int i = 0; i < issues.size(); i++) {
-							JsonObject issue = issues.get(i);
-							issueIds[i] = issue.getNumber("id");
+							JsonObject issue = issues.getJsonObject(i);
+							issueIds[i] = issue.getLong("id");
 						}
 
 						// Step 2) : given a list of issue ids in Redmine, get issue ids that exist in current ENT and their attachments' ids
@@ -613,7 +622,7 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 										if(!(o instanceof JsonObject)) continue;
 										JsonObject jo = (JsonObject) o;
 
-										final Number issueId = jo.getNumber("id");
+										final Number issueId = jo.getLong("id");
 
 										String ids = jo.getString("attachment_ids", null);
 										final JsonArray existingAttachmentsIds = (ids!=null) ? new JsonArray(ids) : null;
@@ -643,7 +652,7 @@ public class EscalationServiceRedmineImpl implements EscalationService {
                                                                 {
                                                                     try {
                                                                         ticketDate = dfTicket.parse(ticket.getString("issue_update_date"));
-                                                                        issueDate = dfIssue.parse(issue.getObject("issue").getString("updated_on"));
+                                                                        issueDate = dfIssue.parse(issue.getJsonObject("issue").getString("updated_on"));
                                                                     } catch (ParseException e) {
                                                                         e.printStackTrace();
                                                                     }
@@ -661,7 +670,7 @@ public class EscalationServiceRedmineImpl implements EscalationService {
                                                                                 }
 
                                                                                 EscalationServiceRedmineImpl.this.notifyIssueChanged(issueId, updateIssueEvent.right().getValue(), issue);
-                                                                                ticketServiceSql.updateTicketIssueUpdateDate(ticket.getLong("id"), issue.getObject("issue").getString("updated_on"), new Handler<Either<String, JsonObject>>() {
+                                                                                ticketServiceSql.updateTicketIssueUpdateDate(ticket.getLong("id"), issue.getJsonObject("issue").getString("updated_on"), new Handler<Either<String, JsonObject>>() {
                                                                                     @Override
                                                                                     public void handle(final Either<String, JsonObject> res){
                                                                                         if( res.isLeft()){
@@ -677,14 +686,14 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 
 
                                                                     // Step 3c) : If "new" attachments have been added in Redmine, download them
-                                                                    final JsonArray redmineAttachments = issue.getObject("issue").getArray("attachments", null);
+                                                                    final JsonArray redmineAttachments = issue.getJsonObject("issue").getJsonArray("attachments", null);
                                                                     if (redmineAttachments != null && redmineAttachments.size() > 0) {
                                                                         boolean existingAttachmentIdsEmpty = existingAttachmentsIds == null || existingAttachmentsIds.size() == 0;
 
                                                                         for (Object o : redmineAttachments) {
                                                                             if (!(o instanceof JsonObject)) continue;
                                                                             final JsonObject attachment = (JsonObject) o;
-                                                                            final Number redmineAttachmentId = attachment.getNumber("id");
+                                                                            final Number redmineAttachmentId = attachment.getLong("id");
 
                                                                             if (existingAttachmentIdsEmpty || !existingAttachmentsIds.contains(redmineAttachmentId)) {
                                                                                 final String attachmentUrl = attachment.getString("content_url");
@@ -766,7 +775,7 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 	}
 
 	private void doDownloadAttachment(final String attachmentUrl, final JsonObject attachment, final Number issueId) {
-		final Number attachmentIdInRedmine = attachment.getNumber("id");
+		final Number attachmentIdInRedmine = attachment.getLong("id");
 
 		EscalationServiceRedmineImpl.this.downloadAttachment(attachmentUrl, new Handler<Buffer>() {
 			@Override
@@ -780,7 +789,7 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 						 * {"_id":"f62f5dac-b32b-4cb8-b70a-1016885f37ec","status":"ok","metadata":{"content-type":"image/png","filename":"test_pj.png","size":118639}}
 						 */
 								log.info("Metadata of attachment written in gridfs: " + attachmentMetaData.encodePrettily());
-								attachmentMetaData.putNumber("id_in_bugtracker", attachmentIdInRedmine);
+								attachmentMetaData.put("id_in_bugtracker", attachmentIdInRedmine);
 
 								// store attachment's metadata in postgresql
 								ticketServiceSql.insertIssueAttachment(issueId, attachmentMetaData, new Handler<Either<String, JsonArray>>() {
@@ -806,7 +815,7 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 		try {
 			final String oldStatus = updateIssueResponse.getString("status_id", "-1");
 			final int oldStatusId = Integer.parseInt(oldStatus);
-			final Number newStatusId = issue.getObject("issue").getObject("status").getNumber("id");
+			final Number newStatusId = issue.getJsonObject("issue").getJsonObject("status").getLong("id");
 			log.debug("Old status_id: " + oldStatusId);
 			log.debug("New status_id:" + newStatusId);
 //			if(newStatusId.intValue() != oldStatusId &&
@@ -814,10 +823,10 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 //					newStatusId.intValue() == redmineClosedStatusId.intValue())) {
 
             JsonObject lastEvent = null;
-            if( issue.getObject("issue") != null && issue.getObject("issue").getArray("journals") != null &&
-                    issue.getObject("issue").getArray("journals").size() >= 1) {
+            if( issue.getJsonObject("issue") != null && issue.getJsonObject("issue").getJsonArray("journals") != null &&
+                    issue.getJsonObject("issue").getJsonArray("journals").size() >= 1) {
                 // getting the last event from the bug tracker for historization
-                lastEvent = issue.getObject("issue").getArray("journals").get(issue.getObject("issue").getArray("journals").size() - 1);
+                lastEvent = issue.getJsonObject("issue").getJsonArray("journals").getJsonObject(issue.getJsonObject("issue").getJsonArray("journals").size() - 1);
             }
             final JsonObject fLastEvent = lastEvent;
 
@@ -836,7 +845,7 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 								return;
 							}
 
-							final Number ticketId = ticket.getNumber("id", -1);
+							final Number ticketId = ticket.getLong("id", -1L);
 							String schooldId = ticket.getString("school_id", null);
 							if(ticketId.longValue() == -1 || schooldId == null) {
 								log.error("[Support] Error : cannot get ticketId or schoolId. Unable to send timeline notification.");
@@ -876,18 +885,18 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 											}
 
 											JsonObject params = new JsonObject();
-											params.putNumber("issueId", issueId)
-												.putNumber("ticketId", ticketId);
-											params.putString("ticketUri", "/support#/ticket/" + ticketId);
-											params.putString("resourceUri", params.getString("ticketUri"));
+											params.put("issueId", issueId)
+												.put("ticketId", ticketId);
+											params.put("ticketUri", "/support#/ticket/" + ticketId);
+											params.put("resourceUri", params.getString("ticketUri"));
 
 											notification.notifyTimeline(null, "support." + notificationName, null, recipients, null, params);
                                             // Historization
                                             String additionnalInfoHisto = "";
                                             String locale = ticket.getString("locale");
-                                            if( fLastEvent != null && fLastEvent.getArray("details") != null  ){
-                                                if( fLastEvent.getArray("details").size() > 0 ){
-                                                    JsonArray details = fLastEvent.getArray("details");
+                                            if( fLastEvent != null && fLastEvent.getJsonArray("details") != null  ){
+                                                if( fLastEvent.getJsonArray("details").size() > 0 ){
+                                                    JsonArray details = fLastEvent.getJsonArray("details");
                                                     // do not duplicate identical informations
                                                     boolean attrFound = false;
                                                     boolean attachmentFound = false;
@@ -1051,8 +1060,8 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 				@Override
 				public void handle(final Document file) {
 					final String filename = file.getDocument().getString("name");
-					final String contentType = file.getDocument().getObject("metadata").getString("content-type");
-					final Long size = file.getDocument().getObject("metadata").getLong("size");
+					final String contentType = file.getDocument().getJsonObject("metadata").getString("content-type");
+					final Long size = file.getDocument().getJsonObject("metadata").getLong("size");
 					EscalationServiceRedmineImpl.this.uploadAttachment(file.getData(), new Handler<HttpClientResponse>() {
 						@Override
 						public void handle(final HttpClientResponse resp) {
@@ -1064,13 +1073,13 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 										uploadError.set(true);
 									} else {
 										JsonObject response = new JsonObject(event.toString());
-										String token = response.getObject("upload").getString("token");
+										String token = response.getJsonObject("upload").getString("token");
 										String attachmentIdInRedmine = token.substring(0, token.indexOf('.'));
 
-										JsonObject attachment = new JsonObject().putString("token", token)
-												.putString("filename", filename)
-												.putString("content_type", contentType);
-										uploads.addObject(attachment);
+										JsonObject attachment = new JsonObject().put("token", token)
+												.put("filename", filename)
+												.put("content_type", contentType);
+										uploads.add(attachment);
 										bugTrackerAttachments.add(Sql.parseId(attachmentIdInRedmine))
 												.add(issueId).add(documentId).add(filename).add(size);
 //												insertBugTrackerAttachment(attachmentIdInRedmine, issueId, documentId, filename, size);
@@ -1087,7 +1096,7 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 																	public void handle(Either<String, JsonObject> r) {
 																		handler.handle(new Either.Right<String, JsonObject>(
 																				new JsonObject()
-																						.putNumber("issue_id", issueId)));
+																						.put("issue_id", issueId)));
 																	}
 																});
 													} else {

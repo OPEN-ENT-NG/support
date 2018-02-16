@@ -19,8 +19,8 @@
 
 package net.atos.entng.support.enums;
 
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 public enum BugTracker {
 
@@ -37,12 +37,13 @@ public enum BugTracker {
 
 		@Override
 		public Number extractIdFromIssue(JsonObject issue) {
-			return issue.getObject("issue").getNumber("id");
+
+			return issue.getJsonObject("issue").getLong("id");
 		}
 
 		@Override
 		public JsonArray extractAttachmentsFromIssue(JsonObject issue) {
-			return issue.getObject("issue").getArray("attachments", null);
+			return issue.getJsonObject("issue").getJsonArray("attachments", null);
 		}
 	};
 

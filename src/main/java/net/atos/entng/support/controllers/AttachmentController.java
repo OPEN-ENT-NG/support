@@ -26,7 +26,7 @@ import net.atos.entng.support.services.impl.AttachmentServiceSqlImpl;
 
 import org.entcore.common.controller.ControllerHelper;
 import org.entcore.common.http.filter.ResourceFilter;
-import org.vertx.java.core.http.HttpServerRequest;
+import io.vertx.core.http.HttpServerRequest;
 
 import fr.wseduc.rs.ApiDoc;
 import fr.wseduc.rs.Get;

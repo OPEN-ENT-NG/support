@@ -29,11 +29,11 @@ import org.entcore.common.sql.SqlResult;
 import org.entcore.common.user.DefaultFunctions;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserInfos.Function;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 import fr.wseduc.webutils.http.Binding;
 
@@ -72,7 +72,7 @@ public class OwnerOrLocalAdmin implements ResourcesProvider {
 				query.append(" OR t.school_id IN (");
 				for (String scope : adminLocal.getScope()) {
 					query.append("?,");
-					values.addString(scope);
+					values.add(scope);
 				}
 				query.deleteCharAt(query.length() - 1);
 				query.append(")");

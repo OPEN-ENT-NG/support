@@ -25,12 +25,12 @@ import fr.wseduc.webutils.I18n;
 import org.entcore.common.search.SearchingEvents;
 import org.entcore.common.service.impl.SqlCrudService;
 import org.entcore.common.sql.Sql;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.logging.Logger;
-import org.vertx.java.core.logging.impl.LoggerFactory;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 import javax.xml.bind.DatatypeConverter;
 import java.util.ArrayList;
@@ -58,7 +58,7 @@ public class SupportSearchingEvents extends SqlCrudService implements SearchingE
 			searchFields.add("t.subject");
 			searchFields.add("t.description");
 
-			final String iLikeTemplate = "ILIKE ALL " + Sql.arrayPrepared(searchWords.toArray(), true);
+			final String iLikeTemplate = "ILIKE ALL " + Sql.arrayPrepared(searchWords.getList().toArray(), true);
 			final String searchWhere = " AND (" + searchWherePrepared(searchFields, iLikeTemplate) + ")";
 
 			//fixme only user tickets, perhaps add functions to searching api core for admin view
@@ -69,11 +69,11 @@ public class SupportSearchingEvents extends SqlCrudService implements SearchingE
 					.append(" WHERE t.owner = ? ").append(searchWhere)
 					.append(" ORDER BY t.modified DESC LIMIT ? OFFSET ?");
 			final JsonArray values = new JsonArray();
-			values.addString(userId);
-			final List<String> valuesWildcard = searchValuesWildcard(searchWords.toList());
+			values.add(userId);
+			final List<String> valuesWildcard = searchValuesWildcard(searchWords.getList());
 			for (int i=0;i<searchFields.size();i++) {
 				for (final String value : valuesWildcard) {
-					values.addString(value);
+					values.add(value);
 				}
 			}
 
@@ -101,21 +101,21 @@ public class SupportSearchingEvents extends SqlCrudService implements SearchingE
 	}
 
 	private JsonArray formatSearchResult(final JsonArray results, final JsonArray columnsHeader, String locale) {
-		final List<String> aHeader = columnsHeader.toList();
+		final List<String> aHeader = columnsHeader.getList();
 		final JsonArray traity = new JsonArray();
 
 		for (int i=0;i<results.size();i++) {
-			final JsonObject j = results.get(i);
+			final JsonObject j = results.getJsonObject(i);
 			final JsonObject jr = new JsonObject();
 			if (j != null) {
-				jr.putString(aHeader.get(0), formatTitle(j.getString("subject",""), j.getString("category",""),
+				jr.put(aHeader.get(0), formatTitle(j.getString("subject",""), j.getString("category",""),
 						j.getInteger("status",0), locale));
-				jr.putString(aHeader.get(1), j.getString("description", ""));
-				jr.putObject(aHeader.get(2), new JsonObject().putValue("$date",
+				jr.put(aHeader.get(1), j.getString("description", ""));
+				jr.put(aHeader.get(2), new JsonObject().put("$date",
 						DatatypeConverter.parseDateTime(j.getString("modified")).getTime().getTime()));
-				jr.putString(aHeader.get(3), j.getString("owner_name"));
-				jr.putString(aHeader.get(4), j.getString("owner"));
-				jr.putString(aHeader.get(5), "/support#/ticket/"+ j.getNumber("id",0));
+				jr.put(aHeader.get(3), j.getString("owner_name"));
+				jr.put(aHeader.get(4), j.getString("owner"));
+				jr.put(aHeader.get(5), "/support#/ticket/"+ j.getLong("id", 0L));
 				traity.add(jr);
 			}
 		}
