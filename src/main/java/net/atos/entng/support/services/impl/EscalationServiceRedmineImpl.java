@@ -108,7 +108,6 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 		log = LoggerFactory.getLogger(EscalationServiceRedmineImpl.class);
 		EventBus eb = Server.getEventBus(vertx);
 		HttpClientOptions options = new HttpClientOptions().setConnectTimeout(10000);
-		httpClient = vertx.createHttpClient(options);
 		wksHelper = new WorkspaceHelper(eb, storage);
 		notification = new TimelineHelper(vertx, eb, config);
 		ticketServiceSql = ts;
@@ -162,6 +161,8 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 		options.setMaxPoolSize(config.getInteger("escalation-httpclient-maxpoolsize",  16))
 			.setKeepAlive(config.getBoolean("escalation-httpclient-keepalive", false))
 			.setTryUseCompression(config.getBoolean("escalation-httpclient-tryusecompression", true));
+
+		httpClient = vertx.createHttpClient(options);
 
 		Long delayInMinutes = config.getLong("refresh-period", 30L);
 		log.info("[Support] Data will be pulled from Redmine every "+delayInMinutes+" minutes");
