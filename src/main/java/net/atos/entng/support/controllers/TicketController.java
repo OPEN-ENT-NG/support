@@ -158,7 +158,7 @@ public class TicketController extends ControllerHelper {
                                     ticketServiceSql.getIssue(ticketId, new Handler<Either<String, JsonArray>>() {
                                         @Override
                                         public void handle(Either<String, JsonArray> res) {
-                                            if (res.isRight()) {
+                                            if (res.isRight() && res.right().getValue().size() > 0) {
                                                 JsonObject issue = res.right().getValue().getJsonObject(0);
                                                 Long id = issue.getLong("id");
                                                 JsonObject comment = new JsonObject();
