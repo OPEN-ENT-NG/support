@@ -54,7 +54,10 @@ public class Support extends BaseServer {
 
 		addController(new DisplayController());
 
-		final BugTracker bugTrackerType = BugTracker.REDMINE; // TODO : read bugTracker from module configuration
+		BugTracker bugTrackerType;
+
+		// Default value to REDMINE for compatibility purpose
+		bugTrackerType = BugTracker.valueOf(config.getString("bug-tracker-name", BugTracker.REDMINE.toString()));
 		final Storage storage = new StorageFactory(vertx, config,
 				new PostgresqlApplicationStorage("support.attachments", Support.class.getSimpleName(),
 						new JsonObject().put("id", "document_id"))).getStorage();
@@ -69,8 +72,11 @@ public class Support extends BaseServer {
 		if(!escalationActivated) {
 			log.info("[Support] Escalation is desactivated");
 		}
-		EscalationService escalationService = escalationActivated ?
-				EscalationServiceFactory.makeEscalationService(bugTrackerType, vertx, config, ticketServiceSql, userService, storage) : null;
+
+		EscalationService escalationService = escalationActivated
+				? EscalationServiceFactory.makeEscalationService(bugTrackerType, vertx, config,
+						ticketServiceSql, userService, storage)
+				: null;
 
         TicketController ticketController = new TicketController(ticketServiceSql, escalationService, userService, storage);
 		addController(ticketController);

@@ -70,8 +70,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 		SqlStatementsBuilder s = new SqlStatementsBuilder();
 
 		// 1. Upsert user
-		String upsertUserQuery = UPSERT_USER_QUERY;
-		s.prepared(upsertUserQuery, new JsonArray().add(user.getUserId()).add(user.getUsername()));
+		s.prepared(UPSERT_USER_QUERY, new JsonArray().add(user.getUserId()).add(user.getUsername()));
 
 		// 2. Create ticket
 		ticket.put("owner", user.getUserId());
@@ -91,14 +90,13 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 		SqlStatementsBuilder s = new SqlStatementsBuilder();
 
 		// 1. Upsert user
-		String upsertUserQuery = UPSERT_USER_QUERY;
-		s.prepared(upsertUserQuery, new JsonArray().add(user.getUserId()).add(user.getUsername()));
+		s.prepared(UPSERT_USER_QUERY, new JsonArray().add(user.getUserId()).add(user.getUsername()));
 
 		// 2. Update ticket
 		StringBuilder sb = new StringBuilder();
 		JsonArray values = new JsonArray();
 		for (String attr : data.fieldNames()) {
-			if( !"newComment".equals(attr) && !"attachments".equals(attr) ) {
+			if( !"newComment".equals(attr) && !"newComments".equals(attr) && !"attachments".equals(attr) ) {
 				sb.append(attr).append(" = ?, ");
 				values.add(data.getValue(attr));
 			}
@@ -110,16 +108,25 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 				"WHERE id = ? RETURNING modified, subject, owner, school_id";
 		s.prepared(updateTicketQuery, values);
 
-		// 3. Insert comment
+		// 3. Insert comment(s)
 		String comment = data.getString("newComment", null);
+		JsonArray comments = data.getJsonArray("newComments", new JsonArray());
+		String insertCommentQuery = "INSERT INTO support.comments (ticket_id, owner, content) VALUES(?, ?, ?)";
 		if(comment != null && !comment.trim().isEmpty()) {
-			String insertCommentQuery =
-					"INSERT INTO support.comments (ticket_id, owner, content) VALUES(?, ?, ?)";
 			JsonArray commentValues = new JsonArray();
 			commentValues.add(parseId(ticketId))
 				.add(user.getUserId())
 				.add(comment);
 			s.prepared(insertCommentQuery, commentValues);
+		} else if ( comments.size() > 0 ) {
+			for(Object o : comments) {
+				String newComment = (String)o;
+				JsonArray commentValues = new JsonArray();
+				commentValues.add(parseId(ticketId))
+						.add(user.getUserId())
+						.add(newComment);
+				s.prepared(insertCommentQuery, commentValues);
+			}
 		}
 
 		// 4. Insert attachments
@@ -224,7 +231,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 		JsonArray values = new JsonArray().add(issueId);
 
 		sql.prepared(query.toString(), values, validUniqueResultHandler(handler));
-	};
+	}
 
 	/**
 	 * If escalation status is "not_done" or "failed", and ticket status is new or opened,
@@ -233,46 +240,70 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 	 * Else (escalation is not allowed) return null.
 	 */
 	@Override
-	public void getTicketForEscalation(String ticketId, Handler<Either<String, JsonObject>> handler) {
-
+	public void getTicketWithEscalation(String ticketId, Handler<Either<String, JsonObject>> handler) {
 		StringBuilder query = new StringBuilder();
 		JsonArray values = new JsonArray();
 
 		// 1) WITH query to update status
 		query.append("WITH updated_ticket AS (")
-			.append(" UPDATE support.tickets")
-			.append(" SET escalation_status = ?, escalation_date = NOW(), status = 2 ")
-			.append(" WHERE id = ?");
+				.append(" UPDATE support.tickets")
+				.append(" SET escalation_status = ?, escalation_date = NOW(), status = 2 ")
+				.append(" WHERE id = ?");
 		values.add(EscalationStatus.IN_PROGRESS.status())
-			.add(parseId(ticketId));
+				.add(parseId(ticketId));
 
-		query.append(" AND escalation_status NOT IN (?, ?)")
-			.append(" AND status NOT IN (?, ?)")
-			.append(" RETURNING * )");
+		query.append(" AND escalation_status NOT IN (?, ?)");
 		values.add(EscalationStatus.IN_PROGRESS.status())
-			.add(EscalationStatus.SUCCESSFUL.status())
-			.add(TicketStatus.RESOLVED.status())
-			.add(TicketStatus.CLOSED.status());
+				.add(EscalationStatus.SUCCESSFUL.status());
 
-		// 2) query to select ticket, attachments' ids and comments
-		query.append("SELECT t.id, t.status, t.subject, t.description, t.category, t.school_id, u.username AS owner_name,")
-			/*  When no rows are selected, json_agg returns a JSON array whose objects' fields have null values.
-			 * We use CASE to return an empty array instead. */
-			.append(" CASE WHEN COUNT(a.document_id) = 0 THEN '[]' ELSE json_agg(DISTINCT a.document_id) END AS attachments,")
+		query.append(" AND status NOT IN (?, ?)")
+				.append(" RETURNING * )");
+		values.add(TicketStatus.RESOLVED.status())
+				.add(TicketStatus.CLOSED.status());
 
-			.append(" CASE WHEN COUNT(c.id) = 0 THEN '[]' ")
-				.append(" ELSE json_agg(DISTINCT(date_trunc('second', c.created), c.id, c.content, v.username)::support.comment_tuple")
-				.append(" ORDER BY (date_trunc('second', c.created), c.id, c.content, v.username)::support.comment_tuple)")
-				.append(" END AS comments")
-
-			.append(" FROM updated_ticket AS t")
-			.append(" INNER JOIN support.users AS u ON t.owner = u.id")
-			.append(" LEFT JOIN support.attachments AS a ON t.id = a.ticket_id")
-			.append(" LEFT JOIN support.comments AS c ON t.id = c.ticket_id")
-			.append(" LEFT JOIN support.users AS v ON c.owner = v.id")
-			.append(" GROUP BY t.id, t.status, t.subject, t.description, t.category, t.school_id, u.username");
+		query.append( escalateTicketInfoQuery("updated_ticket AS t", "") );
 
 		sql.prepared(query.toString(), values, validUniqueResultHandler(handler));
+	}
+
+	/**
+	 * When no rows are selected, json_agg returns a JSON array whose objects' fields have null values.
+	 * We use CASE to return an empty array instead.
+	 * @return query to select ticket, attachments' ids and comments
+	 */
+	private String escalateTicketInfoQuery( String fromTable, String whereClause )  {
+		return "SELECT t.id, t.status, t.subject, t.description, t.category, t.school_id,"
+		+ " u.username AS owner_name, t.owner as owner_id, t.created,"
+				+ " CASE WHEN COUNT(a.document_id) = 0 THEN '[]' ELSE json_agg(DISTINCT a.document_id) END AS attachments,"
+				+ " CASE WHEN COUNT(a.name) = 0 THEN '[]' ELSE json_agg(DISTINCT a.name) END AS attachmentsNames,"
+		+ " CASE WHEN COUNT(c.id) = 0 THEN '[]' "
+		+ " ELSE json_agg(DISTINCT(date_trunc('second', c.created), c.id, c.content, v.username)::support.comment_tuple"
+		+ " ORDER BY (date_trunc('second', c.created), c.id, c.content, v.username)::support.comment_tuple)"
+		+ " END AS comments"
+		+ " FROM " + fromTable
+		+ " INNER JOIN support.users AS u ON t.owner = u.id"
+		+ " LEFT JOIN support.attachments AS a ON t.id = a.ticket_id"
+		+ " LEFT JOIN support.comments AS c ON t.id = c.ticket_id"
+		+ " LEFT JOIN support.users AS v ON c.owner = v.id"
+		+ " " + whereClause
+		+ " GROUP BY t.id, t.status, t.subject, t.description, t.category, t.school_id, u.username,"
+		+ " t.owner, t.created";
+	}
+
+	/**
+	 * Get ticket in format usable in escalation service
+	 * @param ticketId Id of the ticket to get
+	 * @param handler Handler that will process the response
+	 */
+	public void getTicketForEscalationService( String ticketId, Handler<Either<String, JsonObject>> handler) {
+		StringBuilder query = new StringBuilder();
+		JsonArray values = new JsonArray();
+
+		query.append( escalateTicketInfoQuery("support.tickets AS t", "WHERE t.id = ?") );
+		values.add(Long.valueOf(ticketId));
+
+		sql.prepared(query.toString(), values, validUniqueResultHandler(handler));
+
 	}
 
 
@@ -297,12 +328,14 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 			statements.prepared(query, values);
 
 			// 2. Upsert user
-			String upsertUserQuery = UPSERT_USER_QUERY;
-			statements.prepared(upsertUserQuery, new JsonArray().add(user.getUserId()).add(user.getUsername()));
+			statements.prepared(UPSERT_USER_QUERY, new JsonArray().add(user.getUserId()).add(user.getUsername()));
 
 			// 3. Insert bug tracker issue in ENT, so that local administrators can see it
 			String insertQuery = "INSERT INTO support.bug_tracker_issues(id, ticket_id, content, owner)"
-					+ " VALUES(?, ?, ?::JSON, ?)";
+					+ " VALUES(?, ?, ?::JSON, ?)"
+					+ " ON CONFLICT (id)"
+					+ " DO UPDATE"
+					+ " SET content = excluded.content";
 
 			JsonArray insertValues = new JsonArray().add(issueId)
 					.add(parseId(ticketId))
@@ -374,6 +407,14 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 	@Override
 	public void endFailedEscalation(String ticketId, UserInfos user, Handler<Either<String, JsonObject>> handler) {
 		this.updateTicketAfterEscalation(ticketId, EscalationStatus.FAILED, null, null, null, user, handler);
+	}
+
+	/**
+	 * End escalation in "In progress" state. Used for asynchronous bug trackers
+	 */
+	@Override
+	public void endInProgressEscalation(String ticketId, UserInfos user, Handler<Either<String, JsonObject>> handler) {
+		this.updateTicketAfterEscalation(ticketId, EscalationStatus.IN_PROGRESS, null, null, null, user, handler);
 	}
 
 	@Override
@@ -533,7 +574,6 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
     /**
      *
      * @param ticketId : ticket id from which we want to list the history
-     * @param handler
      */
     public void listEvents(String ticketId, Handler<Either<String, JsonArray>> handler) {
         String query = "SELECT username, event, status, event_date, user_id, event_type FROM support.tickets_histo th " +

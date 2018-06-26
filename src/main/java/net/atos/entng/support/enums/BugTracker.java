@@ -45,6 +45,38 @@ public enum BugTracker {
 		public JsonArray extractAttachmentsFromIssue(JsonObject issue) {
 			return issue.getJsonObject("issue").getJsonArray("attachments", null);
 		}
+
+		@Override
+		public BugTrackerSyncType getBugTrackerSyncType() {
+			return BugTrackerSyncType.SYNC;
+		}
+	},
+	PIVOT {
+		@Override
+		public String getLastIssueUpdateFromPostgresqlJson() {
+			return "->'issue'->>'updated_on'";
+		}
+
+		@Override
+		public String getStatusIdFromPostgresqlJson() {
+			return "#>'{issue,status,id}'";
+		}
+
+		@Override
+		public Number extractIdFromIssue(JsonObject issue) {
+			return issue.getJsonObject("issue").getInteger("id");
+		}
+
+		@Override
+		public JsonArray extractAttachmentsFromIssue(JsonObject issue) {
+			//return issue.getObject("issue").getArray("attachments", null);
+			return null;
+		}
+
+		@Override
+		public BugTrackerSyncType getBugTrackerSyncType() {
+			return BugTrackerSyncType.ASYNC;
+		}
 	};
 
 
@@ -67,5 +99,10 @@ public enum BugTracker {
 	 * Extract "attachments" from JSON object sent by the bug tracker REST API
 	 */
 	public abstract JsonArray extractAttachmentsFromIssue(JsonObject issue);
+
+	/**
+	 * @return tracker sync type
+	 */
+	public abstract BugTrackerSyncType getBugTrackerSyncType();
 
 }

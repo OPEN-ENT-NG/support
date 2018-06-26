@@ -222,6 +222,7 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 	public void escalateTicket(final HttpServerRequest request, final JsonObject ticket,
 			final JsonArray comments, final JsonArray attachmentsIds,
 			final ConcurrentMap<Long, String> attachmentMap, final UserInfos user,
+			final JsonObject issue,
 			final Handler<Either<String, JsonObject>> handler) {
 
 		/*
@@ -1048,6 +1049,14 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 
 	}
 
+	/**
+	 * Not used in synchronous bugtrackers
+	 */
+	@Override
+	public void updateTicketFromBugTracker(Message<JsonObject> message, Handler<Either<String, JsonObject>> handler) {
+		handler.handle(new Either.Left<String, JsonObject>("Not implemented in synchronous mode"));
+	}
+
 	private void uploadDocuments(final Integer issueId, Set<String> exists, JsonArray documents,
 			final Handler<Either<String, JsonObject>> handler) {
 		Set<String> d = new HashSet<>();
@@ -1186,8 +1195,7 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 		});
 	}
 
-	@Override
-	public void isEscaladed(String ticketId, final Handler<Boolean> handler) {
+	private void isEscaladed(String ticketId, final Handler<Boolean> handler) {
 		String query = "SELECT count(*) as nb FROM support.bug_tracker_issues WHERE ticket_id = ? ";
 		sql.prepared(query, new JsonArray().add(Sql.parseId(ticketId)),
 				SqlResult.validUniqueResultHandler(new Handler<Either<String, JsonObject>>() {
@@ -1198,8 +1206,7 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 		}));
 	}
 
-	@Override
-	public void getIssueId(String ticketId, final Handler<Integer> handler) {
+	private void getIssueId(String ticketId, final Handler<Integer> handler) {
 		String query = "SELECT id FROM support.bug_tracker_issues WHERE ticket_id = ? ";
 		sql.prepared(query, new JsonArray().add(Sql.parseId(ticketId)),
 				SqlResult.validUniqueResultHandler(new Handler<Either<String, JsonObject>>() {

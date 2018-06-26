@@ -28,21 +28,23 @@ import net.atos.entng.support.services.EscalationService;
 import net.atos.entng.support.services.TicketServiceSql;
 import net.atos.entng.support.services.UserService;
 import net.atos.entng.support.services.impl.EscalationServiceRedmineImpl;
+import net.atos.entng.support.services.impl.EscalationServicePivotImpl;
 
 
-public class EscalationServiceFactory {
+class EscalationServiceFactory {
 
-	public static EscalationService makeEscalationService(final BugTracker bugTracker,
+	static EscalationService makeEscalationService(final BugTracker bugTracker,
 														  final Vertx vertx, final JsonObject config, final TicketServiceSql ts, final UserService us,
 														  Storage storage) {
-
 		switch (bugTracker) {
 			case REDMINE:
 				return new EscalationServiceRedmineImpl(vertx, config, ts, us, storage);
+
+			case PIVOT:
+				return new EscalationServicePivotImpl(vertx, config, ts, us, storage);
 
 			default:
 				throw new IllegalArgumentException("Invalid parameter bugTracker");
 		}
 	}
-
 }

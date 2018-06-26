@@ -28,7 +28,9 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import fr.wseduc.bus.BusAddress;
 import net.atos.entng.support.Support;
+import net.atos.entng.support.enums.BugTrackerSyncType;
 import net.atos.entng.support.filters.Admin;
 import net.atos.entng.support.filters.OwnerOrLocalAdmin;
 import net.atos.entng.support.services.EscalationService;
@@ -45,6 +47,8 @@ import org.entcore.common.user.UserUtils;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.eventbus.Message;
 import org.vertx.java.core.http.RouteMatcher;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -141,6 +145,7 @@ public class TicketController extends ControllerHelper {
                                     }
                                 }
                             });
+                            boolean commentSentToBugtracker = false;
                             // we only historize if no comment has been added. If there is a comment, it will appear in the history
                             if( ticket.getString("newComment") == null || "".equals(ticket.getString("newComment")) ) {
                                 ticketServiceSql.createTicketHisto(ticketId, I18n.getInstance().translate("support.ticket.histo.modification", getHost(request), I18n.acceptLanguage(request)),
@@ -155,41 +160,35 @@ public class TicketController extends ControllerHelper {
                             } else {
                                 // if option activated, we can send the comment directly to the bug-tracker
                                 if( bugTrackerCommDirect ) {
-                                    ticketServiceSql.getIssue(ticketId, new Handler<Either<String, JsonArray>>() {
+                                    sendTicketUpdateToIssue(request, ticketId, ticket, user);
+                                    commentSentToBugtracker = true;
+                                }
+                            }
+                            notifyTicketUpdated(request, ticketId, user, response);
+                            JsonArray attachments = ticket.getJsonArray("attachments");
+                            if (escalationService != null && attachments != null && attachments.size() > 0) {
+                                if(escalationService.getBugTrackerType().getBugTrackerSyncType()
+                                        == BugTrackerSyncType.ASYNC && !commentSentToBugtracker) {
+                                    sendTicketUpdateToIssue(request, ticketId, ticket, user);
+                                    renderJson(request, response, 200);
+                                } else {
+                                    escalationService.syncAttachments(ticketId, attachments, new Handler<Either<String, JsonObject>>() {
                                         @Override
-                                        public void handle(Either<String, JsonArray> res) {
-                                            if (res.isRight() && res.right().getValue().size() > 0) {
-                                                JsonObject issue = res.right().getValue().getJsonObject(0);
-                                                Long id = issue.getLong("id");
-                                                JsonObject comment = new JsonObject();
-                                                comment.put("content", ticket.getString("newComment"));
-                                                sendIssueComment(user, comment, id.toString(), request);
-                                            } else if (res.isLeft()) {
-                                                log.error("No associated issue found");
+                                        public void handle(Either<String, JsonObject> res) {
+                                            if (res.isRight()) {
+                                                Integer issueId = res.right().getValue().getInteger("issue_id");
+                                                if (issueId != null) {
+                                                    refreshIssue(issueId, request);
+                                                } else {
+                                                    renderJson(request, response, 200);
+                                                }
+                                            } else {
+                                                log.error("Error syncing attachments : " + res.left().getValue());
+                                                renderJson(request, response, 200);
                                             }
                                         }
                                     });
                                 }
-                            }
-                            notifyTicketUpdated(request, user, response);
-                            JsonArray attachments = ticket.getJsonArray("attachments");
-                            if (escalationService != null && attachments != null && attachments.size() > 0) {
-                                escalationService.syncAttachments(ticketId, attachments, new Handler<Either<String, JsonObject>>() {
-                                    @Override
-                                    public void handle(Either<String, JsonObject> res) {
-                                        if (res.isRight()) {
-                                            Integer issueId = res.right().getValue().getInteger("issue_id");
-                                            if (issueId != null) {
-                                                refreshIssue(issueId, request);
-                                            } else {
-                                                renderJson(request, response, 200);
-                                            }
-                                        } else {
-                                            log.error("Error syncing attachments : " + res.left().getValue());
-                                            renderJson(request, response, 200);
-                                        }
-                                    }
-                                });
                             } else {
                                 renderJson(request, response, 200);
                             }
@@ -202,6 +201,44 @@ public class TicketController extends ControllerHelper {
                 }
             }
         };
+    }
+
+    /**
+     * Send ticket updates to bugtracker
+     * @param request Original request
+     * @param ticketId Id of the ticket updated
+     * @param ticket Content of ticket updated
+     * @param user User updating ticket
+     */
+    private void sendTicketUpdateToIssue(final HttpServerRequest request, final String ticketId, final JsonObject ticket,
+                                         final UserInfos user) {
+        ticketServiceSql.getIssue(ticketId, new Handler<Either<String, JsonArray>>() {
+            @Override
+            public void handle(Either<String, JsonArray> res) {
+                if (res.isRight() && res.right().getValue().size() > 0) {
+                    JsonObject issue = res.right().getValue().getJsonObject(0);
+                    Long id = issue.getLong("id");
+                    JsonObject comment = new JsonObject();
+                    if(ticket != null && ticket.containsKey("newComment")) {
+                        comment.put("content", ticket.getString("newComment"));
+                    }
+                    if(escalationService.getBugTrackerType().getBugTrackerSyncType()
+                            == BugTrackerSyncType.SYNC) {
+                        sendIssueComment(user, comment, id.toString(), request);
+                    } else {
+                        escalateTicket(request, ticketId, true);
+                    }
+                } else if (res.isLeft()) {
+                    log.error("No associated issue found");
+                }
+            }
+        });
+    }
+
+    private void updateIssuesStatus(HttpServerRequest request, List<Integer> ids) {
+        for (Integer id : ids) {
+            sendTicketUpdateToIssue(request, id.toString(), null, null);
+        }
     }
 
     /**
@@ -315,6 +352,10 @@ public class TicketController extends ControllerHelper {
                                     if (event.isRight()) {
                                         createTicketHistoMultiple(ids, I18n.getInstance().translate("support.ticket.histo.mass.modification", getHost(request), I18n.acceptLanguage(request)), newStatus, user.getUserId());
                                         request.response().setStatusCode(200).end();
+                                        if(escalationService.getBugTrackerType().getBugTrackerSyncType()
+                                                == BugTrackerSyncType.ASYNC) {
+                                            updateIssuesStatus(request, ids);
+                                        }
                                         //renderJson(request, wholeIssue);
                                     } else {
                                         log.error("Error when updating ticket statuses.");
@@ -335,8 +376,8 @@ public class TicketController extends ControllerHelper {
     /**
      * Notify owner and local administrators that the ticket has been updated
      */
-    private void notifyTicketUpdated(final HttpServerRequest request, final UserInfos user,
-                                     final JsonObject response) {
+    private void notifyTicketUpdated(final HttpServerRequest request, final String ticketId,
+                                     final UserInfos user, final JsonObject response) {
 
         final String eventType = TICKET_UPDATED_EVENT_TYPE;
         final String notificationName = "ticket-updated";
@@ -345,7 +386,6 @@ public class TicketController extends ControllerHelper {
             final String ticketSubject = response.getString("subject", null);
             final String ticketOwner = response.getString("owner", null);
             final String structure = response.getString("school_id", null);
-            final String ticketId = request.params().get("id");
 
             if (ticketSubject == null || ticketOwner == null || structure == null) {
                 log.error("Could not get parameters subject, owner or school_id. Unable to send timeline " + eventType
@@ -469,6 +509,35 @@ public class TicketController extends ControllerHelper {
         renderJson(request, result);
     }
 
+    @BusAddress("support.update.bugtracker")
+    @ApiDoc("Update ticket with information from bugtracker")
+    public void updateTicketFromBugTracker(final Message<JsonObject> message) {
+        escalationService.updateTicketFromBugTracker(message, new Handler<Either<String, JsonObject>>() {
+            @Override
+            public void handle(Either<String, JsonObject> event) {
+                if(event.isLeft()) {
+                    log.error("Support : error when updating ticket from bugtracker " + event.left().getValue());
+                    message.reply(new JsonObject().put("status", "KO").put("message",event.left().getValue()));
+                } else {
+                    JsonObject response = event.right().getValue();
+                    if(response.containsKey("user") && response.containsKey("ticket")) {
+                        JsonObject userJson = response.getJsonObject("user");
+                        UserInfos user = new UserInfos();
+                        user.setUserId(userJson.getString("userid"));
+                        user.setUsername(userJson.getString("username"));
+                        user.setType(userJson.getString("type"));
+
+                        JsonObject ticket = response.getJsonObject("ticket");
+                        ticket.put("owner", ticket.getString("owner_id"));
+                        String ticketId = ticket.getInteger("id").toString();
+                        notifyTicketUpdated(null, ticketId, user, ticket);
+                    }
+                    message.reply(new JsonObject().put("status", "OK"));
+                }
+            }
+        });
+    }
+
     @Get("/profile/:userId")
     @ApiDoc("Returns the profile of a user")
     public void getProfileString(final HttpServerRequest request) {
@@ -523,62 +592,108 @@ public class TicketController extends ControllerHelper {
     @ResourceFilter(Admin.class)
     public void escalateTicket(final HttpServerRequest request) {
         final String ticketId = request.params().get("id");
+        escalateTicket(request, ticketId, false);
+    }
+
+    private void escalateTicket(final HttpServerRequest request, final String ticketId, final boolean updateEscalation) {
 
         UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
             @Override
             public void handle(final UserInfos user) {
                 if (user != null) {
-                    ticketServiceSql.getTicketForEscalation(ticketId, getTicketForEscalationHandler(request, ticketId, user));
+                    if(updateEscalation) {
+                        ticketServiceSql.getTicketForEscalationService(ticketId,
+                                getTicketForEscalationHandler(request, ticketId, user, false));
+                    } else {
+                        ticketServiceSql.getTicketWithEscalation(ticketId,
+                                getTicketForEscalationHandler(request, ticketId, user, true));
+                    }
                 } else {
                     log.debug("User not found in session.");
-                    unauthorized(request);
+                    if(!updateEscalation) {
+                        unauthorized(request);
+                    }
                 }
             }
         });
     }
 
     private Handler<Either<String, JsonObject>> getTicketForEscalationHandler(final HttpServerRequest request,
-                                                                              final String ticketId, final UserInfos user) {
+                                                                              final String ticketId, final UserInfos user,
+                                                                              final boolean doResponse) {
 
         return new Handler<Either<String, JsonObject>>() {
             @Override
             public void handle(Either<String, JsonObject> getTicketResponse) {
                 if (getTicketResponse.isRight()) {
-                    JsonObject ticket = getTicketResponse.right().getValue();
+                    final JsonObject ticket = getTicketResponse.right().getValue();
                     if (ticket == null || ticket.size() == 0) {
-                        log.error("Ticket " + ticketId + " cannot be escalated : its status should be new or opened, and its escalation status should be not_done or in_progress");
-                        badRequest(request, "support.error.escalation.conflict");
+                        log.error("Ticket " + ticketId + " cannot be escalated : its status should be new or opened"
+                                + ", and its escalation status should be not_done or in_progress");
+                        if(doResponse) {
+                            badRequest(request, "support.error.escalation.conflict");
+                        }
                         return;
                     }
 
-                    ticketServiceSql.createTicketHisto(ticket.getInteger("id").toString(), I18n.getInstance().translate("support.ticket.histo.escalate", getHost(request), I18n.acceptLanguage(request))+ user.getUsername(),
-                            ticket.getInteger("status"), user.getUserId(), 4, new Handler<Either<String, JsonObject>>() {
-                                @Override
-                                public void handle(Either<String, JsonObject> res) {
-                                    if (res.isLeft()) {
-                                        log.error("Error creation historization : " + res.left().getValue());
+                    if(doResponse) {
+                        ticketServiceSql.createTicketHisto(
+                                ticket.getInteger("id").toString(),
+                                I18n.getInstance().translate(
+                                        "support.ticket.histo.escalate", getHost(request),
+                                        I18n.acceptLanguage(request)) + user.getUsername(),
+                                ticket.getInteger("status"), user.getUserId(), 4,
+                                new Handler<Either<String, JsonObject>>() {
+                                    @Override
+                                    public void handle(Either<String, JsonObject> res) {
+                                        if (res.isLeft()) {
+                                            log.error("Error creation historization : " + res.left().getValue());
+                                        }
                                     }
-                                }
-                            });
+                                });
+                    }
 
-                    JsonArray comments = new JsonArray(ticket.getString("comments"));
-                    JsonArray attachments = new JsonArray(ticket.getString("attachments"));
+                    final JsonArray comments = new JsonArray(ticket.getString("comments"));
+                    final JsonArray attachments = new JsonArray(ticket.getString("attachments"));
                     final ConcurrentMap<Long, String> attachmentMap = new ConcurrentHashMap<Long, String>();
 
-                    escalationService.escalateTicket(request, ticket, comments, attachments, attachmentMap, user,
-                            getEscalateTicketHandler(request, ticketId, user, attachmentMap));
+                    ticketServiceSql.getIssue(ticketId, new Handler<Either<String, JsonArray>>() {
+                        @Override
+                        public void handle(Either<String, JsonArray> getIssueResponse) {
+                            JsonObject issue = null;
+                            if(getIssueResponse.isRight()) {
+                                JsonArray issues = getIssueResponse.right().getValue();
+                                if(issues != null && issues.size() > 0) {
+                                    if(issues.size() > 1 ) {
+                                        log.error("Support : more than one issue for ticket " + ticketId);
+                                    }
+                                    Object o = issues.getValue(0);
+                                    if(o instanceof JsonObject) {
+                                        issue = (JsonObject) o;
+                                    }
+                                }
+                            }
+                            escalationService.escalateTicket(request, ticket, comments, attachments, attachmentMap, user,
+                                    issue, getEscalateTicketHandler(request, ticketId, user, attachmentMap, doResponse));
+                        }
+                    });
+
 
                 } else {
-                    log.error("Error when calling service getTicketForEscalation. " + getTicketResponse.left().getValue());
-                    renderError(request, new JsonObject().put("error",
-                            "support.escalation.error.data.cannot.be.retrieved.from.database"));
+                    log.error("Error when calling service getTicketWithEscalation. " + getTicketResponse.left().getValue());
+                    if(doResponse) {
+                        renderError(request, new JsonObject().put("error",
+                                "support.escalation.error.data.cannot.be.retrieved.from.database"));
+                    }
                 }
             }
         };
     }
 
     private Handler<Either<String, JsonObject>> getEscalateTicketHandler(final HttpServerRequest request,
-                                                                         final String ticketId, final UserInfos user, final ConcurrentMap<Long, String> attachmentMap) {
+                                                                         final String ticketId, final UserInfos user,
+                                                                         final ConcurrentMap<Long, String> attachmentMap,
+                                                                         final boolean doResponse) {
 
         return new Handler<Either<String, JsonObject>>() {
             @Override
@@ -588,41 +703,7 @@ public class TicketController extends ControllerHelper {
                     final Number issueId = escalationService.getBugTrackerType().extractIdFromIssue(issue);
 
                     // get the whole issue (i.e. with attachments' metadata and comments) to save it in database
-                    escalationService.getIssue(issueId, new Handler<Either<String, JsonObject>>() {
-                        @Override
-                        public void handle(Either<String, JsonObject> getWholeIssueResponse) {
-                            if (getWholeIssueResponse.isRight()) {
-                                final JsonObject wholeIssue = getWholeIssueResponse.right().getValue();
-                                ticketServiceSql.endSuccessfulEscalation(ticketId, wholeIssue, issueId, attachmentMap, user, new Handler<Either<String, JsonObject>>() {
-
-                                    @Override
-                                    public void handle(Either<String, JsonObject> event) {
-                                        if (event.isRight()) {
-                                            renderJson(request, wholeIssue);
-                                        } else {
-                                            log.error("Error when trying to update escalation status to successful and to save bug tracker issue");
-                                            renderError(request, new JsonObject().put("error", event.left().getValue()));
-                                        }
-                                    }
-
-                                });
-                            } else {
-                                log.error("Error when trying to get bug tracker issue");
-
-                                // Update escalation status to successful (escalation succeeded, but data could not be saved in postgresql)
-                                ticketServiceSql.endSuccessfulEscalation(ticketId, new JsonObject(), issueId, attachmentMap, user, new Handler<Either<String, JsonObject>>() {
-                                    @Override
-                                    public void handle(Either<String, JsonObject> event) {
-                                        if (event.isLeft()) {
-                                            log.error("Error when trying to update escalation status to successful");
-                                        }
-                                    }
-                                });
-                                renderError(request, new JsonObject().put("error", getWholeIssueResponse.left().getValue()));
-                            }
-                        }
-                    });
-
+                    escalationService.getIssue(issueId, getIssueHandler(request, issueId, ticketId, user, attachmentMap, doResponse));
                 } else {
                     ticketServiceSql.endFailedEscalation(ticketId, user, new Handler<Either<String, JsonObject>>() {
                         @Override
@@ -632,7 +713,80 @@ public class TicketController extends ControllerHelper {
                             }
                         }
                     });
-                    renderError(request, new JsonObject().put("error", escalationResponse.left().getValue()));
+                    if(doResponse) {
+                        renderError(request, new JsonObject().put("error", escalationResponse.left().getValue()));
+                    }
+                }
+            }
+        };
+    }
+
+    private Handler<Either<String, JsonObject>> getIssueHandler(final HttpServerRequest request, final Number issueId,
+                                                                final String ticketId, final UserInfos user,
+                                                                final ConcurrentMap<Integer, String> attachmentMap,
+                                                                final boolean doResponse) {
+        return new Handler<Either<String, JsonObject>>() {
+            @Override
+            public void handle(Either<String, JsonObject> getWholeIssueResponse) {
+                if (getWholeIssueResponse.isRight()) {
+                    final JsonObject wholeIssue = getWholeIssueResponse.right().getValue();
+                    ticketServiceSql.endSuccessfulEscalation(ticketId, wholeIssue, issueId, attachmentMap, user,
+                            new Handler<Either<String, JsonObject>>() {
+                        @Override
+                        public void handle(Either<String, JsonObject> event) {
+                            if (event.isRight()) {
+                                if (doResponse) {
+                                    renderJson(request, wholeIssue);
+                                }
+                            } else {
+                                log.error("Error when trying to update escalation status to successful and to save bug tracker issue");
+                                if (doResponse) {
+                                    renderError(request, new JsonObject().put("error", event.left().getValue()));
+                                }
+                            }
+                        }
+
+                    });
+                } else {
+                    // Can't get issue from bug tracker in asynchronous mode
+                    if(escalationService.getBugTrackerType().getBugTrackerSyncType()
+                            == BugTrackerSyncType.SYNC) {
+                        log.error("Error when trying to get bug tracker issue");
+                        // Update escalation status to successful
+                        // (escalation succeeded, but data could not be saved in postgresql)
+                        ticketServiceSql.endSuccessfulEscalation(ticketId, new JsonObject(), issueId, attachmentMap,
+                                user, new Handler<Either<String, JsonObject>>() {
+                            @Override
+                            public void handle(Either<String, JsonObject> event) {
+                                if (event.isLeft()) {
+                                    log.error("Error when trying to update escalation status to successful");
+                                }
+                            }
+                        });
+                        if(doResponse) {
+                            renderError(request, new JsonObject().put("error", getWholeIssueResponse.left().getValue()));
+                        }
+                    } else {
+                        // Bug tracker is async, can't get information of tracker issue
+                        // Send dummy info to front
+                        log.info("Bug tracker issue not fetched in asynchronous mode");
+                        ticketServiceSql.endInProgressEscalation(ticketId, user, new Handler<Either<String, JsonObject>>() {
+                            @Override
+                            public void handle(Either<String, JsonObject> event) {
+                                if (event.isLeft()) {
+                                    log.error("Error when trying to update escalation status to in_progress");
+                                }
+                            }
+                        });
+                        String status = I18n.getInstance().translate(
+                                "support.escalation.in.progress",
+                                getHost(request), I18n.acceptLanguage(request));
+                        if(doResponse) {
+                            renderJson(request, new JsonObject().put("issue",
+                                    new JsonObject().put("id", "#")
+                                    .put("status", new JsonObject().put("name", status))));
+                        }
+                    }
                 }
             }
         };
