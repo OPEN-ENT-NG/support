@@ -28,6 +28,8 @@ import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.eventbus.Message;
+
 
 import fr.wseduc.webutils.Either;
 
@@ -44,11 +46,14 @@ public interface EscalationService {
 	 * @param attachmentMap : emptyMap that must be filled by function escalateTicket. key = attachmentId in bug tracker, value = attachmentId in gridfs
 	 */
 	public void escalateTicket(HttpServerRequest request, JsonObject ticket, JsonArray comments, JsonArray attachments,
-			ConcurrentMap<Long, String> attachmentMap, UserInfos user, Handler<Either<String, JsonObject>> handler);
+							   ConcurrentMap<Long, String> attachmentMap, UserInfos user, JsonObject issue,
+							   Handler<Either<String, JsonObject>> handler);
 
 	public void getIssue(Number issueId, Handler<Either<String, JsonObject>> handler);
 
 	public void commentIssue(Number issueId, JsonObject comment, Handler<Either<String,JsonObject>> handler);
+
+	public void updateTicketFromBugTracker(Message<JsonObject> message, Handler<Either<String, JsonObject>> handler);
 
 	void syncAttachments(String ticketId, JsonArray attachments, Handler<Either<String, JsonObject>> handler);
 

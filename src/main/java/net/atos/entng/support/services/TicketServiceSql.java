@@ -41,7 +41,20 @@ public interface TicketServiceSql extends CrudService {
 
 	public void listMyTickets(UserInfos user, Handler<Either<String, JsonArray>> handler);
 
-	public void getTicketForEscalation(String ticketId, Handler<Either<String, JsonObject>> handler);
+	/**
+	 * If escalation status is "not_done" or "failed", and ticket status is new or opened,
+	 * update escalation status to "in_progress" and return the ticket with its attachments' ids and its comments.
+	 *
+	 * Else (escalation is not allowed) return null.
+	 */
+	public void getTicketWithEscalation(String ticketId, Handler<Either<String, JsonObject>> handler);
+
+    /**
+     * Get ticket in format usable in escalation service
+     * @param ticketId Id of the ticket to get
+     * @param handler Handler that will process the response
+     */
+	public void getTicketForEscalationService( String ticketId, Handler<Either<String, JsonObject>> handler);
 
 	public void getTicketIdAndSchoolId(Number issueId, Handler<Either<String, JsonObject>> handler);
 
@@ -50,6 +63,11 @@ public interface TicketServiceSql extends CrudService {
 	 */
 	public void endSuccessfulEscalation(String ticketId, JsonObject issue, Number issueId,
 			ConcurrentMap<Long, String> attachmentMap, UserInfos user, Handler<Either<String, JsonObject>> handler);
+
+	/**
+	 * End escalation in "In progress" state. Used for asynchronous bug trackers
+	 */
+	public void endInProgressEscalation(String ticketId, UserInfos user, Handler<Either<String, JsonObject>> handler);
 
 	public void endFailedEscalation(String ticketId, UserInfos user, Handler<Either<String, JsonObject>> handler);
 

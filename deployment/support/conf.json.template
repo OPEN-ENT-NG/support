@@ -17,6 +17,7 @@
         "integration-mode" : "HTTP",
         "mode" : "${mode}",
         "activate-escalation" : $activateEscalation,
+        "bug-tracker-name" : "$SupportBugTrackername",
         "bug-tracker-host" : "support.web-education.net",
         "bug-tracker-port" : 80,
         "bug-tracker-api-key" : "f8ffdbfb0ee9bae2448713d70172b7df0142d270",
@@ -26,6 +27,10 @@
         "escalation-httpclient-maxpoolsize" : 16,
         "escalation-httpclient-keepalive" : false,
         "escalation-httpclient-tryusecompression" : true,
+        <% if (SupportBugTrackername != null && "PIVOT".equals(SupportBugTrackername)) { %>
+            "user-iws-id" : "$SupportUserIwsId",
+            "user-iws-name" : "$SupportUserIwsName",
+		<% } %>
         "refresh-period" : 15,
       <% if (swiftUri != null && !swiftUri.trim().isEmpty()) { %>
           "swift" : {
