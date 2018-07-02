@@ -221,7 +221,7 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 	@Override
 	public void escalateTicket(final HttpServerRequest request, final JsonObject ticket,
 			final JsonArray comments, final JsonArray attachmentsIds,
-			final ConcurrentMap<Integer, String> attachmentMap, final UserInfos user,
+			final ConcurrentMap<Long, String> attachmentMap, final UserInfos user,
 			final Handler<Either<String, JsonObject>> handler) {
 
 		/*
@@ -251,6 +251,7 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 							EscalationServiceRedmineImpl.this.uploadAttachment(file.getData(), new Handler<HttpClientResponse>() {
 								@Override
 								public void handle(final HttpClientResponse resp) {
+									resp.exceptionHandler(excep -> log.error("client error", excep));
 
 									resp.bodyHandler(new Handler<Buffer>() {
 										@Override
@@ -260,7 +261,7 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 												JsonObject response = new JsonObject(event.toString());
 												String token = response.getJsonObject("upload").getString("token");
 												String attachmentIdInRedmine = token.substring(0, token.indexOf('.'));
-												attachmentMap.put(Integer.valueOf(attachmentIdInRedmine),
+												attachmentMap.put(Long.valueOf(attachmentIdInRedmine),
 														file.getDocument().getString("_id"));
 
 												JsonObject attachment = new JsonObject().put("token", token)
@@ -310,6 +311,7 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 		return new Handler<HttpClientResponse>() {
 			@Override
 			public void handle(final HttpClientResponse resp) {
+				resp.exceptionHandler(excep -> log.error("client error", excep));
 				resp.bodyHandler(new Handler<Buffer>() {
 					@Override
 					public void handle(final Buffer data) {
@@ -349,6 +351,7 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 		return new Handler<HttpClientResponse>() {
 			@Override
 			public void handle(final HttpClientResponse event) {
+				event.exceptionHandler(excep -> log.error("client error", excep));
 				event.bodyHandler(new Handler<Buffer>() {
 					@Override
 					public void handle(Buffer buffer) {
@@ -753,6 +756,7 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 		httpClient.get(url, new Handler<HttpClientResponse>() {
 			@Override
 			public void handle(final HttpClientResponse resp) {
+				resp.exceptionHandler(excep -> log.error("client error", excep));
 				resp.bodyHandler(new Handler<Buffer>() {
 					@Override
 					public void handle(Buffer data) {
@@ -970,6 +974,7 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 		httpClient.get(url, new Handler<HttpClientResponse>() {
 			@Override
 			public void handle(final HttpClientResponse resp) {
+				resp.exceptionHandler(excep -> log.error("client error", excep));
 				resp.bodyHandler(new Handler<Buffer>() {
 					@Override
 					public void handle(Buffer data) {
@@ -1002,6 +1007,7 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 		httpClient.get(url, new Handler<HttpClientResponse>() {
 			@Override
 			public void handle(HttpClientResponse resp) {
+				resp.exceptionHandler(excep -> log.error("client error", excep));
 				resp.bodyHandler(new Handler<Buffer>() {
 					@Override
 					public void handle(Buffer data) {
@@ -1022,6 +1028,7 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 		this.updateIssue(issueId, comment, new Handler<HttpClientResponse>() {
 			@Override
 			public void handle(final HttpClientResponse event) {
+				event.exceptionHandler(excep -> log.error("client error", excep));
 				event.bodyHandler(new Handler<Buffer>() {
 					@Override
 					public void handle(Buffer buffer) {
@@ -1066,7 +1073,7 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 					EscalationServiceRedmineImpl.this.uploadAttachment(file.getData(), new Handler<HttpClientResponse>() {
 						@Override
 						public void handle(final HttpClientResponse resp) {
-
+							resp.exceptionHandler(excep -> log.error("client error", excep));
 							resp.bodyHandler(new Handler<Buffer>() {
 								@Override
 								public void handle(final Buffer event) {
@@ -1090,6 +1097,7 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 											updateIssue(issueId, null, uploads, new Handler<HttpClientResponse>() {
 												@Override
 												public void handle(HttpClientResponse resp) {
+													resp.exceptionHandler(excep -> log.error("client error", excep));
 													if (resp.statusCode() == 200) {
 														insertBugTrackerAttachment(bugTrackerAttachments,
 																new Handler<Either<String, JsonObject>>() {

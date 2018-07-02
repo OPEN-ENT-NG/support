@@ -44,7 +44,7 @@ public interface EscalationService {
 	 * @param attachmentMap : emptyMap that must be filled by function escalateTicket. key = attachmentId in bug tracker, value = attachmentId in gridfs
 	 */
 	public void escalateTicket(HttpServerRequest request, JsonObject ticket, JsonArray comments, JsonArray attachments,
-			ConcurrentMap<Integer, String> attachmentMap, UserInfos user, Handler<Either<String, JsonObject>> handler);
+			ConcurrentMap<Long, String> attachmentMap, UserInfos user, Handler<Either<String, JsonObject>> handler);
 
 	public void getIssue(Number issueId, Handler<Either<String, JsonObject>> handler);
 
