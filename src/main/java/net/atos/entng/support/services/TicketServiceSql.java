@@ -49,7 +49,7 @@ public interface TicketServiceSql extends CrudService {
 	 * @param attachmentMap : key = attachmentId in bug tracker, value = attachmentId in gridfs
 	 */
 	public void endSuccessfulEscalation(String ticketId, JsonObject issue, Number issueId,
-			ConcurrentMap<Integer, String> attachmentMap, UserInfos user, Handler<Either<String, JsonObject>> handler);
+			ConcurrentMap<Long, String> attachmentMap, UserInfos user, Handler<Either<String, JsonObject>> handler);
 
 	public void endFailedEscalation(String ticketId, UserInfos user, Handler<Either<String, JsonObject>> handler);
 

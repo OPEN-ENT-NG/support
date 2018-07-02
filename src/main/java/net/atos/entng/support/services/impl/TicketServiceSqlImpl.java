@@ -277,7 +277,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 
 
 	private void updateTicketAfterEscalation(String ticketId, EscalationStatus targetStatus,
-			JsonObject issue, Number issueId, ConcurrentMap<Integer, String> attachmentMap,
+			JsonObject issue, Number issueId, ConcurrentMap<Long, String> attachmentMap,
 			UserInfos user, Handler<Either<String, JsonObject>> handler) {
 
 		// 1. Update escalation status
@@ -334,7 +334,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 					attachmentsQuery.append("INSERT INTO support.bug_tracker_attachments(id, issue_id, document_id, name, size)")
 						.append(" VALUES");
 
-					JsonArray attachmentsValues = new JsonArray();
+					JsonArray attachmentsValues = new fr.wseduc.webutils.collections.JsonArray();
 
 					for (Object o : attachments) {
 						if(!(o instanceof JsonObject)) continue;
@@ -365,7 +365,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 	 */
 	@Override
 	public void endSuccessfulEscalation(String ticketId, JsonObject issue, Number issueId,
-			ConcurrentMap<Integer, String> attachmentMap,
+			ConcurrentMap<Long, String> attachmentMap,
 			UserInfos user, Handler<Either<String, JsonObject>> handler) {
 
 		this.updateTicketAfterEscalation(ticketId, EscalationStatus.SUCCESSFUL, issue, issueId, attachmentMap, user, handler);
