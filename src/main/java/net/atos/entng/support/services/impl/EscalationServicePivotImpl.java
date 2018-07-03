@@ -72,7 +72,7 @@ public class EscalationServicePivotImpl implements EscalationService
     private final static String DATE_RESOENT_FIELD = "date_resolution_ent";
     private final static String DATE_RESOJIRA_FIELD = "date_resolution_jira";
     private final static String ATTRIBUTION_FIELD = "attribution";
-    private final static String ATTRIBUTION_ENT_VALUE = "ENT";
+    private final static String ATTRIBUTION_ENT_VALUE = "RECTORAT";
 
 
 
@@ -111,7 +111,7 @@ public class EscalationServicePivotImpl implements EscalationService
     @Override
     public void escalateTicket(final HttpServerRequest request, final JsonObject ticket,
                                final JsonArray comments, final JsonArray attachmentsIds,
-                               final ConcurrentMap<Integer, String> attachmentMap, final UserInfos user,
+                               final ConcurrentMap<Long, String> attachmentMap, final UserInfos user,
                                final JsonObject issue,
                                final Handler<Either<String, JsonObject>> handler) {
 

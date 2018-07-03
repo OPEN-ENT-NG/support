@@ -723,7 +723,7 @@ public class TicketController extends ControllerHelper {
 
     private Handler<Either<String, JsonObject>> getIssueHandler(final HttpServerRequest request, final Number issueId,
                                                                 final String ticketId, final UserInfos user,
-                                                                final ConcurrentMap<Integer, String> attachmentMap,
+                                                                final ConcurrentMap<Long, String> attachmentMap,
                                                                 final boolean doResponse) {
         return new Handler<Either<String, JsonObject>>() {
             @Override

@@ -57,8 +57,4 @@ public interface EscalationService {
 
 	void syncAttachments(String ticketId, JsonArray attachments, Handler<Either<String, JsonObject>> handler);
 
-	void isEscaladed(String ticketId, Handler<Boolean> handler);
-
-	void getIssueId(String ticketId, final Handler<Integer> handler);
-
 }
