@@ -286,6 +286,18 @@ public class TicketController extends ControllerHelper {
                                     .put("ticketsubject", shortenSubject(ticketSubject));
                             params.put("resourceUri", params.getString("ticketUri"));
 
+                            JsonObject pushNotif = new JsonObject()
+                                    .put("title", "push-notif.support." + notificationName)
+                                    .put("body", I18n.getInstance()
+                                        .translate(
+                                                "push-notif." + notificationName + ".body",
+                                                getHost(request),
+                                                I18n.acceptLanguage(request),
+                                                user.getUsername(),
+                                                ticketId
+                                        ));
+                            params.put("pushNotif", pushNotif);
+
                             notification.notifyTimeline(request, "support." + notificationName, user, recipients, ticketId, params);
                         }
                     }
@@ -421,6 +433,18 @@ public class TicketController extends ControllerHelper {
                                     .put("ticketid", ticketId)
                                     .put("ticketsubject", shortenSubject(ticketSubject));
                             params.put("resourceUri", params.getString("ticketUri"));
+
+                            JsonObject pushNotif = new JsonObject()
+                                    .put("title", "push-notif.support." + notificationName)
+                                    .put("body", I18n.getInstance()
+                                            .translate(
+                                                    "push-notif." + notificationName + ".body",
+                                                    getHost(request),
+                                                    I18n.acceptLanguage(request),
+                                                    user.getUsername(),
+                                                    ticketId
+                                            ));
+                            params.put("pushNotif", pushNotif);
 
                             notification.notifyTimeline(request, "support." + notificationName, user, recipients, params);
                         }

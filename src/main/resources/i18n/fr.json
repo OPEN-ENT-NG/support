@@ -125,5 +125,10 @@
     "Relative": "Parent",
     "Personnel": "Personnel",
     "Student": "Elève",
-    "Teacher": "Enseignant"
+    "Teacher": "Enseignant",
+    "push-notif.bugtracker-issue-closed.body": "Votre demande n°{0} associée à la demande escaladée n°{1} a été fermée",
+    "push-notif.bugtracker-issue-resolved.body": "Votre demande n°{0} associée à la demande escaladée n°{1} a été résolue",
+    "push-notif.bugtracker-issue-updated.body": "Votre demande n°{0} associée à la demande escaladée n°{1} a été mise à jour"
+    "push-notif.ticket-created.body": "{0} a créé la demande de support n°{1}",
+    "push-notif.ticket-updated.body": "{0} a mis à jour la demande de support n°{1}"
 }
