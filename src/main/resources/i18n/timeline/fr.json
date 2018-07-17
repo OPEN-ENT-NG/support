@@ -14,5 +14,10 @@
     "timeline.support.has.updated": "a mis à jour la ",
     "timeline.support.linked.to": "associée à la ",
     "timeline.support.on": "le",
-    "timeline.support.ticket": "demande de support"
+    "timeline.support.ticket": "demande de support",
+    "push-notif.support.bugtracker-issue-closed": "Aide et support: Fermeture d'une demande escaladée",
+    "push-notif.support.bugtracker-issue-resolved": "Aide et support: Résolution d'une demande escaladée",
+    "push-notif.support.bugtracker-issue-updated": "Aide et support: Mise à jour d'une demande escaladée",
+    "push-notif.support.ticket-created": "Aide et support: Ticket créé",
+    "push-notif.support.ticket-updated": "Aide et support: Ticket mis à jour"
 }
