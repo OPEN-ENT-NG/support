@@ -640,7 +640,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
         String query = "INSERT INTO support.tickets_histo( ticket_id, event, event_date, status, user_id, event_type) "
                 + " values( ?, ?, current_timestamp, ?, ?, ? )";
 
-        JsonArray values = new JsonArray()
+        JsonArray values = new fr.wseduc.webutils.collections.JsonArray()
                 .add(parseId(ticketId))
                 .add(event)
                 .add(status)
