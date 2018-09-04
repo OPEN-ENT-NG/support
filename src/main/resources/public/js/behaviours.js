@@ -2,7 +2,8 @@ var supportBehaviours = {
 	workflow: {
 		createTicket: 'net.atos.entng.support.controllers.TicketController|createTicket',
 		listMyTickets: 'net.atos.entng.support.controllers.TicketController|listUserTickets',
-		listAllTickets: 'net.atos.entng.support.controllers.TicketController|listTickets'
+		listAllTickets: 'net.atos.entng.support.controllers.TicketController|listTickets',
+		escalate: "net.atos.entng.support.controllers.TicketController|escalateTicket"
 	}
 };
 

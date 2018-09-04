@@ -21,7 +21,12 @@
     <div class="row">
         <label class="two cell"><i18n>support.ticket.category</i18n></label>
         <span class="four cell">[[getCategoryLabel(ticket.category)]]</span>
-        <div class="six cell" ng-if="userIsLocalAdmin(ticket) === true">
+        <div class="six cell" ng-if="canEscalate(ticket) === true">
+            <div loading-panel="escalation-request" ng-if="isEscalationActivated === true">
+                <a ng-if="ticket.escalation_status === escalationStatuses.NOT_DONE" ng-click="escalateTicket()">
+                    <i18n>support.escalate.ticket</i18n>
+                </a>
+            </div>
 			<span ng-if="ticket.escalation_status === escalationStatuses.IN_PROGRESS && isEscalationActivated === true">
 				<i18n>support.escalation.in.progress</i18n>
 			</span>
@@ -38,7 +43,7 @@
 			</span>
         </div>
         <div class="six cell">
-            <span class="six cell" ng-if="ticket.escalation_status === escalationStatuses.SUCCESSFUL && !userIsLocalAdmin(ticket) === true">
+            <span class="six cell" ng-if="ticket.escalation_status === escalationStatuses.SUCCESSFUL && !canEscalate(ticket) === true">
                 <i18n>support.ticket.escalation.successful</i18n>&nbsp;
             </span>
         </div>
@@ -50,7 +55,7 @@
         <label class="two cell"><i18n>support.ticket.subject</i18n></label>
         <span class="four cell">[[ticket.subject]]</span>
         <div class="six cell">
-            <a ng-if="ticket.escalation_status === escalationStatuses.SUCCESSFUL && !isBugTrackerCommDirect && userIsLocalAdmin(ticket) === true" ng-click="openBugTrackerIssue()">
+            <a ng-if="ticket.escalation_status === escalationStatuses.SUCCESSFUL && !isBugTrackerCommDirect && canEscalate(ticket) === true" ng-click="openBugTrackerIssue()">
                 <i18n>support.open.escalated.ticket</i18n>
             </a>
 

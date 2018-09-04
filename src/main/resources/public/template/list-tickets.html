@@ -27,8 +27,8 @@
 					<th ng-click="switchSortBy('subject')"
 					ng-class="{'order-by-reversed': (sort.expression === 'subject' && sort.reverse === false),
 								'order-by': (sort.expression === 'subject' && sort.reverse === true),
-								'four': userIsLocalAdmin() && atLeastOneTicketEscalated(),
-								'five': !userIsLocalAdmin() || !atLeastOneTicketEscalated()}">
+								'four': canEscalate() && atLeastOneTicketEscalated(),
+								'five': !canEscalate() || !atLeastOneTicketEscalated()}">
 						<i18n>support.ticket.table.subject</i18n>
 					</th>
 					<th class="one" ng-click="switchSortBy(sortCategoryFunction)"
@@ -52,7 +52,7 @@
 								'order-by': (sort.expression === 'event_count' && sort.reverse === true)}">
                         <i18n>support.ticket.table.event.count</i18n>
                     </th>
-					<th ng-if="userIsLocalAdmin() && atLeastOneTicketEscalated()" class="one" ng-click="switchSortBy('last_issue_update')"
+					<th ng-if="canEscalate() && atLeastOneTicketEscalated()" class="one" ng-click="switchSortBy('last_issue_update')"
 					ng-class="{'order-by-reversed': (sort.expression === 'last_issue_update' && sort.reverse === false),
 								'order-by': (sort.expression === 'last_issue_update' && sort.reverse === true)}">
 						<i18n>support.ticket.table.last.update.of.escalated.ticket</i18n>
@@ -64,15 +64,15 @@
                     <td ><input type="checkbox" ng-model="ticket.selected"></td>
                     <td class="one centered" ng-click="viewTicket(ticket.id)">[[ticket.id]]</td>
 					<td class="one" ng-click="viewTicket(ticket.id)">[[getStatusLabel(ticket.status)]]</td>
-					<td ng-class="userIsLocalAdmin() && atLeastOneTicketEscalated() ? three : four" ng-click="viewTicket(ticket.id)"><b>[[ticket.subject]]</b>&nbsp;[[ticket.short_desc]]
+					<td ng-class="canEscalate() && atLeastOneTicketEscalated() ? three : four" ng-click="viewTicket(ticket.id)"><b>[[ticket.subject]]</b>&nbsp;[[ticket.short_desc]]
                         <span ng-show="ticket.short_desc.length >= 99">...</span></td>
 					<td class="one" ng-click="viewTicket(ticket.id)">[[getCategoryLabel(ticket.category)]]</td>
 					<td class="one" ng-click="viewTicket(ticket.id)"><a href="/userbook/annuaire#[[ticket.owner]]">[[ticket.owner_name]]</a></td>
                     <td class="one" >[[ticket.profile]]</td>
 					<td class="one smallFontSize" ng-click="viewTicket(ticket.id)">[[formatDate(ticket.modified)]]</td>
                     <td class="smallFontSize centered" ng-click="viewTicket(ticket.id)">[[ticket.event_count]]</td>
-					<td class="one smallFontSize" ng-if="userIsLocalAdmin() && atLeastOneTicketEscalated()">
-						<span ng-if="ticket.last_issue_update" ng-model="ticket.last_issue_update">[[formatDate(ticket.last_issue_update)]]</span>
+					<td class="one smallFontSize" ng-if="canEscalate() && atLeastOneTicketEscalated()">
+						<span ng-if="ticket.last_issue_update">[[formatDate(ticket.last_issue_update)]]</span>
 					</td>
 				</tr>
 			</tbody>
