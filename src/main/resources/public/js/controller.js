@@ -505,7 +505,7 @@ function SupportController($scope, template, model, route, $location, orderByFil
 			$scope.ticket.updateTicket($scope.ticket, function() {
 				if($scope.ticket.newAttachments && $scope.ticket.newAttachments.length > 0) {
 					$scope.ticket.getAttachments();
-					if ($scope.isEscalationActivated === true && $scope.userIsLocalAdmin($scope.ticket) === true) {
+					if ($scope.canEscalate($scope.ticket)) {
 						$scope.ticket.getBugTrackerIssue();
 					}
 				}
@@ -683,7 +683,11 @@ function SupportController($scope, template, model, route, $location, orderByFil
 		return schoolName;
 	};
 	
-	
+	$scope.canEscalate = function(ticket){
+		var canEscalate = model.me.workflow.support.escalate || false;
+		return ($scope.isEscalationActivated === true && $scope.userIsLocalAdmin(ticket) === true && canEscalate);
+	}
+
 	$scope.userIsLocalAdmin = function(ticket){
         // SUPER_ADMIN
         if( model.me.functions.SUPER_ADMIN ) {

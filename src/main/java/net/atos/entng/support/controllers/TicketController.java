@@ -593,8 +593,7 @@ public class TicketController extends ControllerHelper {
 
     @Post("/ticket/:id/escalate")
     @ApiDoc("Escalate ticket : the ticket is forwarded to an external bug tracker, a copy of the ticket is saved and will be regularly synchronized")
-    @SecuredAction(value = "support.manager", type = ActionType.RESOURCE)
-    @ResourceFilter(Admin.class)
+    @SecuredAction(value = "support.ticket.escalate")
     public void escalateTicket(final HttpServerRequest request) {
         final String ticketId = request.params().get("id");
         escalateTicket(request, ticketId, false);
