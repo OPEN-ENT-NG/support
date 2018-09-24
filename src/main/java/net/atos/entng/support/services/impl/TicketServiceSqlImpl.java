@@ -364,15 +364,14 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 						]
 					 */
 					StringBuilder attachmentsQuery = new StringBuilder();
-					attachmentsQuery.append("INSERT INTO support.bug_tracker_attachments(id, issue_id, document_id, name, size)")
-						.append(" VALUES");
+					attachmentsQuery.append("SELECT ");
 
 					JsonArray attachmentsValues = new fr.wseduc.webutils.collections.JsonArray();
 
 					for (Object o : attachments) {
 						if(!(o instanceof JsonObject)) continue;
 						JsonObject attachment = (JsonObject) o;
-						attachmentsQuery.append("(?, ?, ?, ?, ?),");
+						attachmentsQuery.append("support.merge_attachment_bydoc(?, ?, ?, ?, ?),");
 
 						Number attachmentIdInBugTracker = attachment.getLong("id");
 						attachmentsValues.add(attachmentIdInBugTracker)
@@ -516,7 +515,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 		/* NB : Attachments downloaded from bug tracker are saved in gridfs, but not in application "workspace".
 		 * => we save a gridfs_id, not a document_id
 		 */
-		String query = "INSERT INTO support.bug_tracker_attachments(id, issue_id, gridfs_id, name, size) VALUES(?, ?, ?, ?, ?)";
+		String query = "SELECT support.merge_attachment_bygridfs(?, ?, ?, ?, ?)";
 
 		JsonArray values = new JsonArray();
 		JsonObject metadata = attachment.getJsonObject("metadata");
