@@ -645,70 +645,60 @@ public class TicketController extends ControllerHelper {
     private Handler<Either<String, JsonObject>> getTicketForEscalationHandler(final HttpServerRequest request,
                                                                               final String ticketId, final UserInfos user,
                                                                               final boolean doResponse) {
-
-        return new Handler<Either<String, JsonObject>>() {
-            @Override
-            public void handle(Either<String, JsonObject> getTicketResponse) {
-                if (getTicketResponse.isRight()) {
-                    final JsonObject ticket = getTicketResponse.right().getValue();
-                    if (ticket == null || ticket.size() == 0) {
-                        log.error("Ticket " + ticketId + " cannot be escalated : its status should be new or opened"
-                                + ", and its escalation status should be not_done or in_progress");
-                        if(doResponse) {
-                            badRequest(request, "support.error.escalation.conflict");
-                        }
-                        return;
-                    }
-
+        return getTicketResponse -> {
+            if (getTicketResponse.isRight()) {
+                final JsonObject ticket = getTicketResponse.right().getValue();
+                if (ticket == null || ticket.size() == 0) {
+                    log.error("Ticket " + ticketId + " cannot be escalated : its status should be new or opened"
+                            + ", and its escalation status should be not_done or in_progress");
                     if(doResponse) {
-                        ticketServiceSql.createTicketHisto(
-                                ticket.getInteger("id").toString(),
-                                I18n.getInstance().translate(
-                                        "support.ticket.histo.escalate", getHost(request),
-                                        I18n.acceptLanguage(request)) + user.getUsername(),
-                                ticket.getInteger("status"), user.getUserId(), 4,
-                                new Handler<Either<String, JsonObject>>() {
-                                    @Override
-                                    public void handle(Either<String, JsonObject> res) {
-                                        if (res.isLeft()) {
-                                            log.error("Error creation historization : " + res.left().getValue());
-                                        }
-                                    }
-                                });
+                        badRequest(request, "support.error.escalation.conflict");
                     }
+                    return;
+                }
 
-                    final JsonArray comments = new JsonArray(ticket.getString("comments"));
-                    final JsonArray attachments = new JsonArray(ticket.getString("attachments"));
-                    final ConcurrentMap<Long, String> attachmentMap = new ConcurrentHashMap<Long, String>();
-
-                    ticketServiceSql.getIssue(ticketId, new Handler<Either<String, JsonArray>>() {
-                        @Override
-                        public void handle(Either<String, JsonArray> getIssueResponse) {
-                            JsonObject issue = null;
-                            if(getIssueResponse.isRight()) {
-                                JsonArray issues = getIssueResponse.right().getValue();
-                                if(issues != null && issues.size() > 0) {
-                                    if(issues.size() > 1 ) {
-                                        log.error("Support : more than one issue for ticket " + ticketId);
-                                    }
-                                    Object o = issues.getValue(0);
-                                    if(o instanceof JsonObject) {
-                                        issue = (JsonObject) o;
-                                    }
+                if(doResponse) {
+                    ticketServiceSql.createTicketHisto(
+                            ticket.getInteger("id").toString(),
+                            I18n.getInstance().translate(
+                                    "support.ticket.histo.escalate", getHost(request),
+                                    I18n.acceptLanguage(request)) + user.getUsername(),
+                            ticket.getInteger("status"), user.getUserId(), 4,
+                            res -> {
+                                if (res.isLeft()) {
+                                    log.error("Error creation historization : " + res.left().getValue());
                                 }
+                            });
+                }
+
+                final JsonArray comments = new JsonArray(ticket.getString("comments"));
+                final JsonArray attachments = new JsonArray(ticket.getString("attachments"));
+                final ConcurrentMap<Long, String> attachmentMap = new ConcurrentHashMap<>();
+
+                ticketServiceSql.getIssue(ticketId, getIssueResponse -> {
+                    JsonObject issue = null;
+                    if(getIssueResponse.isRight()) {
+                        JsonArray issues = getIssueResponse.right().getValue();
+                        if(issues != null && issues.size() > 0) {
+                            if(issues.size() > 1 ) {
+                                log.error("Support : more than one issue for ticket " + ticketId);
                             }
-                            escalationService.escalateTicket(request, ticket, comments, attachments, attachmentMap, user,
-                                    issue, getEscalateTicketHandler(request, ticketId, user, attachmentMap, doResponse));
+                            Object o = issues.getValue(0);
+                            if(o instanceof JsonObject) {
+                                issue = (JsonObject) o;
+                            }
                         }
-                    });
-
-
-                } else {
-                    log.error("Error when calling service getTicketWithEscalation. " + getTicketResponse.left().getValue());
-                    if(doResponse) {
-                        renderError(request, new JsonObject().put("error",
-                                "support.escalation.error.data.cannot.be.retrieved.from.database"));
                     }
+                    escalationService.escalateTicket(request, ticket, comments, attachments, attachmentMap, user,
+                            issue, getEscalateTicketHandler(request, ticketId, user, attachmentMap, doResponse));
+                });
+
+
+            } else {
+                log.error("Error when calling service getTicketWithEscalation. " + getTicketResponse.left().getValue());
+                if(doResponse) {
+                    renderError(request, new JsonObject().put("error",
+                            "support.escalation.error.data.cannot.be.retrieved.from.database"));
                 }
             }
         };

@@ -37,7 +37,8 @@ public class TicketServiceNeo4jImpl {
         StringBuilder query = new StringBuilder();
         query.append("match (u:User), (s:Structure) ")
             .append("where u.id = {userid} and s.id = {structid} ")
-            .append("return u.id as userid, u.emailAcademy as useremail,")
+            .append("return u.id as userid, u.emailAcademy as useremail, ")
+            .append("u.email as userpersoemail,")
             .append("s.id as structid, s.name as structname, s.UAI as structuai, s.academy as structacademy, ")
             .append("s.homePhone as userphone ")
             .append("order by u.id, s.id;");

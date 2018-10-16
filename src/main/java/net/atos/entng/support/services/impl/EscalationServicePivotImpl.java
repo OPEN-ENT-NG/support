@@ -10,6 +10,7 @@ import net.atos.entng.support.helpers.impl.EscalationPivotHelperImpl;
 import net.atos.entng.support.services.EscalationService;
 import net.atos.entng.support.services.TicketServiceSql;
 import net.atos.entng.support.services.UserService;
+import org.entcore.common.bus.ErrorMessage;
 import org.entcore.common.bus.WorkspaceHelper;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.user.UserInfos;
@@ -115,7 +116,7 @@ public class EscalationServicePivotImpl implements EscalationService
                                final JsonObject issue,
                                final Handler<Either<String, JsonObject>> handler) {
 
-        doTicketEscalation(ticket, comments, attachmentsIds, issue, handler);
+        doTicketEscalation(ticket, comments, attachmentsIds, issue, user, handler);
     }
 
     /**
@@ -129,11 +130,12 @@ public class EscalationServicePivotImpl implements EscalationService
      */
     private void doTicketEscalation(final JsonObject ticket, final JsonArray comments,
                                     final JsonArray attachmentsIds, final JsonObject issue,
+                                    final UserInfos escalationUser,
                                     final Handler<Either<String, JsonObject>> handler) {
 
         final JsonArray finalComments = helper.serializeComments(comments);
         final JsonArray attachments = new JsonArray();
-        if(attachmentsIds != null && attachmentsIds.size() > 0) {
+        if( null !=  attachmentsIds  && 0 < attachmentsIds.size() ) {
             final AtomicInteger successfulDocs = new AtomicInteger(0);
 
             for (Object o : attachmentsIds) {
@@ -152,7 +154,7 @@ public class EscalationServicePivotImpl implements EscalationService
                         // Create issue only if all attachments have been retrieved successfully
                         if (successfulDocs.incrementAndGet() == attachmentsIds.size()) {
                             EscalationServicePivotImpl.this.getDataAndCreateIssue( ticket, attachments,
-                                    finalComments, issue, handler);
+                                    finalComments, issue, escalationUser, handler);
                         }
                     } catch (Exception e) {
                         log.error("Error when processing response from readDocument", e);
@@ -160,7 +162,7 @@ public class EscalationServicePivotImpl implements EscalationService
                 });
             }
         } else { // No attachments
-            this.getDataAndCreateIssue( ticket, attachments,  finalComments, issue, handler);
+            this.getDataAndCreateIssue( ticket, attachments,  finalComments, issue,escalationUser, handler);
         }
     }
 
@@ -198,8 +200,7 @@ public class EscalationServicePivotImpl implements EscalationService
                 } else {
                     JsonArray comments = new JsonArray(ticket.getString("comments"));
                     JsonArray attachments = new JsonArray(ticket.getString("attachments"));
-
-                    doTicketEscalation(ticket, comments, attachments, null, handler);
+                    doTicketEscalation(ticket, comments, attachments, null, null, handler);
                 }
             }
         };
@@ -435,6 +436,7 @@ public class EscalationServicePivotImpl implements EscalationService
      */
     private void getDataAndCreateIssue(final JsonObject ticket, final JsonArray attachments,
                                        final JsonArray comments, final JsonObject issue,
+                                       final UserInfos escalationUser,
                                        final Handler<Either<String,JsonObject>> handler) {
         TicketServiceNeo4jImpl.getUserEscalateInfo(
                 ticket.getString("owner_id"),
@@ -451,7 +453,7 @@ public class EscalationServicePivotImpl implements EscalationService
                         } else {
                             JsonObject neoData = event.right().getValue().getJsonObject(0);
                             EscalationServicePivotImpl.this.createIssue(ticket,
-                                    attachments, comments, neoData, issue, getCreateIssueHandler(handler));
+                                    attachments, comments, neoData, issue, escalationUser, getCreateIssueHandler(handler));
                         }
                 });
     }
@@ -467,51 +469,93 @@ public class EscalationServicePivotImpl implements EscalationService
      */
     private void createIssue(final JsonObject ticket, final JsonArray attachments,
                              final JsonArray comments, final JsonObject userInfos,
-                             final JsonObject issue, final Handler<Message<JsonObject>> handler) {
+                             final JsonObject issue, final UserInfos escalationUser,
+                             final Handler<Message<JsonObject>> handler) {
 
-        final JsonObject data = new JsonObject();
 
-        String userphone = "";
-        if(userInfos.containsKey("userphone")&& userInfos.getString("userphone") != null) {
-            userphone = userInfos.getString("userphone");
+        buildUserDataField(ticket, userInfos, escalationUser,
+                userDataFieldValue -> {
+                    if(userDataFieldValue.isRight()) {
+                        String Creator =  userDataFieldValue.right().getValue() ;
+                        JsonObject data = new JsonObject()
+                                .put(ATTRIBUTION_FIELD, ATTRIBUTION_ENT_VALUE)
+                                .put(IDENT_FIELD, Long.toString(ticket.getLong("id")))
+                                .put(TITLE_FIELD, ticket.getString("subject"))
+                                .put(DESCRIPTION_FIELD, ticket.getString(DESCRIPTION_FIELD))
+                                .put(STATUSENT_FIELD, Long.toString(ticket.getLong("status")))
+                                .put(CREATOR_FIELD, Creator)
+                                .put(DATE_CREA_FIELD, ticket.getString("created"))
+                                .put(ACADEMY_FIELD, userInfos.getString("structacademy"))
+                                .put(MODULES_FIELD, new JsonArray().add(ticket.getString("category")));
+
+                        if (comments != null && comments.size() > 0) {
+                            data.put(COMM_FIELD, comments);
+                        }
+                        if (attachments != null && attachments.size() > 0) {
+                            data.put(ATTACHMENT_FIELD, attachments);
+                        }
+                        if (issue != null && issue.containsKey("content") ) {
+                            JsonObject issueContent = new JsonObject(issue.getString("content"));
+                            if (issueContent.containsKey("issue")) {
+                                JsonObject issueData = issueContent.getJsonObject("issue");
+                                if (issueData.containsKey(IDIWS_FIELD) && !issueData.getString(IDIWS_FIELD).isEmpty()) {
+                                    data.put(IDIWS_FIELD, issueData.getString(IDIWS_FIELD));
+                                }
+                            }
+                        }
+
+                        eb.send(TRACKER_ADDRESS, new JsonObject().put("action", "create").put("issue", data), handlerToAsyncHandler(handler));
+                    }
+                    else{
+                        log.error("couldn't get information of any responsible of the ticket");
+                        handler.handle(new ErrorMessage("couldn't get information of any responsible of the ticket"));
+                    }
+                });
+    }
+
+    /**
+     * Build userData field Value. If ticket owner dosen't have academic mail address, use escalating user instead of him
+     * @param ticket the ticket info
+     * @param userInfos The creator of the ticket info
+     * @param escalationUser the connected user info
+     * @param handler
+     */
+    private void buildUserDataField(final JsonObject ticket, JsonObject userInfos, final UserInfos escalationUser, Handler<Either<String, String>> handler) {
+        final String UserEmail_FAILD = "useremail" ;
+        if (userInfos.getString(UserEmail_FAILD) != null) {
+            handler.handle(new Either.Right<>(
+                    BuildStringEscalationUser(
+                            ticket.getString("owner_name"),
+                            userInfos.getString(UserEmail_FAILD),
+                            userInfos.getString("userphone"),
+                            userInfos.getString("structname"),
+                            userInfos.getString("structuai"))
+            ));
+        } else {
+            TicketServiceNeo4jImpl.getUserEscalateInfo( escalationUser.getUserId(),  escalationUser.getStructures().get(0),
+                    userEscalateInfo -> {
+                        if (userEscalateInfo.isRight() && userEscalateInfo.right().getValue().size() > 0) {
+                            JsonObject userInfo = userEscalateInfo.right().getValue().getJsonObject(0);
+                            String userEmail = (null != userInfo.getString(UserEmail_FAILD)) ?
+                                    userInfo.getString(UserEmail_FAILD)
+                                    : userInfo.getString("userpersoemail");
+                            handler.handle(new Either.Right<>(BuildStringEscalationUser(
+                                    escalationUser.getUsername(),
+                                    userEmail,
+                                    userInfo.getString("userphone"),
+                                    userInfo.getString("structname"),
+                                    userInfo.getString("structuai")
+                            )));
+                        }else {
+                            log.error("Something is wrong! can't find the connected user on data base");
+                            handler.handle(new Either.Left<>("Something is wrong! can't find you on data base"));
+                        }
+                    });
         }
+    }
 
-        String userData = ticket.getString("owner_name") + " | "
-                + userInfos.getString("useremail") + " | "
-                + userphone + " | "
-                + userInfos.getString("structname") + " | "
-                + userInfos.getString("structuai");
-
-        data.put(ATTRIBUTION_FIELD, ATTRIBUTION_ENT_VALUE );
-        data.put(IDENT_FIELD, Long.toString(ticket.getLong("id")));
-        data.put(TITLE_FIELD, ticket.getString("subject"));
-        data.put(DESCRIPTION_FIELD, ticket.getString("description"));
-        data.put(STATUSENT_FIELD, Long.toString(ticket.getLong("status")));
-        data.put(CREATOR_FIELD, userData);
-        data.put(DATE_CREA_FIELD, ticket.getString("created"));
-        data.put(ACADEMY_FIELD, userInfos.getString("structacademy"));
-        // Modules are an array, but tickets can have only one category
-        data.put(MODULES_FIELD, new JsonArray()
-                .add(ticket.getString("category")));
-
-        if (comments != null && comments.size() > 0) {
-            data.put(COMM_FIELD, comments);
-        }
-        if (attachments != null && attachments.size() > 0) {
-            data.put(ATTACHMENT_FIELD, attachments);
-        }
-
-
-        if(issue != null && issue.containsKey("content")) {
-            JsonObject issueContent = new JsonObject(issue.getString("content"));
-            if(issueContent.containsKey("issue")) {
-                JsonObject issueData = issueContent.getJsonObject("issue");
-                if (issueData.containsKey(IDIWS_FIELD) && !issueData.getString(IDIWS_FIELD).isEmpty()) {
-                    data.put(IDIWS_FIELD, issueData.getString(IDIWS_FIELD));
-                }
-            }
-        }
-        eb.send( TRACKER_ADDRESS, new JsonObject().put("action","create").put("issue", data), handlerToAsyncHandler(handler));
+    String BuildStringEscalationUser(String uName ,String uEmail, String uPhone, String sName, String sUAI){
+        return uName + " | " + uEmail + " | " + uPhone + " | " + sName + " | " + sUAI;
     }
 
     /**
