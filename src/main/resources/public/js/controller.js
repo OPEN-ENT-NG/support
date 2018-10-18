@@ -594,10 +594,12 @@ function SupportController($scope, template, model, route, $location, orderByFil
 	};
 	
 	// Date functions
-	$scope.formatDate = function(date) {
-		return $scope.formatMoment(moment(date));
-	};
-
+    $scope.formatDate = function(date) {
+        var momentVar = moment(date);
+        if(momentVar.toString() === "Invalid date" )
+            momentVar = moment(date,"dd/MM/yyyy HH:mm:ss") ;
+        return $scope.formatMoment(momentVar);
+    };
 	$scope.formatMoment = function(moment) {
 		return moment.lang('fr').format('DD/MM/YYYY H:mm');
 	};

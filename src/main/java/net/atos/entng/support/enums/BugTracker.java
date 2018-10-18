@@ -54,7 +54,7 @@ public enum BugTracker {
 	PIVOT {
 		@Override
 		public String getLastIssueUpdateFromPostgresqlJson() {
-			return "->'issue'->>'updated_on'";
+			return "->'issue'->>'date'";
 		}
 
 		@Override
