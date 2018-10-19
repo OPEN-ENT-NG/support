@@ -29,17 +29,15 @@ public class EscalationPivotHelperImpl implements EscalationPivotHelper {
      * @return ent status
      */
     @Override
-    public int getStatusCorrespondence(String pivotStatus) {
+    public int getStatusCorrespondence(JsonObject confStatus, String pivotStatus) {
         if( pivotStatus == null ) {
             return TicketStatus.NEW.status();
         }
-        switch(pivotStatus) {
-            case STATUS_NEW : return TicketStatus.NEW.status();
-            case STATUS_OPENED : return TicketStatus.OPENED.status();
-            case STATUS_RESOLVED : return TicketStatus.RESOLVED.status();
-            case STATUS_CLOSED : return TicketStatus.CLOSED.status();
-            default : return TicketStatus.NEW.status();
-        }
+        if (confStatus.getString(STATUS_NEW_FIELD ).equals(pivotStatus )) return TicketStatus.NEW.status();
+        else if (confStatus.getString(STATUS_OPENED_FIELD ).equals(pivotStatus )) return TicketStatus.OPENED.status();
+        else if (confStatus.getString(STATUS_RESOLVED_FIELD ).equals(pivotStatus )) return TicketStatus.RESOLVED.status();
+        else if (confStatus.getString(STATUS_CLOSED_FIELD ).equals(pivotStatus )) return TicketStatus.CLOSED.status();
+            else  return TicketStatus.NEW.status();
     }
 
     /**

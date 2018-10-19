@@ -313,7 +313,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 
 		// 1. Update escalation status
 		String query = "UPDATE support.tickets"
-				+ " SET escalation_status = ?, escalation_date = NOW(), event_count = event_count + 1 "
+				+ " SET escalation_status = ?, escalation_date = NOW()"
 				+ " WHERE id = ?";
 
 		JsonArray values = new JsonArray()

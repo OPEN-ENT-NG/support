@@ -1,20 +1,21 @@
 package net.atos.entng.support.helpers;
 
 import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 public interface EscalationPivotHelper {
 
-    String STATUS_NEW = "Ouvert";
-    String STATUS_OPENED = "En cours";
-    String STATUS_RESOLVED = "Résolu";
-    String STATUS_CLOSED = "Fermé";
+    String STATUS_NEW_FIELD = "STATUS_NEW";
+    String STATUS_OPENED_FIELD  = "STATUS_OPENED";
+    String STATUS_RESOLVED_FIELD = "STATUS_RESOLVED";
+    String STATUS_CLOSED_FIELD = "STATUS_CLOSED";
 
     /**
      * Get ENT equivalent of pivot status
      * @param pivotStatus pivot status
      * @return ent status
      */
-    int getStatusCorrespondence(String pivotStatus);
+    int getStatusCorrespondence(JsonObject confStatus, String pivotStatus);
 
     /**
      * Serialize comments : date | author | content
