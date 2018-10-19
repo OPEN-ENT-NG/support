@@ -1,6 +1,7 @@
 package net.atos.entng.support.services.impl;
 
 import fr.wseduc.webutils.Either;
+import fr.wseduc.webutils.I18n;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.LoggerFactory;
 import net.atos.entng.support.enums.BugTracker;
@@ -12,6 +13,7 @@ import net.atos.entng.support.services.TicketServiceSql;
 import net.atos.entng.support.services.UserService;
 import org.entcore.common.bus.ErrorMessage;
 import org.entcore.common.bus.WorkspaceHelper;
+import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.user.UserInfos;
 import io.vertx.core.Handler;
@@ -24,9 +26,7 @@ import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.logging.Logger;
 
-import java.util.Base64;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import static fr.wseduc.webutils.Server.getEventBus;
@@ -39,9 +39,10 @@ import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 public class EscalationServicePivotImpl implements EscalationService
 {
     private final Logger log = LoggerFactory.getLogger(EscalationServicePivotImpl.class);
-
+    private final TimelineHelper notification;
     private final TicketServiceSql ticketServiceSql;
     private final EventBus eb;
+    private final UserService userService;
     private final WorkspaceHelper wksHelper;
     private final Storage storage;
 
@@ -75,7 +76,7 @@ public class EscalationServicePivotImpl implements EscalationService
     private final static String ATTRIBUTION_FIELD = "attribution";
     private final static String ATTRIBUTION_ENT_VALUE = "RECTORAT";
 
-
+    private static final int SUBJECT_LENGTH_IN_NOTIFICATION = 50;
 
     private final UserInfos userIws;
 
@@ -87,11 +88,13 @@ public class EscalationServicePivotImpl implements EscalationService
         eb = getEventBus(vertx);
         wksHelper = new WorkspaceHelper(eb, storage);
         ticketServiceSql = ts;
+        userService = us;
         userIws = new UserInfos();
         userIws.setUserId(config.getString("user-iws-id"));
         userIws.setUsername(config.getString("user-iws-name"));
         userIws.setType("");
         helper = new EscalationPivotHelperImpl();
+        notification = new TimelineHelper(vertx, eb, config);
         this.storage = storage;
     }
 
@@ -235,6 +238,62 @@ public class EscalationServicePivotImpl implements EscalationService
             }
         });
     }
+    private String shortenSubject(String subject) {
+        if (subject.length() > SUBJECT_LENGTH_IN_NOTIFICATION) {
+            return subject.substring(0, SUBJECT_LENGTH_IN_NOTIFICATION)
+                    .concat(" [...]");
+        }
+        return subject;
+    }
+    private String getNotificationName( int status ){
+
+        if ( status == TicketStatus.RESOLVED.status()) {
+            return "bugtracker-issue-resolved";
+        } else if (status == TicketStatus.CLOSED.status()) {
+            return "bugtracker-issue-closed";
+        } else {
+            return "bugtracker-issue-updated";
+        }
+
+}
+    private void notifyUsersOfChangeStatus ( final JsonObject issue, String ticket_id_iws,
+                                         final int issueStatus, JsonObject user){
+        String ticketId = issue.getLong("id").toString();
+        log.debug("Ticket Updated: " + ticketId);
+        log.debug("New status_id:" + issueStatus);
+
+        String ticketOwner = issue.getString("owner_id");
+        String structure = issue.getString("school_id");
+        final Set<String> recipientSet = new HashSet<>();
+        String notificationName = getNotificationName( issueStatus );
+
+        recipientSet.add(ticketOwner);
+        userService.getLocalAdministrators(structure, admins -> {
+                    if (admins != null) {
+
+                        for (Object o : admins) {
+                            if (!(o instanceof JsonObject)) continue;
+                            String id1 = ((JsonObject) o).getString("id");
+                            recipientSet.add(id1);
+                        }
+                    }
+            List<String> recipients = new ArrayList<>(recipientSet);
+            if (!recipients.isEmpty()) {
+                JsonObject params = new JsonObject();
+                params.put("issueId",ticket_id_iws)
+                        .put("username", user.getString("username"))
+                        .put("ticketId", ticketId);
+                params.put("ticketUri", "/support#/ticket/" + ticketId);
+                params.put("resourceUri", params.getString("ticketUri"))
+                        .put("ticketsubject", shortenSubject(issue.getString("description") ));
+                params.put("resourceUri", params.getString("ticketUri"));
+
+                notification.notifyTimeline(null, "support." + notificationName, null, recipients, params);
+            }
+
+        } );
+
+    }
 
     /**
      * Update ticket with bugtracker info
@@ -252,7 +311,7 @@ public class EscalationServicePivotImpl implements EscalationService
         }
 
         //Check forbidden changing id_iws
-        String entering_id_iws = issue.getString(IDIWS_FIELD);
+        final String entering_id_iws = issue.getString(IDIWS_FIELD);
         String enttiket_id_iws = ticket.getString(IDIWS_FIELD);
         if(enttiket_id_iws != null && !enttiket_id_iws.equals(entering_id_iws)){
             handler.handle(new Either.Left<>("202;ENT ticket " + ticketId + " is already link with IWS ticket" + entering_id_iws));
@@ -262,7 +321,7 @@ public class EscalationServicePivotImpl implements EscalationService
 
         Long ticketStatus = ticket.getLong("status");
         final int issueStatus = helper.getStatusCorrespondence(issue.getString(STATUSIWS_FIELD));
-        boolean updateStatus = ( ticketStatus.intValue() != issueStatus
+        final boolean updateStatus = ( ticketStatus.intValue() != issueStatus
                 && (issueStatus == TicketStatus.RESOLVED.status()
                     || issueStatus == TicketStatus.CLOSED.status()) );
 
@@ -303,6 +362,9 @@ public class EscalationServicePivotImpl implements EscalationService
                         .put("type", userIws.getType());
                 jsonResponse.put("user", jsonUser);
                 Either<String,JsonObject> finalResponse = new Either.Right<>(jsonResponse);
+                if(updateStatus) {
+                    notifyUsersOfChangeStatus(ticket,entering_id_iws,issueStatus, jsonUser );
+                }
                 handler.handle(finalResponse);
             }
         };
