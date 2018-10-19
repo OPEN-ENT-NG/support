@@ -1,7 +1,6 @@
 package net.atos.entng.support.services.impl;
 
 import fr.wseduc.webutils.Either;
-import fr.wseduc.webutils.I18n;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.LoggerFactory;
 import net.atos.entng.support.enums.BugTracker;
@@ -45,7 +44,7 @@ public class EscalationServicePivotImpl implements EscalationService
     private final UserService userService;
     private final WorkspaceHelper wksHelper;
     private final Storage storage;
-
+    private final JsonObject STATUS ;
     private static final String TRACKER_ADDRESS = "supportpivot.demande";
     /**
      * Declaration of JSON fields for pivot format
@@ -92,6 +91,7 @@ public class EscalationServicePivotImpl implements EscalationService
         userIws = new UserInfos();
         userIws.setUserId(config.getString("user-iws-id"));
         userIws.setUsername(config.getString("user-iws-name"));
+        STATUS = config.getJsonObject("status_iws");
         userIws.setType("");
         helper = new EscalationPivotHelperImpl();
         notification = new TimelineHelper(vertx, eb, config);
@@ -99,7 +99,7 @@ public class EscalationServicePivotImpl implements EscalationService
     }
 
     @Override
-    public BugTracker getBugTrackerType() {
+    public BugTracker getBugTrackerType() { 
         return BugTracker.PIVOT;
     }
 
@@ -320,7 +320,8 @@ public class EscalationServicePivotImpl implements EscalationService
 
 
         Long ticketStatus = ticket.getLong("status");
-        final int issueStatus = helper.getStatusCorrespondence(issue.getString(STATUSIWS_FIELD));
+
+        final int issueStatus = helper.getStatusCorrespondence(STATUS, issue.getString(STATUSIWS_FIELD));
         final boolean updateStatus = ( ticketStatus.intValue() != issueStatus
                 && (issueStatus == TicketStatus.RESOLVED.status()
                     || issueStatus == TicketStatus.CLOSED.status()) );
@@ -361,11 +362,20 @@ public class EscalationServicePivotImpl implements EscalationService
                         .put("username", userIws.getUsername())
                         .put("type", userIws.getType());
                 jsonResponse.put("user", jsonUser);
-                Either<String,JsonObject> finalResponse = new Either.Right<>(jsonResponse);
+                final Either<String,JsonObject> finalResponse = new Either.Right<>(jsonResponse);
                 if(updateStatus) {
                     notifyUsersOfChangeStatus(ticket,entering_id_iws,issueStatus, jsonUser );
+                    ticketServiceSql.updateEventCount(ticketId, result ->{
+                        if(result.isRight()){
+                            handler.handle(finalResponse);
+                        }else{
+                            handler.handle(new Either.Left<>("couldn't update ticket: " + ticketId));
+                        }
+                    });
+                }else {
+                    handler.handle(finalResponse);
                 }
-                handler.handle(finalResponse);
+
             }
         };
         addAttachmentAndUpdate(ticketId, data, issue, issueStatus, updateStatus, attsName, preparedHandler);
@@ -389,7 +399,7 @@ public class EscalationServicePivotImpl implements EscalationService
                         || !att.containsKey(ATTACHMENT_CONTENT_FIELD)) {
                     uploadedDocs.decrementAndGet();
                     continue;
-                }
+                } 
                 final String pjName = att.getString(ATTACHMENT_NAME_FIELD);
                 if(attsName.contains(pjName)){
                     uploadedDocs.decrementAndGet();

@@ -28,8 +28,15 @@
         "escalation-httpclient-keepalive" : false,
         "escalation-httpclient-tryusecompression" : true,
         <% if (SupportBugTrackername != null && "PIVOT".equals(SupportBugTrackername)) { %>
-            "user-iws-id" : "$SupportUserIwsId",
-            "user-iws-name" : "$SupportUserIwsName",
+         "user-iws-id" : "$SupportUserIwsId",
+         "user-iws-name" : "$SupportUserIwsName",
+         "status_iws":{
+               "STATUS_NEW":"Ouvert",
+               "STATUS_OPENED":"En cours",
+               "STATUS_RESOLVED":"Résolu",
+               "STATUS_CLOSED":"Fermé"
+          },
+
 		<% } %>
         "refresh-period" : 15,
       <% if (swiftUri != null && !swiftUri.trim().isEmpty()) { %>
