@@ -6,8 +6,8 @@ public interface EscalationPivotHelper {
 
     String STATUS_NEW = "Ouvert";
     String STATUS_OPENED = "En cours";
-    String STATUS_RESOLVED = "Resolu";
-    String STATUS_CLOSED = "Ferme";
+    String STATUS_RESOLVED = "Résolu";
+    String STATUS_CLOSED = "Fermé";
 
     /**
      * Get ENT equivalent of pivot status
