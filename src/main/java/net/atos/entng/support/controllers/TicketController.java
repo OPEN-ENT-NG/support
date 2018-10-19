@@ -262,44 +262,41 @@ public class TicketController extends ControllerHelper {
             }
             final String ticketId = Long.toString(id);
 
-            userService.getLocalAdministrators(structure, new Handler<JsonArray>() {
-                @Override
-                public void handle(JsonArray event) {
-                    if (event != null) {
-                        Set<String> recipientSet = new HashSet<>();
-                        for (Object o : event) {
-                            if (!(o instanceof JsonObject)) continue;
-                            JsonObject j = (JsonObject) o;
-                            String id = j.getString("id");
-                            if (!user.getUserId().equals(id)) {
-                                recipientSet.add(id);
-                            }
+            userService.getLocalAdministrators(structure, event -> {
+                if (event != null) {
+                    Set<String> recipientSet = new HashSet<>();
+                    for (Object o : event) {
+                        if (!(o instanceof JsonObject)) continue;
+                        JsonObject j = (JsonObject) o;
+                        String id1 = j.getString("id");
+                        if (!user.getUserId().equals(id1)) {
+                            recipientSet.add(id1);
                         }
+                    }
 
-                        List<String> recipients = new ArrayList<>(recipientSet);
-                        if (!recipients.isEmpty()) {
-                            JsonObject params = new JsonObject();
-                            params.put("uri", "/userbook/annuaire#" + user.getUserId() + "#" + user.getType());
-                            params.put("ticketUri", "/support#/ticket/" + ticketId)
-                                    .put("username", user.getUsername())
-                                    .put("ticketid", ticketId)
-                                    .put("ticketsubject", shortenSubject(ticketSubject));
-                            params.put("resourceUri", params.getString("ticketUri"));
+                    List<String> recipients = new ArrayList<>(recipientSet);
+                    if (!recipients.isEmpty()) {
+                        JsonObject params = new JsonObject();
+                        params.put("uri", "/userbook/annuaire#" + user.getUserId() + "#" + user.getType());
+                        params.put("ticketUri", "/support#/ticket/" + ticketId)
+                                .put("username", user.getUsername())
+                                .put("ticketid", ticketId)
+                                .put("ticketsubject", shortenSubject(ticketSubject));
+                        params.put("resourceUri", params.getString("ticketUri"));
 
-                            JsonObject pushNotif = new JsonObject()
-                                    .put("title", "push-notif.support." + notificationName)
-                                    .put("body", I18n.getInstance()
-                                        .translate(
-                                                "push-notif." + notificationName + ".body",
-                                                getHost(request),
-                                                I18n.acceptLanguage(request),
-                                                user.getUsername(),
-                                                ticketId
-                                        ));
-                            params.put("pushNotif", pushNotif);
+                        JsonObject pushNotif = new JsonObject()
+                                .put("title", "push-notif.support." + notificationName)
+                                .put("body", I18n.getInstance()
+                                    .translate(
+                                            "push-notif." + notificationName + ".body",
+                                            getHost(request),
+                                            I18n.acceptLanguage(request),
+                                            user.getUsername(),
+                                            ticketId
+                                    ));
+                        params.put("pushNotif", pushNotif);
 
-                            notification.notifyTimeline(request, "support." + notificationName, user, recipients, ticketId, params);
-                        }
+                        notification.notifyTimeline(request, "support." + notificationName, user, recipients, ticketId, params);
                     }
                 }
             });
@@ -410,44 +407,41 @@ public class TicketController extends ControllerHelper {
                 recipientSet.add(ticketOwner);
             }
 
-            userService.getLocalAdministrators(structure, new Handler<JsonArray>() {
-                @Override
-                public void handle(JsonArray event) {
-                    if (event != null) {
-                        for (Object o : event) {
-                            if (!(o instanceof JsonObject)) continue;
-                            JsonObject j = (JsonObject) o;
-                            String id = j.getString("id");
-                            if (!user.getUserId().equals(id)) {
-                                recipientSet.add(id);
-                            }
+            userService.getLocalAdministrators(structure, event -> {
+                if (event != null) {
+                    for (Object o : event) {
+                        if (!(o instanceof JsonObject)) continue;
+                        JsonObject j = (JsonObject) o;
+                        String id = j.getString("id");
+                        if (!user.getUserId().equals(id)) {
+                            recipientSet.add(id);
                         }
+                    }
 
-                        List<String> recipients = new ArrayList<>(recipientSet);
+                    List<String> recipients = new ArrayList<>(recipientSet);
 
-                        if (!recipients.isEmpty()) {
-                            JsonObject params = new JsonObject();
-                            params.put("uri", "/userbook/annuaire#" + user.getUserId() + "#" + user.getType());
-                            params.put("ticketUri", "/support#/ticket/" + ticketId)
-                                    .put("username", user.getUsername())
-                                    .put("ticketid", ticketId)
-                                    .put("ticketsubject", shortenSubject(ticketSubject));
-                            params.put("resourceUri", params.getString("ticketUri"));
+                    if (!recipients.isEmpty()) {
+                        JsonObject params = new JsonObject();
+                        params.put("uri", "/userbook/annuaire#" + user.getUserId() + "#" + user.getType());
+                        params.put("ticketUri", "/support#/ticket/" + ticketId)
+                                .put("username", user.getUsername())
+                                .put("ticketid", ticketId)
+                                .put("ticketsubject", shortenSubject(ticketSubject));
+                        params.put("resourceUri", params.getString("ticketUri"));
 
-                            JsonObject pushNotif = new JsonObject()
-                                    .put("title", "push-notif.support." + notificationName)
-                                    .put("body", I18n.getInstance()
-                                            .translate(
-                                                    "push-notif." + notificationName + ".body",
-                                                    getHost(request),
-                                                    I18n.acceptLanguage(request),
-                                                    user.getUsername(),
-                                                    ticketId
-                                            ));
-                            params.put("pushNotif", pushNotif);
+                        JsonObject pushNotif = new JsonObject()
+                                .put("title", "push-notif.support." + notificationName)
+                                .put("body", I18n.getInstance()
+                                        .translate(
+                                                "push-notif." + notificationName + ".body",
+                                                getHost(request),
+                                                I18n.acceptLanguage(request),
+                                                user.getUsername(),
+                                                ticketId
+                                        ));
+                        params.put("pushNotif", pushNotif);
 
-                            notification.notifyTimeline(request, "support." + notificationName, user, recipients, params);
-                        }
+                        notification.notifyTimeline(request, "support." + notificationName, user, recipients, params);
                     }
                 }
             });
