@@ -306,12 +306,16 @@ function SupportController($scope, template, model, route, $location, orderByFil
 	};
 	
 	$scope.createTicket = function() {
+
 		$scope.ticket.event_count = 1;
-        $scope.ticket.processing = true;
+		$scope.ticket.processing = true;
 		
+		// Hack: var thisTicket created to retain reference to $scope.ticket when ajax calls return, after it is setted to undefined
+		var thisTicket = $scope.ticket;
+
         // adding profile after creation
         model.getProfile($scope.me.userId, function(result) {
-            $scope.ticket.profile = result.profile;
+            thisTicket.profile = result.profile;
         });
         
 		if (!$scope.ticket.subject || $scope.ticket.subject.trim().length === 0){
@@ -336,15 +340,17 @@ function SupportController($scope, template, model, route, $location, orderByFil
 			$scope.ticket.processing = false;
 			return;
 		}
-		
+
 		$scope.createProtectedCopies($scope.ticket, true, function() {
 			$scope.ticket.id=null;
 			template.open('main', 'list-tickets');
 			$scope.ticket.processing = false;
 			$scope.ticket.createTicket($scope.ticket, function() {
-				$scope.ticket.newAttachments = [];
+				thisTicket.newAttachments = [];
 				notify.info('support.ticket.has.been.created');
+				$scope.escalateTicketNow(thisTicket);
 			});
+			$scope.ticket = undefined;
 		});
 	}.bind(this);
 	
@@ -562,6 +568,37 @@ function SupportController($scope, template, model, route, $location, orderByFil
 		$scope.ticket.escalateTicket(successCallback, e500Callback, e400Callback);
 		$scope.ticket.status = 2;
 	};
+
+	$scope.atLeastOneTicketUnescalated = function() {
+		return $scope.tickets.selection().find(e => e.escalation_status === model.escalationStatuses.NOT_DONE) !== undefined
+	};
+
+	$scope.escalateSelected = function() {
+		$scope.tickets.selection().forEach(function(element) {
+			var id = parseInt(element.id,10);
+			$scope.ticket = _.find(model.tickets.all, function(ticket){
+				return ticket.id === id;
+			});
+			if($scope.ticket && $scope.ticket.escalation_status === model.escalationStatuses.NOT_DONE) {
+				$scope.escalateTicket();
+			}
+		});
+		$scope.ticket = undefined;
+	};
+
+	$scope.createAndEscalateTicket = function() {
+		$scope.escalateAfterCreation = true;
+		$scope.createTicket();
+	}
+
+	$scope.escalateTicketNow = function(thisTicket) {
+		if($scope.escalateAfterCreation){
+			$scope.ticket = thisTicket;
+			$scope.escalateTicket();
+			$scope.escalateAfterCreation = false;
+			$scope.ticket = undefined;
+		}
+	}
 	
 	$scope.openBugTrackerIssue = function() {
 		template.open('main', 'view-bugtracker-issue');

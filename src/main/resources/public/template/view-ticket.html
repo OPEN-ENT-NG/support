@@ -22,11 +22,6 @@
         <label class="two cell"><i18n>support.ticket.category</i18n></label>
         <span class="four cell">[[getCategoryLabel(ticket.category)]]</span>
         <div class="six cell" ng-if="userIsLocalAdmin(ticket) === true">
-            <div loading-panel="escalation-request" ng-if="isEscalationActivated === true">
-                <a ng-if="ticket.escalation_status === escalationStatuses.NOT_DONE" ng-click="escalateTicket()">
-                    <i18n>support.escalate.ticket</i18n>
-                </a>
-            </div>
 			<span ng-if="ticket.escalation_status === escalationStatuses.IN_PROGRESS && isEscalationActivated === true">
 				<i18n>support.escalation.in.progress</i18n>
 			</span>

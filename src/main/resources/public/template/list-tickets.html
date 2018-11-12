@@ -72,7 +72,7 @@
 					<td class="one smallFontSize" ng-click="viewTicket(ticket.id)">[[formatDate(ticket.modified)]]</td>
                     <td class="smallFontSize centered" ng-click="viewTicket(ticket.id)">[[ticket.event_count]]</td>
 					<td class="one smallFontSize" ng-if="userIsLocalAdmin() && atLeastOneTicketEscalated()">
-						<span ng-if="ticket.last_issue_update">[[formatDate(ticket.last_issue_update)]]</span>
+						<span ng-if="ticket.last_issue_update" ng-model="ticket.last_issue_update">[[formatDate(ticket.last_issue_update)]]</span>
 					</td>
 				</tr>
 			</tbody>
@@ -80,12 +80,15 @@
 </div>
     <section class="toggle-buttons" ng-class="{ hide: tickets.selection().length === 0 }">
         <div class="toggle">
-            <div class="row">
+            <div class="contextual-buttons twelve cell">
                 <span ng-repeat="status in statuses">
-                <button ng-click="updateStatus(status.value)">
-                    <i18n>support.toggle.change.to</i18n><i18n>[[status.i18nValue]]</i18n>
-                </button>
+                    <button ng-click="updateStatus(status.value)">
+                        <i18n>support.toggle.change.to</i18n><i18n>[[status.i18nValue]]</i18n>
+                    </button>
                 </span>
+                <button ng-if="isEscalationActivated && atLeastOneTicketUnescalated()" ng-click="escalateSelected()">
+                    <i18n>support.ticket.escalate</i18n>
+                </button>
             </div>
         </div>
     </section>

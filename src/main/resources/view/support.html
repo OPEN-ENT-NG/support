@@ -21,13 +21,16 @@
 								<i18n>support.title</i18n></a>
 						</h1>
 					</div>
-					<div class="contextual-buttons six cell">
+					<div class="contextual-buttons twelve cell">
 						<div ng-if="!isCreatingOrEditingOrViewingEscalatedTicket() && !display.histo">
 							<button ng-click="newTicket()" workflow="support.createTicket" class="cell right-magnet">
 								<i18n>support.ticket.create</i18n>
 							</button>
 							<button ng-click="editTicket()" ng-if="ticket && ticket.id" class="cell right-magnet">
 								<i18n>support.ticket.edit</i18n>
+							</button>
+							<button ng-click="escalateTicket()" ng-if="ticket && ticket.id && isEscalationActivated && ticket.escalation_status === escalationStatuses.NOT_DONE" class="cell right-magnet">
+								<i18n>support.ticket.escalate</i18n>
 							</button>
 						</div>
 						<div ng-if="isViewingEscalatedTicket() && isEscalationActivated === true">
@@ -36,7 +39,7 @@
 							</button>
 						</div>
 					</div>
-                    <div class="contextual-buttons six cell">
+                    <div class="contextual-buttons twelve cell">
                         <div ng-if="display.histo">
                             <button ng-click="backHisto()" class="cell right-magnet">
                                 <i18n>support.histo.back</i18n>
