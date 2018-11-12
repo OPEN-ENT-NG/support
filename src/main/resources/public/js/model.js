@@ -88,6 +88,7 @@ Ticket.prototype.updateTicket = function(data, callback) {
 Ticket.prototype.escalateTicket = function(callback, errorCallback, badRequestCallback) {
 	http().postJson('/support/ticket/' + this.id + '/escalate', null, {requestName: 'escalation-request' })
 	.done(function(result){
+			this.last_issue_update = result.issue.updated_on;
 			this.escalation_status = model.escalationStatuses.SUCCESSFUL;
 			this.issue = result.issue;
 			this.trigger('change');
