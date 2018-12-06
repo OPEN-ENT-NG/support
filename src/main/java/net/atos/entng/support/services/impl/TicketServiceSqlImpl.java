@@ -320,7 +320,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 			.add(targetStatus.status())
 			.add(parseId(ticketId));
 
-		if(!EscalationStatus.SUCCESSFUL.equals(targetStatus)) {
+		if(EscalationStatus.FAILED.equals(targetStatus) || EscalationStatus.NOT_DONE.equals(targetStatus)) {
 			sql.prepared(query, values, validUniqueResultHandler(handler));
 		}
 		else {
@@ -413,7 +413,19 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 	 */
 	@Override
 	public void endInProgressEscalation(String ticketId, UserInfos user, Handler<Either<String, JsonObject>> handler) {
-		this.updateTicketAfterEscalation(ticketId, EscalationStatus.IN_PROGRESS, null, null, null, user, handler);
+		JsonObject issue = new JsonObject()
+			.put("issue",new JsonObject()
+				.put("date",new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS").format(new Date()))
+				.put("id_ent",ticketId));
+
+		Number issueId = 0;
+		try {
+			// use ticket id as issue id in database
+			issueId = Integer.parseInt(ticketId);
+		} catch (NumberFormatException e) {
+			log.error("Invalid id_ent, saving issue with id 0");
+		}
+		this.updateTicketAfterEscalation(ticketId, EscalationStatus.IN_PROGRESS, issue, issueId, null, user, handler);
 	}
 
 	@Override

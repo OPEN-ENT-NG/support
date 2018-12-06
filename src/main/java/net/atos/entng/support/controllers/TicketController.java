@@ -24,6 +24,8 @@ import static net.atos.entng.support.Support.bugTrackerCommDirect;
 import static net.atos.entng.support.enums.TicketStatus.*;
 import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -40,6 +42,7 @@ import net.atos.entng.support.services.UserService;
 import net.atos.entng.support.services.impl.TicketServiceNeo4jImpl;
 import org.entcore.common.controller.ControllerHelper;
 import org.entcore.common.http.filter.ResourceFilter;
+import org.entcore.common.http.request.JsonHttpServerRequest;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.user.DefaultFunctions;
 import org.entcore.common.user.UserInfos;
@@ -434,8 +437,8 @@ public class TicketController extends ControllerHelper {
                                 .put("body", I18n.getInstance()
                                         .translate(
                                                 "push-notif." + notificationName + ".body",
-                                                getHost(request),
-                                                I18n.acceptLanguage(request),
+                                                request!= null ? getHost(request) : I18n.DEFAULT_DOMAIN,
+                                                request!= null ? I18n.acceptLanguage(request) : "fr",
                                                 user.getUsername(),
                                                 ticketId
                                         ));
@@ -778,7 +781,7 @@ public class TicketController extends ControllerHelper {
                         // Bug tracker is async, can't get information of tracker issue
                         // Send dummy info to front
                         log.info("Bug tracker issue not fetched in asynchronous mode");
-                        ticketServiceSql.endInProgressEscalation(ticketId, user, new Handler<Either<String, JsonObject>>() {
+                       ticketServiceSql.endInProgressEscalation(ticketId, user, new Handler<Either<String, JsonObject>>() {
                             @Override
                             public void handle(Either<String, JsonObject> event) {
                                 if (event.isLeft()) {
