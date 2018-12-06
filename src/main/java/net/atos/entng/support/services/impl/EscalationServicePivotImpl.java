@@ -485,7 +485,7 @@ public class EscalationServicePivotImpl implements EscalationService
                     // use ticket id as issue id in database
                     issueId = Integer.parseInt(ticketId);
                 } catch (NumberFormatException e) {
-                    log.error("Invalid id_iws, saving issue with id 0");
+                    log.error("Invalid id_ent, saving issue with id 0");
                 }
                 JsonObject dataIssue = new JsonObject().put("issue", issue);
                 ticketServiceSql.endSuccessfulEscalation(

@@ -5,7 +5,6 @@ gradle:
     - ./:/home/gradle/project
     - ~/.m2:/home/gradle/.m2
     - ~/.gradle:/home/gradle/.gradle
-    - ~/config:/home/gradle/config
 
 node:
   image: opendigitaleducation/node
@@ -13,7 +12,3 @@ node:
   volumes:
     - ./:/home/node/app
     - ~/.npm:/.npm
-    - ~/config/.gitconfig:/home/node/.gitconfig
-    - ~/config/.npmrc:/home/node/.npmrc
-    - ~/config/.bowerrc:/home/node/.bowerrc
-

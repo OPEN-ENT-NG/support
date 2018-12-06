@@ -64,7 +64,10 @@ public enum BugTracker {
 
 		@Override
 		public Number extractIdFromIssue(JsonObject issue) {
-			return issue.getJsonObject("issue").getInteger("id");
+			if (issue != null) {
+				return issue.getInteger("id_ent");
+			}
+			return 0;
 		}
 
 		@Override
