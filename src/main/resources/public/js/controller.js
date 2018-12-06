@@ -27,6 +27,7 @@ function SupportController($scope, template, model, route, $location, orderByFil
 	});
 	
 	this.initialize = function() {
+		$scope.lang = lang;
 		$scope.template = template;
 		$scope.me = model.me;
 
@@ -83,6 +84,11 @@ function SupportController($scope, template, model, route, $location, orderByFil
 			}
 		});
 
+		// Get user's Schools to build filter
+        $scope.schools = [];
+        for (var i=0; i < model.me.structures.length; i++) {
+            $scope.schools.push({id: model.me.structures[i], name: model.me.structureNames[i]});
+        }
 
         // filters initalization
         $scope.display = {};
@@ -94,6 +100,8 @@ function SupportController($scope, template, model, route, $location, orderByFil
         }
         $scope.display.filters.all = true;
         $scope.display.filters.mydemands = true;
+
+        $scope.display.filters.school_id ="*";
 
         $scope.switchAll = function(){
             for(var filter in $scope.display.filters){
@@ -126,12 +134,10 @@ function SupportController($scope, template, model, route, $location, orderByFil
         // display the item if the status is ok.
         // If we are in admin mode, we have to check if the mydemands is checked.
         // If not, we display only the demands from other users.
-        if( $scope.display.filters[item.status] &&
-            ($scope.display.filters.mydemands || item.owner != $scope.me.userId) ) {
-            return true;
-        } else {
-            return false;
-        }
+		// if a school is selected in filter, keep only demands of this school
+        return ($scope.display.filters[item.status] &&
+            ($scope.display.filters.mydemands || item.owner != $scope.me.userId)
+		&& ($scope.schools.length === 1 || $scope.display.filters.school_id === '*' ? true : item.school_id === $scope.display.filters.school_id));
 	};
 	
 	// Sort
@@ -595,10 +601,7 @@ function SupportController($scope, template, model, route, $location, orderByFil
 	
 	// Date functions
     $scope.formatDate = function(date) {
-        var momentVar = moment(date);
-        if(momentVar.toString() === "Invalid date" )
-            momentVar = moment(date,"dd/MM/yyyy HH:mm:ss") ;
-        return $scope.formatMoment(momentVar);
+        return $scope.formatMoment(moment(date));
     };
 	$scope.formatMoment = function(moment) {
 		return moment.lang('fr').format('DD/MM/YYYY H:mm');
