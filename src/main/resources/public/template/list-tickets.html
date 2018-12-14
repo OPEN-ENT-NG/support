@@ -86,7 +86,7 @@
                         <i18n>support.toggle.change.to</i18n><i18n>[[status.i18nValue]]</i18n>
                     </button>
                 </span>
-                <button ng-if="isEscalationActivated && atLeastOneTicketUnescalated() && userIsLocalAdmin()" ng-click="escalateSelected()">
+                <button ng-if="isEscalationActivated && allTicketsUnescalatedAndAdminLocal()" ng-click="escalateSelected()">
                     <i18n>support.ticket.escalate</i18n>
                 </button>
             </div>
