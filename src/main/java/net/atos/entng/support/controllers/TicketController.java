@@ -144,6 +144,7 @@ public class TicketController extends ControllerHelper {
                                     }
                                 }
                             });
+                            JsonArray attachments = ticket.getJsonArray("attachments");
                             boolean commentSentToBugtracker = false;
                             // we only historize if no comment has been added. If there is a comment, it will appear in the history
                             if( ticket.getString("newComment") == null || "".equals(ticket.getString("newComment")) ) {
@@ -158,22 +159,25 @@ public class TicketController extends ControllerHelper {
                                         });
                             } else {
                                 // if option activated, we can send the comment directly to the bug-tracker
-                                if( bugTrackerCommDirect ) {
+                                if( bugTrackerCommDirect && (attachments == null || attachments.isEmpty())) {
                                     sendTicketUpdateToIssue(request, ticketId, ticket, user);
                                     commentSentToBugtracker = true;
                                 }
                             }
                             notifyTicketUpdated(request, ticketId, user, response);
-                            JsonArray attachments = ticket.getJsonArray("attachments");
                             if (escalationService != null && attachments != null && attachments.size() > 0) {
                                 if(escalationService.getBugTrackerType().getBugTrackerSyncType()
                                         == BugTrackerSyncType.ASYNC && !commentSentToBugtracker) {
                                     sendTicketUpdateToIssue(request, ticketId, ticket, user);
                                     renderJson(request, response, 200);
                                 } else {
+                                    final boolean commentSent = commentSentToBugtracker;
                                     escalationService.syncAttachments(ticketId, attachments, new Handler<Either<String, JsonObject>>() {
                                         @Override
                                         public void handle(Either<String, JsonObject> res) {
+                                            if(!commentSent) {
+                                                sendTicketUpdateToIssue(request, ticketId, ticket, user);
+                                            }
                                             if (res.isRight()) {
                                                 Integer issueId = res.right().getValue().getInteger("issue_id");
                                                 if (issueId != null) {
