@@ -24,8 +24,6 @@ import static net.atos.entng.support.Support.bugTrackerCommDirect;
 import static net.atos.entng.support.enums.TicketStatus.*;
 import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -42,7 +40,6 @@ import net.atos.entng.support.services.UserService;
 import net.atos.entng.support.services.impl.TicketServiceNeo4jImpl;
 import org.entcore.common.controller.ControllerHelper;
 import org.entcore.common.http.filter.ResourceFilter;
-import org.entcore.common.http.request.JsonHttpServerRequest;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.user.DefaultFunctions;
 import org.entcore.common.user.UserInfos;
@@ -50,7 +47,6 @@ import org.entcore.common.user.UserUtils;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.Message;
 import org.vertx.java.core.http.RouteMatcher;
 import io.vertx.core.json.JsonArray;
@@ -576,23 +572,6 @@ public class TicketController extends ControllerHelper {
                         profil = I18n.getInstance().translate(profil, getHost(request), I18n.acceptLanguage(request));
                         JsonObject result = new JsonObject().put("profile", profil);
                         renderJson(request, result);
-                }
-            };
-        });
-    }
-
-    @Get("/userStructures/:userId")
-    @ApiDoc("Returns the profile of a user")
-    public void getUserStructures(final HttpServerRequest request) {
-        final String userId = request.params().get("userId");
-        TicketServiceNeo4jImpl ticketServiceNeo4j = new TicketServiceNeo4jImpl();
-        ticketServiceNeo4j.getUserStructures(userId, new Handler<Either<String, JsonArray>>() {
-            @Override
-            public void handle(Either<String, JsonArray> event) {
-                if( event.isRight() && event.right().getValue().size() > 0){
-                    JsonArray structures = event.right().getValue();
-                    JsonObject result = new JsonObject().put("structures", structures);
-                    renderJson(request, result);
                 }
             };
         });
