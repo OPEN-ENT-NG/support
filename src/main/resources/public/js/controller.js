@@ -122,13 +122,7 @@ function SupportController($scope, template, model, route, $location, orderByFil
                                                 $scope.display.filters.all;
             }
         };
-
-		$scope.schools = [];
-
-		model.getUserStructures($scope.me.userId, function(result) {
-			$scope.schools =result.structures;
-		});		
-    };
+	};
 
 	$scope.filterByStatus = function(item) {
         // display the item if the status is ok.
