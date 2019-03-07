@@ -27,6 +27,11 @@
                     <i18n>support.ticket.status.my.demands</i18n>
                 </label>
             </li>
+            <li ng-if="userIsLocalAdmin()">
+                <label class="checkbox cell"><input type="checkbox" ng-model="display.filters.otherdemands" ng-change="checkAll()" />
+                    <i18n>support.ticket.status.other.demands</i18n>
+                </label>
+            </li>
         </ul>
     </div>
 </div>

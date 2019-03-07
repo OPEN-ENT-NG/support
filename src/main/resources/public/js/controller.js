@@ -100,12 +100,15 @@ function SupportController($scope, template, model, route, $location, orderByFil
         }
         $scope.display.filters.all = true;
         $scope.display.filters.mydemands = true;
+		$scope.display.filters.otherdemands = true;
 
         $scope.display.filters.school_id ="*";
 
         $scope.switchAll = function(){
             for(var filter in $scope.display.filters){
-                $scope.display.filters[filter] = $scope.display.filters.all;
+				if (filter !== "school_id") {
+					$scope.display.filters[filter] = $scope.display.filters.all;
+				}
             }
             if($scope.userIsLocalAdmin()) {
                 // no need to update if the checkbox isn't visible.
@@ -125,12 +128,23 @@ function SupportController($scope, template, model, route, $location, orderByFil
 	};
 
 	$scope.filterByStatus = function(item) {
-        // display the item if the status is ok.
-        // If we are in admin mode, we have to check if the mydemands is checked.
-        // If not, we display only the demands from other users.
+		//check if tickets status are checked
+		var statusFilter = $scope.display.filters[model.ticketStatusEnum.NEW] || $scope.display.filters[model.ticketStatusEnum.OPENED] ||
+			$scope.display.filters[model.ticketStatusEnum.RESOLVED] || $scope.display.filters[model.ticketStatusEnum.ClOSED];
+
+		if($scope.userIsLocalAdmin()) {
+			if (!statusFilter && !$scope.display.filters.all && !$scope.display.filters.otherdemands && !$scope.display.filters.mydemands) return false;
+		} else {
+			if (!statusFilter && !$scope.display.filters.all) return false;
+		}
+
+		// display the item if the status is ok (nothing checked or matched).
+        // If we are in admin mode, we have to check if the mydemands or otherdemands is checked.
+        // If not, we display all the demands filtered by status.
 		// if a school is selected in filter, keep only demands of this school
-        return ($scope.display.filters[item.status] &&
-            ($scope.display.filters.mydemands || item.owner != $scope.me.userId)
+        return ((!statusFilter || $scope.display.filters[item.status]) &&
+            (($scope.display.filters.mydemands && item.owner === $scope.me.userId) || ($scope.display.filters.otherdemands && item.owner != $scope.me.userId) ||
+			(!$scope.display.filters.otherdemands && !$scope.display.filters.mydemands) || $scope.display.filters.all)
 		&& ($scope.schools.length === 1 || $scope.display.filters.school_id === '*' ? true : item.school_id === $scope.display.filters.school_id));
 	};
 	
