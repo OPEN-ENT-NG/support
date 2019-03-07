@@ -125,6 +125,7 @@ public class TicketController extends ControllerHelper {
                         if (ticketId == null) {
                             notifyTicketCreated(request, user, response, ticket);
                             response.put("owner_name", user.getUsername());
+                            response.put("owner", user.getUserId());
                             ticketServiceSql.createTicketHisto(response.getInteger("id").toString(), I18n.getInstance().translate("support.ticket.histo.creation", getHost(request), I18n.acceptLanguage(request)),
                                     ticket.getInteger("status"), user.getUserId(), 1, new Handler<Either<String, JsonObject>>() {
                                         @Override
