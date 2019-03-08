@@ -10,6 +10,7 @@
         "app-address" : "/support",
         "app-displayName": "support",
         "app-icon" : "support-large",
+        "app-type" : "END_USER",
         "host": "${host}",
         "ssl" : $ssl,
         "auto-redeploy": false,
