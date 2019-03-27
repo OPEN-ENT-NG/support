@@ -578,11 +578,11 @@ function SupportController($scope, template, model, route, $location, orderByFil
 	};
 
 	$scope.allTicketsUnescalatedAndAdminLocal = function() {
-		return $scope.tickets.selection().every(e => e.escalation_status === model.escalationStatuses.NOT_DONE && $scope.userIsLocalAdmin(e))
+		return $scope.tickets.selection().every(function(e){return e.escalation_status === model.escalationStatuses.NOT_DONE && $scope.userIsLocalAdmin(e)})
 	};
 
 	$scope.atLeastOneTicketUnescalated = function() {
-		return $scope.tickets.selection().find(e => e.escalation_status === model.escalationStatuses.NOT_DONE) !== undefined
+		return $scope.tickets.selection().find(function(e){return e.escalation_status === model.escalationStatuses.NOT_DONE}) !== undefined
 	};
 
 	$scope.escalateSelected = function() {
