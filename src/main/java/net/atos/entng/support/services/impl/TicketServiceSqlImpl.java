@@ -104,7 +104,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 		values.add(parseId(ticketId));
 
 		String updateTicketQuery = "UPDATE support.tickets" +
-				" SET " + sb.toString() + "modified = NOW() " +
+				" SET " + sb.toString() + "modified = timezone('UTC', NOW()) " +
 				"WHERE id = ? RETURNING modified, subject, owner, school_id";
 		s.prepared(updateTicketQuery, values);
 
@@ -247,7 +247,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 		// 1) WITH query to update status
 		query.append("WITH updated_ticket AS (")
 				.append(" UPDATE support.tickets")
-				.append(" SET escalation_status = ?, escalation_date = NOW(), status = 2 ")
+				.append(" SET escalation_status = ?, escalation_date = timezone('UTC', NOW()), status = 2 ")
 				.append(" WHERE id = ?");
 		values.add(EscalationStatus.IN_PROGRESS.status())
 				.add(parseId(ticketId));
@@ -313,7 +313,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 
 		// 1. Update escalation status
 		String query = "UPDATE support.tickets"
-				+ " SET escalation_status = ?, escalation_date = NOW()"
+				+ " SET escalation_status = ?, escalation_date = timezone('UTC', NOW())"
 				+ " WHERE id = ?";
 
 		JsonArray values = new JsonArray()
@@ -441,7 +441,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 		values.add(issueId);
 
 		query.append(" UPDATE support.bug_tracker_issues")
-			.append(" SET content = ?::JSON, modified = now()")
+			.append(" SET content = ?::JSON, modified = timezone('UTC', NOW())")
 			.append(" WHERE id = ?")
 			.append(" RETURNING (SELECT status_id FROM old_issue)");
 

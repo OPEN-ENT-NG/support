@@ -250,10 +250,7 @@ function SupportController($scope, template, model, route, $location, orderByFil
                           // alert(btComment.created_on);
                            if(btComment.user.name != $scope.bugTrackerAuthor){
                                var comment = {};
-                               var time = new Date(btComment.created_on);
-                               var tzoffset = (new Date()).getTimezoneOffset() * 60000; //offset in milliseconds
-                               var localISOTime = (new Date(time - tzoffset)).toISOString().slice(0,-1);
-                               comment.created = localISOTime;
+                               comment.created = btComment.created_on;
                                comment.content = btComment.notes;
                                comment.type = 5;
                                comment.isHistory = true;
@@ -649,9 +646,14 @@ function SupportController($scope, template, model, route, $location, orderByFil
 	};
 	
 	// Date functions
-    $scope.formatDate = function(date) {
-        return $scope.formatMoment(moment(date));
-    };
+	$scope.formatDate = function(date) {
+		if(/^.*Z.*$/.test(date)){
+			// If Z (=> UTC) is specified, moment will convert to UTC automatically
+			return $scope.formatMoment(moment(date));
+		}
+		// Else, assuming date is in UTC, we convert to UTC by ourselves
+		return $scope.formatMoment(moment.utc(date).local());
+	};
 	$scope.formatMoment = function(moment) {
 		return moment.lang('fr').format('DD/MM/YYYY H:mm');
 	};
