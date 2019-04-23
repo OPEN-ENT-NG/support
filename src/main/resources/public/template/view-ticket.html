@@ -80,7 +80,7 @@
     </div>
     <br><br>
     <div class="row" ng-if="ticket.comments !== undefined && !ticket.comments.isEmpty()">
-        <div class="cell-no-float notification" ng-repeat="comment in ticket.comments.all | orderBy: ['created', 'id']">
+        <div class="cell-no-float notification" ng-repeat="comment in ticket.comments.all | orderBy: ['created', 'id']" ng-style="!comment.content && {'display':'none'}">
             <div style="display:table-cell" ng-switch="comment.isHistory">
                 <div ng-switch-when="true" style="padding-top: 38%;">
                     <i ng-switch="comment.type">
