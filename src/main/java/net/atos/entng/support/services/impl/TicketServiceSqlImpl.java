@@ -648,8 +648,8 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
      * @param handler
      */
     public void createTicketHisto(String ticketId, String event, int status, String userid, int eventType, Handler<Either<String, JsonObject>> handler) {
-        String query = "INSERT INTO support.tickets_histo( ticket_id, event, event_date, status, user_id, event_type) "
-                + " values( ?, ?, current_timestamp, ?, ?, ? )";
+        String query = "INSERT INTO support.tickets_histo( ticket_id, event, status, user_id, event_type) "
+                + " values( ?, ?, ?, ?, ? )";
 
         JsonArray values = new fr.wseduc.webutils.collections.JsonArray()
                 .add(parseId(ticketId))
