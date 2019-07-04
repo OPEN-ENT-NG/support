@@ -72,7 +72,7 @@
 					<td class="one smallFontSize" ng-click="viewTicket(ticket.id)">[[formatDate(ticket.modified)]]</td>
                     <td class="smallFontSize centered" ng-click="viewTicket(ticket.id)">[[ticket.event_count]]</td>
 					<td class="one smallFontSize" ng-if="canEscalate() && atLeastOneTicketEscalated()">
-						<span ng-if="ticket.last_issue_update">[[formatDate(ticket.last_issue_update)]]</span>
+						<span ng-if="ticket.last_issue_update" ng-model="ticket.last_issue_update">[[formatDate(ticket.last_issue_update)]]</span>
 					</td>
 				</tr>
 			</tbody>
@@ -86,7 +86,7 @@
                         <i18n>support.toggle.change.to</i18n><i18n>[[status.i18nValue]]</i18n>
                     </button>
                 </span>
-                <button ng-if="isEscalationActivated && allTicketsUnescalatedAndAdminLocal()" ng-click="escalateSelected()">
+                <button ng-if="isEscalationActivated && allTicketsUnescalatedAndCanEscalate()" ng-click="escalateSelected()">
                     <i18n>support.ticket.escalate</i18n>
                 </button>
             </div>

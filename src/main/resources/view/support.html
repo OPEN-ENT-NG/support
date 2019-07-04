@@ -29,7 +29,7 @@
 							<button ng-click="editTicket()" ng-if="ticket && ticket.id" class="cell right-magnet">
 								<i18n>support.ticket.edit</i18n>
 							</button>
-							<button ng-click="escalateTicket()" ng-if="ticket && ticket.id && isEscalationActivated && ticket.escalation_status === escalationStatuses.NOT_DONE && userIsLocalAdmin(ticket)" class="cell right-magnet">
+							<button ng-click="escalateTicket()" ng-if="ticket && ticket.id && isEscalationActivated && ticket.escalation_status === escalationStatuses.NOT_DONE && canEscalate(ticket)" class="cell right-magnet">
 								<i18n>support.ticket.escalate</i18n>
 							</button>
 						</div>

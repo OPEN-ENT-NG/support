@@ -37,7 +37,7 @@
 		</div>
 		<div class="row">
 			<div ng-if="!ticket.processing">
-				<button class="right-magnet" ng-if="isEscalationActivated && userIsLocalAdmin(ticket)" ng-click="createAndEscalateTicket()" translate content="support.ticket.save.and.escalate"></button>
+				<button class="right-magnet" ng-if="isEscalationActivated && canEscalate(ticket)" ng-click="createAndEscalateTicket()" translate content="support.ticket.save.and.escalate"></button>
 				<button class="right-magnet" ng-click="createTicket()" translate content="support.ticket.save"></button>
 				<button class="right-magnet cancel" ng-click="cancelCreateTicket()" translate content="support.ticket.cancel"></button>
 			</div>
