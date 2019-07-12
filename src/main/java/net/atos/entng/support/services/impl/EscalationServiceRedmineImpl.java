@@ -706,14 +706,19 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 																																.right()
 																																.getValue(),
 																														issue);
+																										Long newStatus = issue.getJsonObject("issue").getJsonObject("status").getLong("id");
+																										if (newStatus >= 4l) {
+																											newStatus = 4l;
+																										}
 																										ticketServiceSql
-																												.updateTicketIssueUpdateDate(
+																												.updateTicketIssueUpdateDateAndStatus(
 																														ticket.getLong(
 																																"id"),
 																														issue.getJsonObject(
 																																"issue")
 																																.getString(
 																																		"updated_on"),
+																														newStatus,
 																														new Handler<Either<String, JsonObject>>() {
 																															@Override
 																															public void handle(
@@ -894,7 +899,7 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 		try {
 			final String oldStatus = updateIssueResponse.getString("status_id", "-1");
 			final int oldStatusId = Integer.parseInt(oldStatus);
-			final Number newStatusId = issue.getJsonObject("issue").getJsonObject("status").getLong("id");
+			final Long newStatusId = issue.getJsonObject("issue").getJsonObject("status").getLong("id");
 			log.debug("Old status_id: " + oldStatusId);
 			log.debug("New status_id:" + newStatusId);
 //			if(newStatusId.intValue() != oldStatusId &&
@@ -1018,7 +1023,7 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 														I18n.getInstance().translate(
 																"support.ticket.histo.bug.tracker.updated",
 																I18n.DEFAULT_DOMAIN, locale) + additionnalInfoHisto,
-														ticket.getInteger("status"), null, 6,
+														newStatusId >= 4l ? 4 : newStatusId.intValue(), null, 6,
 														new Handler<Either<String, JsonObject>>() {
 															@Override
 															public void handle(Either<String, JsonObject> res) {
