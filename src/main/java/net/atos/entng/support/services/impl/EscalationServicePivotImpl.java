@@ -49,7 +49,7 @@ public class EscalationServicePivotImpl implements EscalationService
     /**
      * Declaration of JSON fields for pivot format
      */
-    private final static String IDIWS_FIELD = "id_iws";
+    private final String IDIWS_FIELD;
     private final static String IDENT_FIELD = "id_ent";
     private final static String IDJIRA_FIELD = "id_jira";
     private final static String COLLECTIVITY_FIELD = "collectivite";
@@ -65,11 +65,11 @@ public class EscalationServicePivotImpl implements EscalationService
     private final static String ATTACHMENT_FIELD = "pj";
     private final static String ATTACHMENT_NAME_FIELD = "nom";
     private final static String ATTACHMENT_CONTENT_FIELD = "contenu";
-    private final static String STATUSIWS_FIELD = "statut_iws";
+    private final String STATUSIWS_FIELD;
     private final static String STATUSENT_FIELD = "statut_ent";
     private final static String STATUSJIRA_FIELD = "statut_jira";
     private final static String DATE_CREA_FIELD = "date_creation";
-    private final static String DATE_RESOIWS_FIELD = "date_resolution_iws";
+    private final String DATE_RESOIWS_FIELD;
     private final static String DATE_RESOENT_FIELD = "date_resolution_ent";
     private final static String DATE_RESOJIRA_FIELD = "date_resolution_jira";
     private final static String ATTRIBUTION_FIELD = "attribution";
@@ -91,6 +91,12 @@ public class EscalationServicePivotImpl implements EscalationService
         userIws = new UserInfos();
         userIws.setUserId(config.getString("user-iws-id"));
         userIws.setUsername(config.getString("user-iws-name"));
+
+        String externalServiceName = config.getString("external-service-name", "iws");
+        IDIWS_FIELD = "id_" + externalServiceName;
+        STATUSIWS_FIELD = "statut_" + externalServiceName;
+        DATE_RESOIWS_FIELD = "date_resolution_" + externalServiceName;
+
         STATUS = config.getJsonObject("status_iws");
         userIws.setType("");
         helper = new EscalationPivotHelperImpl();

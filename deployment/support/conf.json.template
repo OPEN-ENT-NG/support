@@ -17,6 +17,7 @@
         "userbook-host": "${host}",
         "integration-mode" : "HTTP",
         "mode" : "${mode}",
+        "external-service-name" : "$PivotExternalServiceName",
         "activate-escalation" : $activateEscalation,
         "bug-tracker-name" : "$SupportBugTrackername",
         "bug-tracker-host" : "support.web-education.net",
