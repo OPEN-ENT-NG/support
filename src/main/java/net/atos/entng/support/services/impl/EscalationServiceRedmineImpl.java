@@ -707,8 +707,10 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 																																.getValue(),
 																														issue);
 																										Long newStatus = issue.getJsonObject("issue").getJsonObject("status").getLong("id");
-																										if (newStatus >= 4l) {
-																											newStatus = 4l;
+																										if (newStatus == 5l) {
+                                                                                                            newStatus = 4l;
+                                                                                                        } else if (newStatus >= 4l) {
+																											newStatus = 2l;
 																										}
 																										ticketServiceSql
 																												.updateTicketIssueUpdateDateAndStatus(
@@ -1023,7 +1025,7 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 														I18n.getInstance().translate(
 																"support.ticket.histo.bug.tracker.updated",
 																I18n.DEFAULT_DOMAIN, locale) + additionnalInfoHisto,
-														newStatusId >= 4l ? 4 : newStatusId.intValue(), null, 6,
+														newStatusId == 5l ? 4 : newStatusId >= 4l ? 2 : newStatusId.intValue(), null, 6,
 														new Handler<Either<String, JsonObject>>() {
 															@Override
 															public void handle(Either<String, JsonObject> res) {
