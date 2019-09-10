@@ -98,6 +98,9 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 	private static final String REDMINE_ISSUES_PATH = "/issues.json";
 	private static final String REDMINE_UPLOAD_ATTACHMENT_PATH = "/uploads.json";
 
+	private static final String REDMINE_SUPPORT_GROUP_ID = "4";
+	private static final String REDMINE_COMMENTAIRE_STATUS_ID = "4";
+
 	@Override
 	public BugTracker getBugTrackerType() {
 		return BugTracker.REDMINE;
@@ -535,6 +538,8 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 		JsonObject data = new JsonObject();
 		if (comment != null) {
 			data.put("notes", comment.getString("content"));
+			data.put("status_id", REDMINE_COMMENTAIRE_STATUS_ID);
+			data.put("assigned_to_id", REDMINE_SUPPORT_GROUP_ID);
 		}
 		if (attachments != null) {
 			data.put("uploads", attachments);
