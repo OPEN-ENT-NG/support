@@ -1,5 +1,5 @@
 
-<div class="checkbox-filters">
+<div class="flex-row f-column">
     <div class="cell checkbox-filters right-spacing" ng-if="schools.length > 1">
         <i18n class="right-spacing">support.ticket.school</i18n>
         <select ng-model="display.filters.school_id">
@@ -8,9 +8,9 @@
         </select>
     </div>
     <div class="cell checkbox-filters">
-        <i18n>support.filter.tickets.by.status</i18n>
-    </div>
-    <div class="cell checkbox-filters">
+        <div class="cell">
+            <i18n>support.filter.tickets.by.status</i18n>
+        </div>
         <ul>
             <li>
                 <label class="checkbox cell"><input type="checkbox" ng-model="display.filters.all" ng-change="switchAll()" />
