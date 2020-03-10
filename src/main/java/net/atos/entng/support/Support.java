@@ -57,7 +57,7 @@ public class Support extends BaseServer {
 		BugTracker bugTrackerType;
 
 		// Default value to REDMINE for compatibility purpose
-		bugTrackerType = BugTracker.valueOf(config.getString("bug-tracker-name", BugTracker.REDMINE.toString()));
+		bugTrackerType = BugTracker.valueOf(config.getString("bug-tracker-name", BugTracker.REDMINE.toString()).toUpperCase());
 		final Storage storage = new StorageFactory(vertx, config,
 				new PostgresqlApplicationStorage("support.attachments", Support.class.getSimpleName(),
 						new JsonObject().put("id", "document_id"))).getStorage();
