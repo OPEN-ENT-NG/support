@@ -51,6 +51,7 @@ import io.vertx.core.eventbus.Message;
 import org.vertx.java.core.http.RouteMatcher;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.MultiMap;
 
 
 import fr.wseduc.rs.ApiDoc;
@@ -460,13 +461,19 @@ public class TicketController extends ControllerHelper {
     @ApiDoc("If current user is local admin, get all tickets. Otherwise, get my tickets")
     @SecuredAction("support.ticket.list")
     public void listTickets(final HttpServerRequest request) {
+        MultiMap params = request.params();
+        Integer page = Integer.valueOf(params.get("page"));
+        List<String> statuses = params.getAll("status");
+        List<String> applicants = params.getAll("applicant");
+        String order = params.get("order");
+
         UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
             @Override
             public void handle(final UserInfos user) {
                 if (user != null) {
                     Map<String, UserInfos.Function> functions = user.getFunctions();
                     if (functions.containsKey(DefaultFunctions.ADMIN_LOCAL) || functions.containsKey(DefaultFunctions.SUPER_ADMIN)) {
-                        ticketServiceSql.listTickets(user, new Handler<Either<String, JsonArray>>() {
+                        ticketServiceSql.listTickets(user, page, statuses, applicants, order, new Handler<Either<String, JsonArray>>() {
                             @Override
                             public void handle(Either<String, JsonArray> event) {
                                 // getting the profile for users
@@ -492,7 +499,7 @@ public class TicketController extends ControllerHelper {
                                                 for( Object user : listUsers ) {
                                                     if (!(user instanceof JsonObject)) continue;
                                                     JsonObject jUser = (JsonObject)user;
-                                                    // traduction porfil
+                                                    // traduction profil
                                                     String profil = jUser.getJsonArray("n.profiles").getString(0);
                                                     profil = I18n.getInstance().translate(profil, getHost(request), I18n.acceptLanguage(request));
                                                     // iterator on tickets, to see if the ids match
@@ -512,7 +519,7 @@ public class TicketController extends ControllerHelper {
                             }
                         });
                     } else {
-                        ticketServiceSql.listMyTickets(user, arrayResponseHandler(request));
+                        ticketServiceSql.listMyTickets(user, page, statuses, order, arrayResponseHandler(request));
                     }
                 } else {
                     log.debug("User not found in session.");

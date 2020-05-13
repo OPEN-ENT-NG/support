@@ -23,3 +23,35 @@
 .align-button{
     padding-left:207px;
 }
+
+/*Pagination ticket CO-898*/
+.center {
+    text-align: center;
+}
+
+.pagination {
+    font-size: 14px;
+    padding: 0;
+}
+
+.pagination .page {
+    display: inline-block;
+    border: 1px solid #ddd;
+    padding: 6px 12px;
+    margin: 0 4px;
+    transition: background-color .3s;
+    text-align: center;
+}
+
+.pagination li:hover {
+    color: #FF8500;
+}
+
+.pagination .active, .pagination .active:hover {
+    background-color: #FF8500;
+    color: white;
+    border: 1px solid #FF8500;
+}
+
+.pagination li:hover:not(.active) {background-color: #ddd;}
+

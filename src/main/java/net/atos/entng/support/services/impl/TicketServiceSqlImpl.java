@@ -57,6 +57,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
     protected static final Logger log = LoggerFactory.getLogger(Renders.class);
 
 	private final BugTracker bugTrackerType;
+	private final Integer nbTicketsPerPage = 25;
 
 	public TicketServiceSqlImpl(BugTracker bugTracker) {
 		super("support", "tickets");
@@ -179,21 +180,31 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 
 
 	@Override
-	public void listTickets(UserInfos user, Handler<Either<String, JsonArray>> handler) {
+	public void listTickets(UserInfos user, Integer page, List<String> statuses, List<String> applicants, String order, Handler<Either<String, JsonArray>> handler) {
 		StringBuilder query = new StringBuilder();
-		query.append("SELECT t.*, u.username AS owner_name,")
+		query.append("SELECT t.*, u.username AS owner_name, ")
 			.append("i.content").append(bugTrackerType.getLastIssueUpdateFromPostgresqlJson()).append(" AS last_issue_update, ")
-            .append(" substring(t.description, 0, 101)  as short_desc")
+            .append(" substring(t.description, 0, 101)  as short_desc,")
+			.append(" COUNT(*) OVER() AS total_results")
 			.append(" FROM support.tickets AS t")
 			.append(" INNER JOIN support.users AS u ON t.owner = u.id")
 			.append(" LEFT JOIN support.bug_tracker_issues AS i ON t.id=i.ticket_id");
+
+		boolean oneApplicant = false;
+		String applicant = "ME";
+		boolean applicantIsMe = true;
+		if (applicants.size() == 1) {
+			applicant = applicants.get(0);
+			applicantIsMe = applicant.equals("ME");
+			oneApplicant = true;
+		}
 
 		JsonArray values = new JsonArray();
 		Function adminLocal = user.getFunctions().get(DefaultFunctions.ADMIN_LOCAL);
 		if (adminLocal != null) {
 			List<String> scopesList = adminLocal.getScope();
 			if(scopesList != null && !scopesList.isEmpty()) {
-				query.append(" WHERE t.school_id IN (");
+				query.append(" WHERE ((t.school_id IN (");
 				for (String scope : scopesList) {
 					query.append("?,");
 					values.add(scope);
@@ -201,24 +212,69 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 				query.deleteCharAt(query.length() - 1);
 				query.append(")");
 
+				if (oneApplicant) {
+					query.append(" AND t.owner").append(applicantIsMe?"=":"!=").append("?");
+					values.add(user.getUserId());
+				}
+				query.append(")");
+
 				// Include tickets created by current user, and linked to a school where he is not local administrator
-				query.append(" OR t.owner = ?");
-				values.add(user.getUserId());
+				if (!oneApplicant || applicantIsMe) {
+					query.append(" OR t.owner = ?");
+					values.add(user.getUserId());
+				}
+				query.append(")");
 			}
-		} else {
+		}
+		else {
             query.append(" WHERE t.school_id IN (?)");
             values.add(user.getStructures().get(0)); // SUPER_ADMIN, has only 1 structure.
+			if (oneApplicant) {
+				query.append(" AND t.owner").append(applicantIsMe?"=":"!=").append("?");
+				values.add(user.getUserId());
+			}
         }
+
+		if (statuses.size() > 0 && statuses.size() < 4) {
+			query.append(" AND (t.status IN (");
+			for (String status : statuses) {
+				query.append("?,");
+				values.add(status);
+			}
+			query.deleteCharAt(query.length() - 1);
+			query.append("))");
+		}
+
+		query.append(" ORDER BY t.modified ").append(order)
+				.append(" LIMIT ").append(nbTicketsPerPage)
+				.append(" OFFSET ").append((page-1)*nbTicketsPerPage);
 
 		sql.prepared(query.toString(), values, validResultHandler(handler));
 	}
 
 	@Override
-	public void listMyTickets(UserInfos user, Handler<Either<String, JsonArray>> handler) {
-		String query = "SELECT t.*, u.username AS owner_name, substring(t.description, 0, 100)  as short_desc FROM support.tickets AS t"
-			+ " INNER JOIN support.users AS u ON t.owner = u.id"
-			+ " WHERE t.owner = ?";
+	public void listMyTickets(UserInfos user, Integer page, List<String> statuses, String order, Handler<Either<String, JsonArray>> handler) {
+		StringBuilder query = new StringBuilder();
+		query.append("SELECT t.*, u.username AS owner_name, substring(t.description, 0, 100) AS short_desc")
+				.append(", COUNT(*) OVER() AS total_results")
+				.append(" FROM support.tickets AS t")
+				.append(" INNER JOIN support.users AS u ON t.owner = u.id")
+				.append(" WHERE t.owner = ?");
 		JsonArray values = new JsonArray().add(user.getUserId());
+
+		if (statuses.size() > 0 && statuses.size() < 4) {
+			query.append(" AND t.status IN (");
+			for (String status : statuses) {
+				query.append("?,");
+				values.add(status);
+			}
+			query.deleteCharAt(query.length() - 1);
+			query.append(")");
+		}
+
+		query.append(" ORDER BY t.modified ").append(order)
+				.append(" LIMIT ").append(nbTicketsPerPage)
+				.append(" OFFSET ").append((page-1)*nbTicketsPerPage);
 
 		sql.prepared(query.toString(), values, validResultHandler(handler));
 	}

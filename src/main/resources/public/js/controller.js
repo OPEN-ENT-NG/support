@@ -117,7 +117,6 @@ function SupportController($scope, template, model, route, $location, orderByFil
         };
 
         $scope.checkAll = function(){
-
             $scope.display.filters.all = true;
             for(var filter in $scope.display.filters){
                 $scope.display.filters.all = $scope.display.filters[filter] &&
@@ -125,6 +124,18 @@ function SupportController($scope, template, model, route, $location, orderByFil
                                                 $scope.display.filters.all;
             }
         };
+
+        $scope.onStatusChange = function () {
+			$scope.checkAll();
+			$scope.goPage(1, true);
+		}
+
+		// Pagination system
+		$scope.pages = [1];
+		$scope.currentPage = 1;
+		$scope.nbPages = 1;
+		$scope.nbResultsTot = 1;
+		$scope.nbTicketsPerPage = 5; // Defined in TicketServiceSqlImpl.java and updated here accordingly
 	};
 
 	$scope.filterByStatus = function(item) {
@@ -167,12 +178,15 @@ function SupportController($scope, template, model, route, $location, orderByFil
 	$scope.displayTicketList = function() {
 		$scope.display.histo = false;
         $scope.ticket = new Ticket();
-		$scope.registerViewTicketListEvent();
-    	model.tickets.sync();
+		$scope.display.filters.all = true;
+		$scope.switchAll();
+		$scope.goPage(1, true);
 	};
 
     $scope.registerViewTicketListEvent = function() {
         model.tickets.one('sync', function() {
+			$scope.nbTicketsPerPage = $scope.tickets.all.length;
+        	$scope.updatePagination();
             window.location.hash = '';
             template.open('main', 'list-tickets');
             template.open('filters', 'filters');
@@ -190,7 +204,7 @@ function SupportController($scope, template, model, route, $location, orderByFil
             model.tickets.one('sync', function() {
                 $scope.openTicket(ticketId);
             });
-            model.tickets.sync();
+			model.tickets.sync($scope.currentPage, $scope.display.filters, $scope.sort.reverse);
         }
         else {
             $scope.openTicket(ticketId);
@@ -654,6 +668,7 @@ function SupportController($scope, template, model, route, $location, orderByFil
 		// Else, assuming date is in UTC, we convert to UTC by ourselves
 		return $scope.formatMoment(moment.utc(date).local());
 	};
+
 	$scope.formatMoment = function(moment) {
 		return moment.lang('fr').format('DD/MM/YYYY H:mm');
 	};
@@ -711,12 +726,59 @@ function SupportController($scope, template, model, route, $location, orderByFil
     $scope.updateStatus = function(newStatus){
         model.updateTicketStatus($scope.tickets.selection(), newStatus, function() {
             notify.info('support.comment.status.modification.successful');
-            model.tickets.sync();
+			model.tickets.sync($scope.currentPage, $scope.display.filters, $scope.sort.reverse);
         }, function (e) {
             $scope.processingData = false;
             validationError(e);
         });
     }
+
+	// Pagination system functions
+    $scope.updatePagination = function() {
+    	$scope.pages = [];
+		$scope.nbResultsTot = $scope.tickets.all.length>0?$scope.tickets.all[0].total_results:0;
+		$scope.nbPages = Math.ceil($scope.nbResultsTot / $scope.nbTicketsPerPage);
+		var interval = 2; // Number of page visible before and after the current page
+		var start = 1;
+		var end = $scope.nbPages;
+
+		// Controller of 'pagination rolling' if we have too much pages to display
+		if ($scope.nbPages > (2 * interval) + 1) {
+			if ($scope.currentPage <= start + interval) { // When we are in first pages
+				end = (2 * interval) + 1;
+			}
+			else if ($scope.currentPage >= $scope.nbPages - interval) { // When we are in last pages
+				start = $scope.nbPages - (2 * interval);
+				end = $scope.nbPages;
+			}
+			else { // Everything between
+				start = $scope.currentPage - interval;
+				end = $scope.currentPage + interval;
+			}
+		}
+
+		for (var i = start; i <= end; i++) {
+			$scope.pages.push(i);
+		}
+	};
+
+    $scope.goPage = function(page, init = false) {
+		if (page > $scope.nbPages) {
+			$scope.currentPage = $scope.nbPages;
+		}
+		else if (page < 1) {
+			$scope.currentPage = 1;
+		}
+    	else {
+    		$scope.currentPage = page;
+		}
+
+    	// At start or on status change
+    	if (init) {
+			$scope.registerViewTicketListEvent();
+		}
+		model.tickets.sync($scope.currentPage, $scope.display.filters, $scope.sort.reverse);
+	};
 
 	this.initialize();
 }

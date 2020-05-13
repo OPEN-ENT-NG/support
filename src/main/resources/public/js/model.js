@@ -215,8 +215,16 @@ model.build = function() {
 	this.makeModels([ Ticket, Comment, Attachment ]);
 
 	this.collection(Ticket, {
-		sync : function() {
-			http().get('/support/tickets').done(function(tickets) {
+		sync : function(page= 1, filters = [true,true,true,true,true], order = true) {
+			var queryParams = '?page=' + page
+				+ (filters[1]?'&status=1':'')
+				+ (filters[2]?'&status=2':'')
+				+ (filters[3]?'&status=3':'')
+				+ (filters[4]?'&status=4':'')
+				+ (filters.mydemands?'&applicant=ME':'')
+				+ (filters.otherdemands?'&applicant=OTHER':'')
+				+ '&order=' + (order?'DESC':'ASC');
+			http().get('/support/tickets' + queryParams).done(function(tickets) {
 				this.load(tickets);
 			}.bind(this));
 		}, 

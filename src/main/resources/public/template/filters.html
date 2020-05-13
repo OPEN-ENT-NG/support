@@ -1,4 +1,3 @@
-
 <div class="flex-row f-column">
     <div class="cell checkbox-filters right-spacing" ng-if="schools.length > 1">
         <i18n class="right-spacing">support.ticket.school</i18n>
@@ -18,17 +17,17 @@
                 </label>
             </li>
             <li ng-repeat="status in statuses">
-                <label class="checkbox cell"><input type="checkbox" ng-model="display.filters[[status.value]]" ng-change="checkAll()" />
+                <label class="checkbox cell"><input type="checkbox" ng-model="display.filters[[status.value]]" ng-change="onStatusChange()" />
                     <i18n>[[status.i18nValue]]</i18n>
                 </label>
             </li>
             <li ng-if="userIsLocalAdmin()">
-                <label class="checkbox cell"><input type="checkbox" ng-model="display.filters.mydemands" ng-change="checkAll()" />
+                <label class="checkbox cell"><input type="checkbox" ng-model="display.filters.mydemands" ng-change="onStatusChange()" />
                     <i18n>support.ticket.status.my.demands</i18n>
                 </label>
             </li>
             <li ng-if="userIsLocalAdmin()">
-                <label class="checkbox cell"><input type="checkbox" ng-model="display.filters.otherdemands" ng-change="checkAll()" />
+                <label class="checkbox cell"><input type="checkbox" ng-model="display.filters.otherdemands" ng-change="onStatusChange()" />
                     <i18n>support.ticket.status.other.demands</i18n>
                 </label>
             </li>
