@@ -114,6 +114,7 @@ function SupportController($scope, template, model, route, $location, orderByFil
                 // no need to update if the checkbox isn't visible.
                 $scope.display.filters.mydemands = $scope.display.filters.all;
             }
+			$scope.goPage(1, true);
         };
 
         $scope.checkAll = function(){
@@ -325,7 +326,6 @@ function SupportController($scope, template, model, route, $location, orderByFil
 	};
 	
 	$scope.createTicket = function() {
-
 		$scope.ticket.event_count = 1;
 		$scope.ticket.processing = true;
 		
@@ -762,7 +762,7 @@ function SupportController($scope, template, model, route, $location, orderByFil
 		}
 	};
 
-    $scope.goPage = function(page, init = false) {
+    $scope.goPage = function(page, statusChanged = false) {
 		if (page > $scope.nbPages) {
 			$scope.currentPage = $scope.nbPages;
 		}
@@ -774,7 +774,7 @@ function SupportController($scope, template, model, route, $location, orderByFil
 		}
 
     	// At start or on status change
-    	if (init) {
+    	if (statusChanged) {
 			$scope.registerViewTicketListEvent();
 		}
 		model.tickets.sync($scope.currentPage, $scope.display.filters, $scope.sort.reverse);
