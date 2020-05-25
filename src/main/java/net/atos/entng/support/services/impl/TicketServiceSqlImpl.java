@@ -57,7 +57,6 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
     protected static final Logger log = LoggerFactory.getLogger(Renders.class);
 
 	private final BugTracker bugTrackerType;
-	private final Integer nbTicketsPerPage = 25;
 
 	public TicketServiceSqlImpl(BugTracker bugTracker) {
 		super("support", "tickets");
@@ -180,7 +179,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 
 
 	@Override
-	public void listTickets(UserInfos user, Integer page, List<String> statuses, List<String> applicants, String order, Handler<Either<String, JsonArray>> handler) {
+	public void listTickets(UserInfos user, Integer page, List<String> statuses, List<String> applicants, String order, Integer nbTicketsPerPage, Handler<Either<String, JsonArray>> handler) {
 		StringBuilder query = new StringBuilder();
 		query.append("SELECT t.*, u.username AS owner_name, ")
 			.append("i.content").append(bugTrackerType.getLastIssueUpdateFromPostgresqlJson()).append(" AS last_issue_update, ")
@@ -253,7 +252,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 	}
 
 	@Override
-	public void listMyTickets(UserInfos user, Integer page, List<String> statuses, String order, Handler<Either<String, JsonArray>> handler) {
+	public void listMyTickets(UserInfos user, Integer page, List<String> statuses, String order, Integer nbTicketsPerPage, Handler<Either<String, JsonArray>> handler) {
 		StringBuilder query = new StringBuilder();
 		query.append("SELECT t.*, u.username AS owner_name, substring(t.description, 0, 100) AS short_desc")
 				.append(", COUNT(*) OVER() AS total_results")
