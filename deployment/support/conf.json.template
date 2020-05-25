@@ -17,6 +17,7 @@
         "userbook-host": "${host}",
         "integration-mode" : "HTTP",
         "mode" : "${mode}",
+        "nbTicketsPerPage" : 25,
         "external-service-name" : "$PivotExternalServiceName",
         "activate-escalation" : $activateEscalation,
         "bug-tracker-name" : "$SupportBugTrackername",
