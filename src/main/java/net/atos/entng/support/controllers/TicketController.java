@@ -466,7 +466,7 @@ public class TicketController extends ControllerHelper {
         List<String> statuses = params.getAll("status");
         List<String> applicants = params.getAll("applicant");
         String order = params.get("order");
-        Integer nbTicketsPerPage = config.getInteger("nbTicketsPerPage");
+        Integer nbTicketsPerPage = config.getInteger("nbTicketsPerPage", 25);
 
         UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
             @Override
