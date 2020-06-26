@@ -136,7 +136,7 @@ function SupportController($scope, template, model, route, $location, orderByFil
 		$scope.currentPage = 1;
 		$scope.nbPages = 1;
 		$scope.nbResultsTot = 1;
-		$scope.nbTicketsPerPage = 5; // Defined in TicketServiceSqlImpl.java and updated here accordingly
+		$scope.nbTicketsPerPage = undefined; // Defined in TicketServiceSqlImpl.java and updated here accordingly
 	};
 
 	$scope.filterByStatus = function(item) {
@@ -186,7 +186,9 @@ function SupportController($scope, template, model, route, $location, orderByFil
 
     $scope.registerViewTicketListEvent = function() {
         model.tickets.one('sync', function() {
-			$scope.nbTicketsPerPage = $scope.tickets.all.length;
+			if ($scope.nbTicketsPerPage === undefined) { // init nbTicketsPerPage according to the number of results (given by config)
+				$scope.nbTicketsPerPage = $scope.tickets.all.length;
+			}
         	$scope.updatePagination();
             window.location.hash = '';
             template.open('main', 'list-tickets');
@@ -777,7 +779,10 @@ function SupportController($scope, template, model, route, $location, orderByFil
     	if (statusChanged) {
 			$scope.registerViewTicketListEvent();
 		}
-		model.tickets.sync($scope.currentPage, $scope.display.filters, $scope.sort.reverse);
+		else {
+			model.tickets.sync($scope.currentPage, $scope.display.filters, $scope.sort.reverse);
+			$scope.updatePagination();
+		}
 	};
 
 	this.initialize();
