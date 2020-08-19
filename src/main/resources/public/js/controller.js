@@ -740,6 +740,8 @@ function SupportController($scope, template, model, route, $location, orderByFil
     	$scope.pages = [];
 		$scope.nbResultsTot = $scope.tickets.all.length>0?$scope.tickets.all[0].total_results:0;
 		$scope.nbPages = Math.ceil($scope.nbResultsTot / $scope.nbTicketsPerPage);
+		if(!$scope.nbPages)
+			$scope.nbPages = 1;
 		var interval = 2; // Number of page visible before and after the current page
 		var start = 1;
 		var end = $scope.nbPages;
@@ -778,6 +780,7 @@ function SupportController($scope, template, model, route, $location, orderByFil
     	// At start or on status change
     	if (statusChanged) {
 			$scope.registerViewTicketListEvent();
+			model.tickets.sync($scope.currentPage, $scope.display.filters, $scope.sort.reverse);
 		}
 		else {
 			model.tickets.sync($scope.currentPage, $scope.display.filters, $scope.sort.reverse);
