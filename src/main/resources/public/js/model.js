@@ -5,15 +5,15 @@ model.ticketStatusEnum = {
 	RESOLVED: 3,
 	ClOSED: 4,
 	properties: {
-	    1: {i18n: "support.ticket.status.new", value: 1},
-	    2: {i18n: "support.ticket.status.opened", value: 2},
-	    3: {i18n: "support.ticket.status.resolved", value: 3},
-	    4: {i18n: "support.ticket.status.closed", value: 4}
+		1: {i18n: "support.ticket.status.new", value: 1},
+		2: {i18n: "support.ticket.status.opened", value: 2},
+		3: {i18n: "support.ticket.status.resolved", value: 3},
+		4: {i18n: "support.ticket.status.closed", value: 4}
 	}
 };
 
 if (Object.freeze) {
-	Object.freeze(model.ticketStatusEnum);	
+	Object.freeze(model.ticketStatusEnum);
 }
 
 // Constants for escalationStatus
@@ -36,7 +36,7 @@ function Comment(){}
 function Attachment(){}
 
 function Ticket(){
-    this.collection(Comment);
+	this.collection(Comment);
 	this.collection(Attachment);
 }
 
@@ -49,19 +49,19 @@ model.isEscalationActivated = function(callback){
 };
 
 model.updateTicketStatus = function(itemArray, newStatus, cb, cbe){
-    http().postJson('/support/ticketstatus/' + newStatus, {ids:model.getItemsIds(itemArray)}).done(function (result) {
-        if(typeof cb === 'function'){
-            cb();
-        }
-    }.bind(this));
+	http().postJson('/support/ticketstatus/' + newStatus, {ids:model.getItemsIds(itemArray)}).done(function (result) {
+		if(typeof cb === 'function'){
+			cb();
+		}
+	}.bind(this));
 }
 
 model.isBugTrackerCommDirect = function(callback){
-    http().get('/support/isBugTrackerCommDirect').done(function(result){
-        if(typeof callback === 'function'){
-            callback(result);
-        }
-    }.bind(this));
+	http().get('/support/isBugTrackerCommDirect').done(function(result){
+		if(typeof callback === 'function'){
+			callback(result);
+		}
+	}.bind(this));
 };
 
 
@@ -87,39 +87,39 @@ Ticket.prototype.updateTicket = function(data, callback) {
 
 Ticket.prototype.escalateTicket = function(callback, errorCallback, badRequestCallback) {
 	http().postJson('/support/ticket/' + this.id + '/escalate', null, {requestName: 'escalation-request' })
-	.done(function(result){
-			this.last_issue_update = result.issue.updated_on;
-			this.escalation_status = model.escalationStatuses.SUCCESSFUL;
-			this.issue = result.issue;
+		.done(function(result){
+				this.last_issue_update = result.issue.updated_on;
+				this.escalation_status = model.escalationStatuses.SUCCESSFUL;
+				this.issue = result.issue;
+				this.trigger('change');
+				if(typeof callback === 'function'){
+					callback();
+				}
+			}.bind(this)
+		)
+		.e500(function(){
+				this.escalation_status = model.escalationStatuses.FAILED;
+				this.trigger('change');
+				if(typeof errorCallback === 'function'){
+					errorCallback();
+				}
+			}.bind(this)
+		)
+		.e400(function(){
+			this.escalation_status = model.escalationStatuses.NOT_DONE;
 			this.trigger('change');
-			if(typeof callback === 'function'){
-				callback();
+			if(typeof badRequestCallback === 'function'){
+				badRequestCallback();
 			}
-		}.bind(this)
-	)
-	.e500(function(){
-			this.escalation_status = model.escalationStatuses.FAILED;
-			this.trigger('change');
-			if(typeof errorCallback === 'function'){
-				errorCallback();
-			}
-		}.bind(this)
-	)
-	.e400(function(){
-		this.escalation_status = model.escalationStatuses.NOT_DONE;
-		this.trigger('change');
-		if(typeof badRequestCallback === 'function'){
-			badRequestCallback();
-		}
-	}.bind(this));
+		}.bind(this));
 };
 
 Ticket.prototype.toJSON = function() {
-    var json = {
-		    subject : this.subject,
-		    description : this.description,
-		    category : this.category,
-		    school_id : this.school_id
+	const json = {
+		subject: this.subject,
+		description: this.description,
+		category: this.category,
+		school_id: this.school_id
 	};
 	if(this.status !== undefined) {
 		json.status = this.status;
@@ -131,13 +131,13 @@ Ticket.prototype.toJSON = function() {
 		json.attachments = [];
 		for (var i=0; i < this.newAttachments.length; i++) {
 			json.attachments.push({
-				id: this.newAttachments[i]._id, 
+				id: this.newAttachments[i]._id,
 				name: this.newAttachments[i].title,
 				size: this.newAttachments[i].metadata.size
 			});
 		}
 	}
-	
+
 	return json;
 };
 
@@ -165,19 +165,19 @@ Ticket.prototype.getAttachments = function(callback) {
 
 Ticket.prototype.getBugTrackerIssue = function(callback) {
 	http().get('/support/ticket/' + this.id + '/bugtrackerissue').done(function(result){
-        if(result.length > 0 && result[0] && result[0].content) {
+		if(result.length > 0 && result[0] && result[0].content) {
 			// JSON type in PostgreSQL is sent as a JSON string. Parse it
 			var content = JSON.parse(result[0].content);
 			if(content && content.issue) {
 
-                this.issue = content.issue;
-				
+				this.issue = content.issue;
+
 				var attachments = JSON.parse(result[0].attachments);
 				if(attachments && attachments.length > 0) {
 					// add fields "document_id" and "gridfs_id" to each attachment in variable "content.issue"
 					this.issue.attachments = _.map(this.issue.attachments, function(pAttachment) {
 						var anAttachment = _.find(attachments, function(att) {
-							 return att.id === pAttachment.id;
+							return att.id === pAttachment.id;
 						});
 						pAttachment.document_id = anAttachment.document_id;
 						pAttachment.gridfs_id = anAttachment.gridfs_id;
@@ -194,20 +194,20 @@ Ticket.prototype.getBugTrackerIssue = function(callback) {
 
 Ticket.prototype.commentIssue = function(callback, errorCallback) {
 	http().postJson('/support/issue/' + this.issue.id + '/comment', {content: this.issue.newComment})
-	.done(function(result){
-			this.issue = result.issue;
-			this.trigger('change');
-			if(typeof callback === 'function'){
-				callback();
-			}
-		}.bind(this)
-	)
-	.e500(function(result){
-			if(typeof errorCallback === 'function'){
-				errorCallback(result.error);
-			}
-		}.bind(this)
-	);
+		.done(function(result){
+				this.issue = result.issue;
+				this.trigger('change');
+				if(typeof callback === 'function'){
+					callback();
+				}
+			}.bind(this)
+		)
+		.e500(function(result){
+				if(typeof errorCallback === 'function'){
+					errorCallback(result.error);
+				}
+			}.bind(this)
+		);
 };
 
 model.build = function() {
@@ -216,7 +216,7 @@ model.build = function() {
 
 	this.collection(Ticket, {
 		sync : function(page= 1, filters = [true,true,true,true,true], school = '*', order = true) {
-			var queryParams = '?page=' + page
+			const queryParams = '?page=' + page
 				+ (filters[1]?'&status=1':'')
 				+ (filters[2]?'&status=2':'')
 				+ (filters[3]?'&status=3':'')
@@ -228,33 +228,32 @@ model.build = function() {
 			http().get('/support/tickets' + queryParams).done(function(tickets) {
 				this.load(tickets);
 			}.bind(this));
-		}, 
+		},
 		behaviours: 'support'
 	});
 };
 
 model.getItemsIds = function (items) {
+	const itemArray = [];
+	items.forEach(function (item) {
+		itemArray.push(item.id);
+	});
 
-    var itemArray = [];
-    items.forEach(function (item) {
-        itemArray.push(item.id);
-    });
-
-    return itemArray;
+	return itemArray;
 }
 
 model.getProfile = function(userId, callback) {
-    http().get('/support/profile/' + userId).done(function(result) {
-       if(typeof callback === 'function'){
-           callback(result);
-       }
-    });
+	http().get('/support/profile/' + userId).done(function(result) {
+		if(typeof callback === 'function'){
+			callback(result);
+		}
+	});
 }
 
 model.getEvents = function (ticketId, callback) {
-    http().get('/support/events/' + ticketId).done(function(result){
-        if(typeof callback === 'function'){
-            callback(result);
-        }
-    });
+	http().get('/support/events/' + ticketId).done(function(result){
+		if(typeof callback === 'function'){
+			callback(result);
+		}
+	});
 }
