@@ -17,7 +17,7 @@
                 </label>
             </li>
             <li ng-repeat="status in statuses">
-                <label class="checkbox cell"><input type="checkbox" ng-model="display.filters[[status.value]]"c />
+                <label class="checkbox cell"><input type="checkbox" ng-model="display.filters[[status.value]]" ng-change="onStatusChange()" />
                     <i18n>[[status.i18nValue]]</i18n>
                 </label>
             </li>
