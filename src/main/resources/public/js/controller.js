@@ -207,7 +207,7 @@ function SupportController($scope, template, model, route, $location, orderByFil
             model.tickets.one('sync', function() {
                 $scope.openTicket(ticketId);
             });
-			model.tickets.sync($scope.currentPage, $scope.display.filters, $scope.sort.reverse);
+			model.tickets.sync($scope.currentPage, $scope.display.filters, $scope.display.filters.school_id, $scope.sort.reverse);
         }
         else {
             $scope.openTicket(ticketId);
@@ -728,7 +728,7 @@ function SupportController($scope, template, model, route, $location, orderByFil
     $scope.updateStatus = function(newStatus){
         model.updateTicketStatus($scope.tickets.selection(), newStatus, function() {
             notify.info('support.comment.status.modification.successful');
-			model.tickets.sync($scope.currentPage, $scope.display.filters, $scope.sort.reverse);
+			model.tickets.sync($scope.currentPage, $scope.display.filters, $scope.display.filters.school_id, $scope.sort.reverse);
         }, function (e) {
             $scope.processingData = false;
             validationError(e);
@@ -780,10 +780,10 @@ function SupportController($scope, template, model, route, $location, orderByFil
     	// At start or on status change
     	if (statusChanged) {
 			$scope.registerViewTicketListEvent();
-			model.tickets.sync($scope.currentPage, $scope.display.filters, $scope.sort.reverse);
+			model.tickets.sync($scope.currentPage, $scope.display.filters, $scope.display.filters.school_id, $scope.sort.reverse);
 		}
 		else {
-			model.tickets.sync($scope.currentPage, $scope.display.filters, $scope.sort.reverse);
+			model.tickets.sync($scope.currentPage, $scope.display.filters, $scope.display.filters.school_id, $scope.sort.reverse);
 			$scope.updatePagination();
 		}
 	};

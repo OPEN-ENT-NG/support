@@ -37,9 +37,9 @@ public interface TicketServiceSql extends CrudService {
 	public void updateTicket(String id, JsonObject data, UserInfos user,
 			Handler<Either<String, JsonObject>> handler);
 
-	public void listTickets(UserInfos user, Integer page, List<String> statuses, List<String> applicants, String order, Integer nbTicketsPerPage, Handler<Either<String, JsonArray>> handler);
+	public void listTickets(UserInfos user, Integer page, List<String> statuses, List<String> applicants, String school_id, String order, Integer nbTicketsPerPage, Handler<Either<String, JsonArray>> handler);
 
-	public void listMyTickets(UserInfos user, Integer page, List<String> statuses, String order, Integer nbTicketsPerPage, Handler<Either<String, JsonArray>> handler);
+	public void listMyTickets(UserInfos user, Integer page, List<String> statuses, String school_id, String order, Integer nbTicketsPerPage, Handler<Either<String, JsonArray>> handler);
 
 	/**
 	 * If escalation status is "not_done" or "failed", and ticket status is new or opened,

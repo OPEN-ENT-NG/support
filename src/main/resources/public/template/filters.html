@@ -1,7 +1,7 @@
 <div class="flex-row f-column">
     <div class="cell checkbox-filters right-spacing" ng-if="schools.length > 1">
         <i18n class="right-spacing">support.ticket.school</i18n>
-        <select ng-model="display.filters.school_id">
+        <select ng-model="display.filters.school_id" ng-change="onStatusChange()">
             <option ng-selected="display.filters.school_id === '*'" value="*">[[ lang.translate('support.ticket.filter.allschools') ]]</option>
             <option ng-selected="display.filters.school_id === school.id" ng-repeat="school in schools | orderBy:'name'" value="[[school.id]]">[[school.name]]</option>
         </select>
@@ -17,7 +17,7 @@
                 </label>
             </li>
             <li ng-repeat="status in statuses">
-                <label class="checkbox cell"><input type="checkbox" ng-model="display.filters[[status.value]]" ng-change="onStatusChange()" />
+                <label class="checkbox cell"><input type="checkbox" ng-model="display.filters[[status.value]]"c />
                     <i18n>[[status.i18nValue]]</i18n>
                 </label>
             </li>
