@@ -424,6 +424,65 @@ public class TicketController extends ControllerHelper {
         }
     }
 
+    @Get("/ticket/:id")
+    @ApiDoc("If current user is local admin, get all tickets. Otherwise, get my tickets")
+    @SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+    public void getTicket(final HttpServerRequest request) {
+        final Integer id = Integer.valueOf(request.params().get("id"));
+        UserUtils.getUserInfos(eb, request, user -> {
+            if (user != null) {
+                Map<String, UserInfos.Function> functions = user.getFunctions();
+                if (functions.containsKey(DefaultFunctions.ADMIN_LOCAL) || functions.containsKey(DefaultFunctions.SUPER_ADMIN)) {
+                    ticketServiceSql.getTicket(user, id, event -> {
+                        // getting the profile for users
+                        if( event.isRight()){
+                            final JsonArray jsonListTickets = event.right().getValue();
+                            final JsonArray listUserIds = new JsonArray();
+                            // get list of unique user ids
+                            for (Object ticket : jsonListTickets) {
+                                if (!(ticket instanceof JsonObject)) continue;
+                                String userId = ((JsonObject) ticket).getString("owner");
+                                if( !listUserIds.contains(userId)){
+                                    listUserIds.add(userId);
+                                }
+                            }
+                            // get profiles from neo4j
+                            TicketServiceNeo4jImpl ticketServiceNeo4j = new TicketServiceNeo4jImpl();
+                            ticketServiceNeo4j.getUsersFromList(listUserIds, event1 -> {
+                                if( event1.isRight()){
+                                    JsonArray listUsers = event1.right().getValue();
+                                    // list of users got from neo4j
+                                    for( Object user1 : listUsers ) {
+                                        if (!(user1 instanceof JsonObject)) continue;
+                                        JsonObject jUser = (JsonObject) user1;
+                                        // traduction profil
+                                        String profil = jUser.getJsonArray("n.profiles").getString(0);
+                                        profil = I18n.getInstance().translate(profil, getHost(request), I18n.acceptLanguage(request));
+                                        // iterator on tickets, to see if the ids match
+                                        for( Object ticket : jsonListTickets) {
+                                            if (!(ticket instanceof JsonObject)) continue;
+                                            JsonObject jTicket = (JsonObject)ticket;
+                                            if( jTicket.getString("owner").equals(jUser.getString("n.id"))) {
+                                                jTicket.put("profile", profil);
+                                            }
+                                        }
+                                    }
+                                    renderJson(request, jsonListTickets);
+                                }
+                            });
+                        }
+                    });
+                } else {
+                    ticketServiceSql.getMyTicket(user,id, arrayResponseHandler(request));
+                }
+            } else {
+                log.debug("User not found in session.");
+                unauthorized(request);
+            }
+        });
+
+    }
+
 
     @Get("/tickets")
     @ApiDoc("If current user is local admin, get all tickets. Otherwise, get my tickets")

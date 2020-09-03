@@ -14,8 +14,21 @@ routes.define(function($routeProvider){
 function SupportController($scope, template, model, route, $location, orderByFilter){
 
 	route({
-		displayTicket: function(params) {
-			$scope.displayTicket(params.ticketId);
+		displayTicket: function (params) {
+			let hasTicket = [];
+			if(model.tickets.all)
+				hasTicket = model.tickets.all.filter(ticket => {
+					return ticket.id === params.ticketId;
+				});
+			if (hasTicket.length === 0){
+				model.getTicket(params.ticketId, function(result) {
+					$scope.ticket = new Ticket(result[0]);
+					$scope.openTicket(params.ticketId);
+				});
+			}else{
+				$scope.ticket = hasTicket[0];
+				$scope.openTicket(params.ticketId);
+			}
 		},
 		listTickets: function() {
 			if($scope.userIsLocalAdmin()) {
@@ -182,23 +195,12 @@ function SupportController($scope, template, model, route, $location, orderByFil
 		});
 	};
 
-	$scope.displayTicket = function(ticketId) {
-		if(model.tickets.all === undefined || model.tickets.isEmpty()) {
-			model.tickets.one('sync', function() {
-				$scope.openTicket(ticketId);
-			});
-			model.tickets.sync($scope.currentPage, $scope.display.filters, $scope.display.filters.school_id, $scope.sort.reverse);
-		}
-		else {
-			$scope.openTicket(ticketId);
-		}
-	};
-
 	$scope.openTicket = function(ticketId) {
-		var id = parseInt(ticketId,10);
-		$scope.ticket = _.find(model.tickets.all, function(ticket){
-			return ticket.id === id;
-		});
+		const id = parseInt(ticketId, 10);
+		if(!$scope.ticket || ($scope.ticket && $scope.ticket.id !== id))
+			$scope.ticket = _.find(model.tickets.all, function(ticket){
+				return ticket.id === id;
+			});
 		if(!$scope.ticket) {
 			$scope.notFound = true;
 			return;
