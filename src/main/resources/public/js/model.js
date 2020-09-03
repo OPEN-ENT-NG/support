@@ -225,7 +225,7 @@ model.build = function() {
 				+ (filters.otherdemands?'&applicant=OTHER':'')
 				+ '&school=' + school
 				+ '&order=' + (order?'DESC':'ASC');
-			http().get('/support/tickets' + queryParams).done(function(tickets) {
+			http().get('/support/tickets' + queryParams).done(function (tickets) {
 				this.load(tickets);
 			}.bind(this));
 		},
@@ -252,6 +252,14 @@ model.getProfile = function(userId, callback) {
 
 model.getEvents = function (ticketId, callback) {
 	http().get('/support/events/' + ticketId).done(function(result){
+		if(typeof callback === 'function'){
+			callback(result);
+		}
+	});
+}
+
+model.getTicket = function (ticketId, callback) {
+	http().get('/support/ticket/' + ticketId).done(function(result){
 		if(typeof callback === 'function'){
 			callback(result);
 		}

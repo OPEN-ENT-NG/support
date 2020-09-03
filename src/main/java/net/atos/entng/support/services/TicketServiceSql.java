@@ -41,6 +41,11 @@ public interface TicketServiceSql extends CrudService {
 
 	public void listMyTickets(UserInfos user, Integer page, List<String> statuses, String school_id, String order, Integer nbTicketsPerPage, Handler<Either<String, JsonArray>> handler);
 
+	public void getMyTicket(UserInfos user, Integer id, Handler<Either<String, JsonArray>> handler);
+
+	public void getTicket(UserInfos user, Integer id, Handler<Either<String, JsonArray>> handler);
+
+
 	/**
 	 * If escalation status is "not_done" or "failed", and ticket status is new or opened,
 	 * update escalation status to "in_progress" and return the ticket with its attachments' ids and its comments.

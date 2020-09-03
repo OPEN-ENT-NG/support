@@ -191,7 +191,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 			.append(" LEFT JOIN support.bug_tracker_issues AS i ON t.id=i.ticket_id");
 
 		boolean oneApplicant = false;
-		String applicant = "ME";
+		String applicant;
 		boolean applicantIsMe = true;
 		if (applicants.size() == 1) {
 			applicant = applicants.get(0);
@@ -258,6 +258,46 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 	}
 
 	@Override
+	public void getTicket(UserInfos user, Integer id, Handler<Either<String, JsonArray>> handler) {
+		StringBuilder query = new StringBuilder();
+		query.append("SELECT t.*, u.username AS owner_name, ")
+				.append("i.content").append(bugTrackerType.getLastIssueUpdateFromPostgresqlJson()).append(" AS last_issue_update, ")
+				.append(" substring(t.description, 0, 101)  as short_desc,")
+				.append(" COUNT(*) OVER() AS total_results")
+				.append(" FROM support.tickets AS t")
+				.append(" INNER JOIN support.users AS u ON t.owner = u.id")
+				.append(" LEFT JOIN support.bug_tracker_issues AS i ON t.id=i.ticket_id");
+
+		JsonArray values = new JsonArray();
+		Function adminLocal = user.getFunctions().get(DefaultFunctions.ADMIN_LOCAL);
+		if (adminLocal != null) {
+			List<String> scopesList = adminLocal.getScope();
+			if(scopesList != null && !scopesList.isEmpty()) {
+				query.append(" WHERE ((t.school_id IN (");
+				for (String scope : scopesList) {
+					query.append("?,");
+					values.add(scope);
+				}
+				query.deleteCharAt(query.length() - 1);
+				query.append("))");
+
+				query.append(" OR t.owner = ?");
+				values.add(user.getUserId());
+				query.append(")");
+			}
+		}
+		else {
+			query.append(" WHERE t.school_id IN (?)");
+			values.add(user.getStructures().get(0)); // SUPER_ADMIN, has only 1 structure.
+		}
+
+		query.append(" AND t.id = ?");
+		values.add(id);
+
+		sql.prepared(query.toString(), values, validResultHandler(handler));
+	}
+
+	@Override
 	public void listMyTickets(UserInfos user, Integer page, List<String> statuses, String school_id, String order,
 							  Integer nbTicketsPerPage, Handler<Either<String, JsonArray>> handler) {
 		StringBuilder query = new StringBuilder();
@@ -286,6 +326,22 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 		query.append(" ORDER BY t.modified ").append(order)
 				.append(" LIMIT ").append(nbTicketsPerPage)
 				.append(" OFFSET ").append((page-1)*nbTicketsPerPage);
+
+		sql.prepared(query.toString(), values, validResultHandler(handler));
+	}
+
+	@Override
+	public void getMyTicket(UserInfos user, Integer id, Handler<Either<String, JsonArray>> handler) {
+		StringBuilder query = new StringBuilder();
+		query.append("SELECT t.*, u.username AS owner_name, substring(t.description, 0, 100) AS short_desc")
+				.append(", COUNT(*) OVER() AS total_results")
+				.append(" FROM support.tickets AS t")
+				.append(" INNER JOIN support.users AS u ON t.owner = u.id")
+				.append(" WHERE t.owner = ?");
+		JsonArray values = new JsonArray().add(user.getUserId());
+
+		query.append(" AND t.id = ?");
+		values.add(id);
 
 		sql.prepared(query.toString(), values, validResultHandler(handler));
 	}
