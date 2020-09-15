@@ -250,9 +250,10 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 			values.add(school_id);
 		}
 
-		query.append(" ORDER BY t.modified ").append(order)
-				.append(" LIMIT ").append(nbTicketsPerPage)
-				.append(" OFFSET ").append((page-1)*nbTicketsPerPage);
+		query.append(" ORDER BY t.modified ").append(order);
+		if (page > 0) {
+			query.append(" LIMIT ").append(nbTicketsPerPage).append(" OFFSET ").append((page-1)*nbTicketsPerPage);
+		}
 
 		sql.prepared(query.toString(), values, validResultHandler(handler));
 	}

@@ -419,9 +419,7 @@ function SupportController($scope, template, model, route, $location, orderByFil
 
 	// Update ticket
 	$scope.editTicket = function() {
-		$scope.editedTicket = _.find(model.tickets.all, function(ticket){
-			return ticket.id === $scope.ticket.id;
-		});
+		$scope.editedTicket = $scope.ticket;
 		template.open('main', 'edit-ticket');
 	};
 
@@ -444,7 +442,7 @@ function SupportController($scope, template, model, route, $location, orderByFil
 			notify.error('support.ticket.validation.error.duplicate.in.new.attachments');
 			ticket.processing = false;
 		}
-	}
+	};
 
 	$scope.updateTicket = function() {
 
@@ -523,7 +521,7 @@ function SupportController($scope, template, model, route, $location, orderByFil
 
 	$scope.isCreating = function() {
 		return (template.contains('main', 'create-ticket'));
-	}
+	};
 
 	$scope.isViewingEscalatedTicket = function() {
 		return template.contains('main', 'view-bugtracker-issue');
@@ -580,7 +578,7 @@ function SupportController($scope, template, model, route, $location, orderByFil
 	$scope.createAndEscalateTicket = function() {
 		$scope.escalateAfterCreation = true;
 		$scope.createTicket();
-	}
+	};
 
 	$scope.escalateTicketNow = function(thisTicket) {
 		if($scope.escalateAfterCreation){
@@ -589,7 +587,7 @@ function SupportController($scope, template, model, route, $location, orderByFil
 			$scope.escalateAfterCreation = false;
 			$scope.ticket = undefined;
 		}
-	}
+	};
 
 	$scope.openBugTrackerIssue = function() {
 		template.open('main', 'view-bugtracker-issue');
@@ -667,7 +665,7 @@ function SupportController($scope, template, model, route, $location, orderByFil
 	$scope.canEscalate = function(ticket){
 		const canEscalate = model.me.workflow.support.escalate || false;
 		return ($scope.isEscalationActivated === true && $scope.userIsLocalAdmin(ticket) === true && canEscalate);
-	}
+	};
 
 	$scope.userIsLocalAdmin = function(ticket){
 		// SUPER_ADMIN
@@ -697,7 +695,7 @@ function SupportController($scope, template, model, route, $location, orderByFil
 			$scope.processingData = false;
 			validationError(e);
 		});
-	}
+	};
 
 	// Pagination system functions
 	$scope.updatePagination = function() {
