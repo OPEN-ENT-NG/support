@@ -344,8 +344,8 @@ function SupportController($scope, template, model, route, $location, orderByFil
 	}.bind(this);
 
 	$scope.cancelCreateTicket = function() {
-		template.open('main', 'list-tickets');
-		template.open('filters', 'filters');
+		window.location.hash = '/list-tickets/';
+		$scope.displayTicketList();
 	};
 
 	/*
