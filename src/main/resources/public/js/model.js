@@ -240,7 +240,7 @@ model.getItemsIds = function (items) {
 	});
 
 	return itemArray;
-}
+};
 
 model.getProfile = function(userId, callback) {
 	http().get('/support/profile/' + userId).done(function(result) {
@@ -248,7 +248,7 @@ model.getProfile = function(userId, callback) {
 			callback(result);
 		}
 	});
-}
+};
 
 model.getEvents = function (ticketId, callback) {
 	http().get('/support/events/' + ticketId).done(function(result){
@@ -256,7 +256,7 @@ model.getEvents = function (ticketId, callback) {
 			callback(result);
 		}
 	});
-}
+};
 
 model.getTicket = function (ticketId, callback) {
 	http().get('/support/ticket/' + ticketId).done(function(result){
@@ -264,4 +264,4 @@ model.getTicket = function (ticketId, callback) {
 			callback(result);
 		}
 	});
-}
+};
