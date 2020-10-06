@@ -39,6 +39,9 @@ import net.atos.entng.support.services.UserService;
 
 import net.atos.entng.support.services.impl.TicketServiceNeo4jImpl;
 import org.entcore.common.controller.ControllerHelper;
+import org.entcore.common.events.EventHelper;
+import org.entcore.common.events.EventStore;
+import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.user.DefaultFunctions;
@@ -66,6 +69,7 @@ import fr.wseduc.webutils.request.RequestUtils;
 
 
 public class TicketController extends ControllerHelper {
+    static final String RESOURCE_NAME = "support";
 
     private static final String TICKET_CREATED_EVENT_TYPE = SUPPORT_NAME + "_TICKET_CREATED";
     private static final String TICKET_UPDATED_EVENT_TYPE = SUPPORT_NAME + "_TICKET_UPDATED";
@@ -75,12 +79,15 @@ public class TicketController extends ControllerHelper {
     private final UserService userService;
     private final EscalationService escalationService;
     private final Storage storage;
+    private final EventHelper eventHelper;
 
     public TicketController(TicketServiceSql ts, EscalationService es, UserService us, Storage storage) {
         ticketServiceSql = ts;
         userService = us;
         escalationService = es;
         this.storage = storage;
+        final EventStore eventStore = EventStoreFactory.getFactory().getEventStore(Support.class.getSimpleName());
+        this.eventHelper = new EventHelper(eventStore);
     }
 
     @Override
@@ -99,8 +106,8 @@ public class TicketController extends ControllerHelper {
                     ticket.put("event_count", 1);
                     JsonArray attachments = ticket.getJsonArray("attachments", null);
                     ticket.remove("attachments");
-                    ticketServiceSql.createTicket(ticket, attachments, user, I18n.acceptLanguage(request),
-                            getCreateOrUpdateTicketHandler(request, user, ticket, null));
+                    final Handler<Either<String,JsonObject>> handler = getCreateOrUpdateTicketHandler(request, user, ticket, null);
+                    ticketServiceSql.createTicket(ticket, attachments, user, I18n.acceptLanguage(request), eventHelper.onCreateResource(request, RESOURCE_NAME, handler));
                 });
             } else {
                 log.debug("User not found in session.");
