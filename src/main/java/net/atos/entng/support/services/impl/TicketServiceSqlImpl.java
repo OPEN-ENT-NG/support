@@ -738,7 +738,9 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
      * @param updateDate
      */
     public void updateTicketIssueUpdateDateAndStatus(Long ticketId, String updateDate, Long status, Handler<Either<String, JsonObject>> handler){
-        String query = "update support.tickets set issue_update_date = to_timestamp(?,?)::timestamp, status = ? where id = ? ";
+        String query = "update support.tickets set issue_update_date = to_timestamp(?,?)::timestamp, status = ?, "+
+			" modified = timezone('UTC', NOW()), event_count = event_count + 1 "+
+			" where id = ? ";
         JsonArray values = new JsonArray();
         final DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
         df.setTimeZone(TimeZone.getTimeZone("GMT"));
