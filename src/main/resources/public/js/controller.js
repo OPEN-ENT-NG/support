@@ -100,9 +100,19 @@ function SupportController($scope, template, model, route, $location, orderByFil
 
 		// Get user's Schools to build filter
 		$scope.schools = [];
-		for (let i=0; i < model.me.structures.length; i++) {
-			$scope.schools.push({id: model.me.structures[i], name: model.me.structureNames[i]});
-		}
+		model.getAdministeredStructures(function(result){
+			if( angular.isArray(result) && result.length > 0 ) {
+				// Use structures which user has admin access on.
+				for (let i=0; i < result.length; i++) {
+					$scope.schools.push({id: result[i].id, name: result[i].name});
+				}
+			} else {
+				// Default to user's school
+				for (let i=0; i < model.me.structures.length; i++) {
+					$scope.schools.push({id: model.me.structures[i], name: model.me.structureNames[i]});
+				}
+			}
+		});
 
 		// filters initalization
 		$scope.display = {};

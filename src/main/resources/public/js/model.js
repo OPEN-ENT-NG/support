@@ -265,3 +265,13 @@ model.getTicket = function (ticketId, callback) {
 		}
 	});
 };
+
+model.getAdministeredStructures = function(callback) {
+	if(typeof callback === 'function'){
+		http().get('/directory/structure/admin/list').done(function(data) {
+			callback( data );
+		}).error(function(err) {
+			callback( [] );
+		});
+	}
+};
