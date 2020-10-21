@@ -163,6 +163,12 @@ Ticket.prototype.getAttachments = function(callback) {
 	}.bind(this));
 };
 
+Ticket.prototype.isAttachmentDuplicated = function(attachment) {
+	return typeof _.find( this.attachments, function(att) {
+    return (att.name == attachment.filename && att.size == attachment.filesize );
+	}) !== "undefined";
+}
+
 Ticket.prototype.getBugTrackerIssue = function(callback) {
 	http().get('/support/ticket/' + this.id + '/bugtrackerissue').done(function(result){
 		if(result.length > 0 && result[0] && result[0].content) {
