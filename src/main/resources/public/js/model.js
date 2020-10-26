@@ -164,9 +164,12 @@ Ticket.prototype.getAttachments = function(callback) {
 };
 
 Ticket.prototype.isAttachmentDuplicated = function(attachment) {
-	return typeof _.find( this.attachments, function(att) {
-    return (att.name == attachment.filename && att.size == attachment.filesize );
-	}) !== "undefined";
+	var ret = false;
+	this.attachments && this.attachments.forEach( function(att){
+		if( att && att.name == attachment.filename && att.size == attachment.filesize )
+			ret = true;
+	});
+	return ret;
 }
 
 Ticket.prototype.getBugTrackerIssue = function(callback) {
