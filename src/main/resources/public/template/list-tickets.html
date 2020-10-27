@@ -31,14 +31,14 @@
 								'five': !canEscalate() || !atLeastOneTicketEscalated()}">
 						<i18n>support.ticket.table.subject</i18n>
 					</th>
-					<th class="one" ng-click="switchSortBy(sortCategoryFunction)"
+					<th class="one" ng-click="switchSortBy('category')"
 					ng-class="{'order-by-reversed': (sort.expression === sortCategoryFunction && sort.reverse === false),
 								'order-by': (sort.expression === sortCategoryFunction && sort.reverse === true)}">
 						<i18n>support.ticket.table.category</i18n>
 					</th>
-					<th class="one" ng-click="switchSortBy('owner_name')"
-					ng-class="{'order-by-reversed': (sort.expression === 'owner_name' && sort.reverse === false),
-								'order-by': (sort.expression === 'owner_name' && sort.reverse === true)}">
+					<th class="one" ng-click="switchSortBy('owner')"
+					ng-class="{'order-by-reversed': (sort.expression === 'owner' && sort.reverse === false),
+								'order-by': (sort.expression === 'owner' && sort.reverse === true)}">
 						<i18n>support.ticket.table.author</i18n>
 					</th>
                     <th class="one" ><i18n>support.label.profil</i18n></th>
@@ -52,9 +52,9 @@
 								'order-by': (sort.expression === 'event_count' && sort.reverse === true)}">
                         <i18n>support.ticket.table.event.count</i18n>
                     </th>
-					<th ng-if="canEscalate() && atLeastOneTicketEscalated()" class="one" ng-click="switchSortBy('last_issue_update')"
-					ng-class="{'order-by-reversed': (sort.expression === 'last_issue_update' && sort.reverse === false),
-								'order-by': (sort.expression === 'last_issue_update' && sort.reverse === true)}">
+					<th ng-if="canEscalate() && atLeastOneTicketEscalated()" class="one" ng-click="switchSortBy('issue_update_date')"
+					ng-class="{'order-by-reversed': (sort.expression === 'issue_update_date' && sort.reverse === false),
+								'order-by': (sort.expression === 'issue_update_date' && sort.reverse === true)}">
 						<i18n>support.ticket.table.last.update.of.escalated.ticket</i18n>
 					</th>
 				</tr>
