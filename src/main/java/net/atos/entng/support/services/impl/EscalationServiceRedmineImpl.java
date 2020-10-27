@@ -145,7 +145,8 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 			proxyIsDefined = true;
 			options.setDefaultHost(proxyHost).setDefaultPort(proxyPort);
 		} else {
-			options.setDefaultHost(redmineHost).setDefaultPort(redminePort);
+			options.setDefaultHost(redmineHost).setDefaultPort(redminePort)
+					.setSsl(config.getBoolean("bug-tracker-ssl", (redminePort == 443)));
 		}
 		log.info("[Support] proxyHost: " + proxyHost);
 		log.info("[Support] proxyPort: " + proxyPort);
