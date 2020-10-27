@@ -500,6 +500,7 @@ public class TicketController extends ControllerHelper {
         List<String> statuses = params.getAll("status");
         List<String> applicants = params.getAll("applicant");
         String school_id = params.get("school");
+        String sortBy = params.get("sortBy");
         String order = params.get("order");
         Integer nbTicketsPerPage = config.getInteger("nbTicketsPerPage", 25);
 
@@ -507,7 +508,7 @@ public class TicketController extends ControllerHelper {
             if (user != null) {
                 Map<String, UserInfos.Function> functions = user.getFunctions();
                 if (functions.containsKey(DefaultFunctions.ADMIN_LOCAL) || functions.containsKey(DefaultFunctions.SUPER_ADMIN)) {
-                    ticketServiceSql.listTickets(user, page, statuses, applicants, school_id, order, nbTicketsPerPage, event -> {
+                    ticketServiceSql.listTickets(user, page, statuses, applicants, school_id, sortBy, order, nbTicketsPerPage, event -> {
                         // getting the profile for users
                         if( event.isRight()){
                             final JsonArray jsonListTickets = event.right().getValue();
@@ -547,7 +548,7 @@ public class TicketController extends ControllerHelper {
                         }
                     });
                 } else {
-                    ticketServiceSql.listMyTickets(user, page, statuses, school_id, order, nbTicketsPerPage, arrayResponseHandler(request));
+                    ticketServiceSql.listMyTickets(user, page, statuses, school_id, sortBy, order, nbTicketsPerPage, arrayResponseHandler(request));
                 }
             } else {
                 log.debug("User not found in session.");

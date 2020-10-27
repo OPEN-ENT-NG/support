@@ -180,7 +180,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 
 	@Override
 	public void listTickets(UserInfos user, Integer page, List<String> statuses, List<String> applicants, String school_id,
-							String order, Integer nbTicketsPerPage, Handler<Either<String, JsonArray>> handler) {
+							String sortBy, String order, Integer nbTicketsPerPage, Handler<Either<String, JsonArray>> handler) {
 		StringBuilder query = new StringBuilder();
 		query.append("SELECT t.*, u.username AS owner_name, ")
 			.append("i.content").append(bugTrackerType.getLastIssueUpdateFromPostgresqlJson()).append(" AS last_issue_update, ")
@@ -250,7 +250,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 			values.add(school_id);
 		}
 
-		query.append(" ORDER BY t.modified ").append(order);
+		query.append(" ORDER BY t.").append(sortBy).append(" ").append(order);
 		if (page > 0) {
 			query.append(" LIMIT ").append(nbTicketsPerPage).append(" OFFSET ").append((page-1)*nbTicketsPerPage);
 		}
@@ -299,8 +299,8 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 	}
 
 	@Override
-	public void listMyTickets(UserInfos user, Integer page, List<String> statuses, String school_id, String order,
-							  Integer nbTicketsPerPage, Handler<Either<String, JsonArray>> handler) {
+	public void listMyTickets(UserInfos user, Integer page, List<String> statuses, String school_id, String sortBy,
+							  String order, Integer nbTicketsPerPage, Handler<Either<String, JsonArray>> handler) {
 		StringBuilder query = new StringBuilder();
 		query.append("SELECT t.*, u.username AS owner_name, substring(t.description, 0, 100) AS short_desc")
 				.append(", COUNT(*) OVER() AS total_results")
@@ -324,7 +324,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 			values.add(school_id);
 		}
 
-		query.append(" ORDER BY t.modified ").append(order)
+		query.append(" ORDER BY t.").append(sortBy).append(" ").append(order)
 				.append(" LIMIT ").append(nbTicketsPerPage)
 				.append(" OFFSET ").append((page-1)*nbTicketsPerPage);
 

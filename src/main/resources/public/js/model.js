@@ -224,7 +224,7 @@ model.build = function() {
 	this.makeModels([ Ticket, Comment, Attachment ]);
 
 	this.collection(Ticket, {
-		sync : function(page= 1, filters = [true,true,true,true,true], school = '*', order = true) {
+		sync : function(page= 1, filters = [true,true,true,true,true], school = '*', sortBy= 'modified', order = true) {
 			const queryParams = '?page=' + page
 				+ (filters[1]?'&status=1':'')
 				+ (filters[2]?'&status=2':'')
@@ -233,6 +233,7 @@ model.build = function() {
 				+ (filters.mydemands?'&applicant=ME':'')
 				+ (filters.otherdemands?'&applicant=OTHER':'')
 				+ '&school=' + school
+				+ '&sortBy=' + sortBy
 				+ '&order=' + (order?'DESC':'ASC');
 			http().get('/support/tickets' + queryParams).done(function (tickets) {
 				this.load(tickets);

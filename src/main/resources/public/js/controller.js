@@ -153,7 +153,7 @@ function SupportController($scope, template, model, route, $location, orderByFil
 		$scope.onStatusChange = function () {
 			$scope.checkAll();
 			$scope.goPage(1, true);
-		}
+		};
 
 		// Pagination system
 		$scope.pages = [1];
@@ -176,6 +176,7 @@ function SupportController($scope, template, model, route, $location, orderByFil
 			$scope.sort.expression = expression;
 			$scope.sort.reverse = false;
 		}
+		$scope.goPage(1, true);
 	};
 
 	// View tickets
@@ -700,7 +701,7 @@ function SupportController($scope, template, model, route, $location, orderByFil
 	$scope.updateStatus = function(newStatus){
 		model.updateTicketStatus($scope.tickets.selection(), newStatus, function() {
 			notify.info('support.comment.status.modification.successful');
-			model.tickets.sync($scope.currentPage, $scope.display.filters, $scope.display.filters.school_id, $scope.sort.reverse);
+			model.tickets.sync($scope.currentPage, $scope.display.filters, $scope.display.filters.school_id, $scope.sort.expression, $scope.sort.reverse);
 		}, function (e) {
 			$scope.processingData = false;
 			validationError(e);
@@ -752,10 +753,10 @@ function SupportController($scope, template, model, route, $location, orderByFil
 		// At start or on status change
 		if (statusChanged) {
 			$scope.registerViewTicketListEvent();
-			model.tickets.sync($scope.currentPage, $scope.display.filters, $scope.display.filters.school_id, $scope.sort.reverse);
+			model.tickets.sync($scope.currentPage, $scope.display.filters, $scope.display.filters.school_id, $scope.sort.expression, $scope.sort.reverse);
 		}
 		else {
-			model.tickets.sync($scope.currentPage, $scope.display.filters, $scope.display.filters.school_id, $scope.sort.reverse);
+			model.tickets.sync($scope.currentPage, $scope.display.filters, $scope.display.filters.school_id, $scope.sort.expression, $scope.sort.reverse);
 			$scope.updatePagination();
 		}
 	};
