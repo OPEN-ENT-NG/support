@@ -675,7 +675,7 @@ function SupportController($scope, template, model, route, $location, orderByFil
 
 	$scope.canEscalate = function(ticket){
 		const canEscalate = model.me.workflow.support.escalate || false;
-		return ($scope.isEscalationActivated === true && $scope.userIsLocalAdmin(ticket) === true && canEscalate);
+		return ($scope.isEscalationActivated === true && canEscalate);
 	};
 
 	$scope.userIsLocalAdmin = function(ticket){
