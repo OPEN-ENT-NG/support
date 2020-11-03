@@ -6,7 +6,20 @@
             <option ng-selected="display.filters.school_id === school.id" ng-repeat="school in schools | orderBy:'name'" value="[[school.id]]">[[school.name]]</option>
         </select>
     </div>
-    <div class="cell checkbox-filters">
+    <div class="cell two min-width-search-bar">
+        <div class="search-bar">
+            <i class="search" style="margin: 0; padding:20px;"></i>
+            <input class="eight search-input"
+                   type="text"
+                   ng-model="display.filters.ticket_id"
+                   ng-keyup="$event.keyCode == 13 ? inputSearchTicketNumber(display.filters.ticket_id) : setNotFoundFalse()"
+                   i18n-placeholder="support.ticket.search.number">
+        </div>
+    </div>
+    <div class="cell vertical-spacing" ng-if="notFoundSearchInput">
+        <span class="warning"><i18n>support.ticket.search.notFound1</i18n>[[ display.filters.ticket_id ]]<i18n>support.ticket.search.notFound2</i18n></span>
+    </div>
+    <div class="cell checkbox-filters vertical-spacing">
         <div class="cell">
             <i18n>support.filter.tickets.by.status</i18n>
         </div>
