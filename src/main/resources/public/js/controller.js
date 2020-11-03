@@ -15,20 +15,7 @@ function SupportController($scope, template, model, route, $location, orderByFil
 
 	route({
 		displayTicket: function (params) {
-			let hasTicket = [];
-			if(model.tickets.all)
-				hasTicket = model.tickets.all.filter(ticket => {
-					return ticket.id === params.ticketId;
-				});
-			if (hasTicket.length === 0){
-				model.getTicket(params.ticketId, function(result) {
-					$scope.ticket = new Ticket(result[0]);
-					$scope.openTicket(params.ticketId);
-				});
-			}else{
-				$scope.ticket = hasTicket[0];
-				$scope.openTicket(params.ticketId);
-			}
+			$scope.searchTicketNumber(params.ticketId);
 		},
 		listTickets: function() {
 			if($scope.userIsLocalAdmin()) {
@@ -128,9 +115,11 @@ function SupportController($scope, template, model, route, $location, orderByFil
 
 		$scope.display.filters.school_id ="*";
 
+		$scope.display.filters.ticket_id ="";
+
 		$scope.switchAll = function(){
 			for(var filter in $scope.display.filters){
-				if (filter !== "school_id") {
+				if (filter !== "school_id" && filter !== "ticket_id") {
 					$scope.display.filters[filter] = $scope.display.filters.all;
 				}
 			}
@@ -181,6 +170,7 @@ function SupportController($scope, template, model, route, $location, orderByFil
 
 	// View tickets
 	$scope.displayTicketList = function() {
+		$scope.notFound = false;
 		$scope.display.histo = false;
 		$scope.ticket = new Ticket();
 		$scope.display.filters.all = true;
@@ -206,20 +196,57 @@ function SupportController($scope, template, model, route, $location, orderByFil
 		});
 	};
 
-	$scope.openTicket = function(ticketId) {
+	$scope.inputSearchTicketNumber = function (ticketId) {
+		$scope.searchInput = true;
+		$scope.notFoundSearchInput = false;
+		$scope.searchTicketNumber(ticketId);
+	};
+
+	$scope.setNotFoundFalse = function () {
+		$scope.notFoundSearchInput = false;
+	};
+
+	$scope.searchTicketNumber = function (ticketId) {
+		let hasTicket = [];
 		const id = parseInt(ticketId, 10);
+		if(!isNaN(id)){
+			if(model.tickets.all)
+				hasTicket = model.tickets.all.filter(ticket => {
+					return ticket.id === id;
+				});
+			if (hasTicket.length === 0){
+				model.getTicket(ticketId, function(result) {
+					$scope.ticket = new Ticket(result[0]);
+					$scope.openTicket(id);
+				});
+			}else{
+				$scope.ticket = hasTicket[0];
+				$scope.openTicket(id);
+			}
+		}else{
+			notify.info('support.ticket.search.warning');
+		}
+	};
+
+	$scope.openTicket = function(id) {
 		if(!$scope.ticket || ($scope.ticket && $scope.ticket.id !== id))
 			$scope.ticket = _.find(model.tickets.all, function(ticket){
 				return ticket.id === id;
 			});
 		if(!$scope.ticket) {
-			$scope.notFound = true;
+			if($scope.searchInput){
+				$scope.notFoundSearchInput = true;
+				$scope.searchInput = false;
+			}else{
+				$scope.notFound = true;
+			}
+			$scope.$apply();
 			return;
 		}
 		template.open('main', 'view-ticket');
 		$scope.ticket.getAttachments();
 		$scope.ticket.getComments(function() {
-			$scope.initHisto(ticketId);
+			$scope.initHisto(id.toString());
 		});
 		model.getProfile($scope.ticket.owner, function(result) {
 			$scope.ticket.profile = result.profile;
@@ -266,7 +293,7 @@ function SupportController($scope, template, model, route, $location, orderByFil
 								comment.isHistory = true;
 								comment.owner_name = btComment.user.name;
 								$scope.ticket.comments.push(comment);
-							};
+							}
 						}
 					});
 				}
@@ -344,6 +371,7 @@ function SupportController($scope, template, model, route, $location, orderByFil
 		$scope.createProtectedCopies($scope.ticket, true, function() {
 			$scope.ticket.id=null;
 			template.open('main', 'list-tickets');
+			template.open('filters', 'filters');
 			$scope.ticket.processing = false;
 			$scope.ticket.createTicket($scope.ticket, function() {
 				thisTicket.newAttachments = [];

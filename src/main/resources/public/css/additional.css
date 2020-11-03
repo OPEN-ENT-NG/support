@@ -55,3 +55,20 @@
 
 .pagination li:hover:not(.active) {background-color: #ddd;}
 
+.search-bar {
+    border-radius: 50px;
+    height: 50px;
+    box-shadow: 0 0 5px grey;
+    background-color: white;
+    display: flex;
+    align-items: center;
+}
+.search-input {
+    margin-bottom: 0 !important;
+    border: unset !important;
+    box-shadow: none;
+}
+.min-width-search-bar{
+    min-width: 310px;
+}
+
