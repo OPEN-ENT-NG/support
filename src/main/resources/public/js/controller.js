@@ -411,7 +411,10 @@ function SupportController($scope, template, model, route, $location, orderByFil
 				return function (result) {
 					// Exemple of result : {_id: "db1f060a-5c0e-45fa-8318-2d8b33873747", status: "ok"}
 
-					if (result && result.status === "ok") {
+					/// NOTE 2020-11-09 : 
+					// i never get a document with 'status: "ok"' here, so i instead test the value of _id.
+					// TODO remove commented code and explanations if correction accepted.
+					if (result && typeof result._id === "string" /*&& result.status === "ok"*/) {
 						console.log("createProtectedCopy OK for attachment " + anAttachment._id + ". Id of protected copy is:" + result._id);
 						remainingAttachments = remainingAttachments - 1;
 
