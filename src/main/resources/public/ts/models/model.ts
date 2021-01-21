@@ -1,4 +1,9 @@
 // Enum based on the following article : https://stijndewitt.wordpress.com/2014/01/26/enums-in-javascript/
+
+import {_, http} from "entcore";
+
+declare let model: any;
+
 model.ticketStatusEnum = {
 	NEW: 1,
 	OPENED: 2,
@@ -30,15 +35,17 @@ if (Object.freeze) {
 	Object.freeze(model.escalationStatuses);
 }
 
+export let models: any = {};
 
-function Comment(){}
-
-function Attachment(){}
-
-function Ticket(){
-	this.collection(Comment);
-	this.collection(Attachment);
+models.Ticket = function (value?: any){
+	this.collection(models.Comment);
+	this.collection(models.Attachment);
 }
+
+models.Comment = function (){}
+
+models.Attachment = function (){}
+
 
 model.isEscalationActivated = function(callback){
 	http().get('/support/escalation').done(function(result){
@@ -65,7 +72,7 @@ model.isBugTrackerCommDirect = function(callback){
 };
 
 
-Ticket.prototype.createTicket = function(data, callback) {
+models.Ticket.prototype.createTicket = function(data, callback) {
 	http().postJson('/support/ticket', data).done(function(result){
 		this.updateData(result);
 		model.tickets.push(this);
@@ -75,7 +82,7 @@ Ticket.prototype.createTicket = function(data, callback) {
 	}.bind(this));
 };
 
-Ticket.prototype.updateTicket = function(data, callback) {
+models.Ticket.prototype.updateTicket = function(data, callback) {
 	http().putJson('/support/ticket/' + this.id, data).done(function(result){
 		this.updateData(result);
 		this.trigger('change');
@@ -85,7 +92,7 @@ Ticket.prototype.updateTicket = function(data, callback) {
 	}.bind(this));
 };
 
-Ticket.prototype.escalateTicket = function(callback, errorCallback, badRequestCallback) {
+models.Ticket.prototype.escalateTicket = function(callback, errorCallback, badRequestCallback) {
 	http().postJson('/support/ticket/' + this.id + '/escalate', null, {requestName: 'escalation-request' })
 		.done(function(result){
 				this.last_issue_update = result.issue.updated_on;
@@ -114,12 +121,15 @@ Ticket.prototype.escalateTicket = function(callback, errorCallback, badRequestCa
 		}.bind(this));
 };
 
-Ticket.prototype.toJSON = function() {
+models.Ticket.prototype.toJSON = function() {
 	const json = {
 		subject: this.subject,
 		description: this.description,
 		category: this.category,
-		school_id: this.school_id
+		school_id: this.school_id,
+		status: undefined,
+		newComment: undefined,
+		attachments: undefined
 	};
 	if(this.status !== undefined) {
 		json.status = this.status;
@@ -141,7 +151,7 @@ Ticket.prototype.toJSON = function() {
 	return json;
 };
 
-Ticket.prototype.getComments = function(callback) {
+models.Ticket.prototype.getComments = function(callback) {
 	http().get('/support/ticket/' + this.id + '/comments').done(function(result){
 		if(result.length > 0) {
 			this.comments.load(result);
@@ -152,7 +162,7 @@ Ticket.prototype.getComments = function(callback) {
 	}.bind(this));
 };
 
-Ticket.prototype.getAttachments = function(callback) {
+models.Ticket.prototype.getAttachments = function(callback) {
 	http().get('/support/ticket/' + this.id + '/attachments').done(function(result){
 		if(result.length > 0) {
 			this.attachments.load(result);
@@ -163,7 +173,7 @@ Ticket.prototype.getAttachments = function(callback) {
 	}.bind(this));
 };
 
-Ticket.prototype.isAttachmentDuplicated = function(attachment) {
+models.Ticket.prototype.isAttachmentDuplicated = function(attachment) {
 	var ret = false;
 	this.attachments && this.attachments.forEach( function(att){
 		if( att && att.name == attachment.filename && att.size == attachment.filesize )
@@ -172,7 +182,7 @@ Ticket.prototype.isAttachmentDuplicated = function(attachment) {
 	return ret;
 }
 
-Ticket.prototype.getBugTrackerIssue = function(callback) {
+models.Ticket.prototype.getBugTrackerIssue = function(callback) {
 	http().get('/support/ticket/' + this.id + '/bugtrackerissue').done(function(result){
 		if(result.length > 0 && result[0] && result[0].content) {
 			// JSON type in PostgreSQL is sent as a JSON string. Parse it
@@ -201,7 +211,7 @@ Ticket.prototype.getBugTrackerIssue = function(callback) {
 	}.bind(this));
 };
 
-Ticket.prototype.commentIssue = function(callback, errorCallback) {
+models.Ticket.prototype.commentIssue = function(callback, errorCallback) {
 	http().postJson('/support/issue/' + this.issue.id + '/comment', {content: this.issue.newComment})
 		.done(function(result){
 				this.issue = result.issue;
@@ -221,10 +231,10 @@ Ticket.prototype.commentIssue = function(callback, errorCallback) {
 
 model.build = function() {
 	model.me.workflow.load(['support']);
-	this.makeModels([ Ticket, Comment, Attachment ]);
+	this.makeModels(models);
 
-	this.collection(Ticket, {
-		sync : function(page= 1, filters = [true,true,true,true,true], school = '*', sortBy= 'modified', order = true) {
+	this.collection(models.Ticket, {
+		sync : function(page= 1, filters: any = [true,true,true,true,true], school = '*', sortBy= 'modified', order = true, callback) {
 			const queryParams = '?page=' + page
 				+ (filters[1]?'&status=1':'')
 				+ (filters[2]?'&status=2':'')
@@ -237,6 +247,9 @@ model.build = function() {
 				+ '&order=' + (order?'DESC':'ASC');
 			http().get('/support/tickets' + queryParams).done(function (tickets) {
 				this.load(tickets);
+				if(typeof callback === 'function'){
+					callback();
+				}
 			}.bind(this));
 		},
 		behaviours: 'support'
