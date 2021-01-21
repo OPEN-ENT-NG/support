@@ -1,3 +1,5 @@
+import {Behaviours, model} from "entcore";
+
 const supportBehaviours = {
 	workflow: {
 		createTicket: 'net.atos.entng.support.controllers.TicketController|createTicket',
