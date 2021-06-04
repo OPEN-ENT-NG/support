@@ -1,4 +1,4 @@
-<article class="twelve cell details">
+<article class="twelve cell details" guard-root>
 	<form class="row">
 		<div class="row">
 			<label class="two cell"><i18n>support.ticket.id</i18n></label>
@@ -6,7 +6,7 @@
 			<label class="three cell"><i18n>support.ticket.status</i18n></label>
 			<span class="three cell">
 				<select ng-model="editedTicket.status"
-					ng-options="object.value as object.i18nValue for (key, object) in statuses">
+					ng-options="object.value as object.i18nValue for (key, object) in statuses" input-guard>
 				</select>
 			</span>
 		</div>
@@ -25,7 +25,7 @@
 				<label class="two cell"><i18n>support.ticket.school</i18n></label>
 				<span class="four cell">
 					<select ng-model="ticket.school_id" 
-						ng-options="school.id as school.name for school in schools">
+						ng-options="school.id as school.name for school in schools" input-guard>
 					</select>
 				</span>
 			</div>
@@ -37,25 +37,25 @@
 			<label class="two cell"><i18n>support.ticket.category</i18n></label>
 			<span class="ten cell">
 				<select ng-model="editedTicket.category" 
-					ng-options="app.address as app.displayName for app in apps">
+					ng-options="app.address as app.displayName for app in apps" input-guard>
 				</select>
 			</span>
 		</div>
 		<div class="row">
 			<label class="two cell"><i18n>support.ticket.subject</i18n></label>
-			<input class="ten cell" type="text" ng-model="editedTicket.subject" />
+			<input class="ten cell" type="text" ng-model="editedTicket.subject" input-guard/>
 		</div>
 		<div class="row">
 			<label class="two cell"><i18n>support.ticket.description</i18n></label>
 			<div class="ten cell">
-				<textarea ng-model="editedTicket.description"></textarea>
+				<textarea ng-model="editedTicket.description" input-guard></textarea>
 			</div>
 		</div>
 
 		<div class="row">
 			<label class="two cell"><i18n>support.ticket.new.comment</i18n></label>
 			<div class="ten cell">
-				<textarea ng-model="editedTicket.newComment"></textarea>
+				<textarea ng-model="editedTicket.newComment" input-guard></textarea>
 			</div>
 			<div class="ten cell right-magnet" ng-if="ticket.attachments !== undefined && !ticket.attachments.isEmpty()">
 				<br>
@@ -71,8 +71,8 @@
 		</div>
 		<div class="row">
 			<div ng-if="!editedTicket.processing">
-				<button class="right-magnet" ng-click="updateTicket()" translate content="support.ticket.save"></button>
-				<button class="right-magnet cancel" ng-click="cancelEditTicket()" translate content="support.ticket.cancel"></button>
+				<button class="right-magnet" reset-guard="updateTicket()" translate content="support.ticket.save"></button>
+				<button class="right-magnet cancel" navigation-trigger="cancelEditTicket()" translate content="support.ticket.cancel"></button>
 			</div>
 			<button ng-if="editedTicket.processing === true" class="right-magnet disabled" disabled><i18n>support.ticket.processing</i18n></button>
 		</div>
