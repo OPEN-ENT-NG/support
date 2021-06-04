@@ -343,7 +343,7 @@ export const SupportController: Controller = ng.controller('SupportController',
 				.value();
 		};
 
-		$scope.createTicket = function() {
+		$scope.createTicket = function(){
 			$scope.ticket.event_count = 1;
 			$scope.ticket.processing = true;
 
@@ -478,8 +478,7 @@ export const SupportController: Controller = ng.controller('SupportController',
 			}
 		};
 
-		$scope.updateTicket = function() {
-
+		$scope.updateTicket = function(){
 			$scope.checkUpdateTicket($scope.editedTicket);
 			if(!$scope.editedTicket.processing){
 				return;
@@ -535,9 +534,9 @@ export const SupportController: Controller = ng.controller('SupportController',
 
 					$scope.ticket.newComment = '';
 					$scope.ticket.processing = false;
-
 					template.open('main', 'view-ticket');
 				});
+
 			});
 
 		}.bind(this);
@@ -609,7 +608,7 @@ export const SupportController: Controller = ng.controller('SupportController',
 			$scope.ticket = undefined;
 		};
 
-		$scope.createAndEscalateTicket = function() {
+		$scope.createAndEscalateTicket = function(){
 			$scope.escalateAfterCreation = true;
 			$scope.createTicket();
 		};

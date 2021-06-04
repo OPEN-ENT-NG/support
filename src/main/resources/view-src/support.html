@@ -9,13 +9,13 @@
 	<link href="/support/public/css/additional.css" rel="stylesheet">
 	<script type="text/ng-template" id="empty"></script>
 </head>
-<body ng-controller="SupportController" class="support">
+<body ng-controller="SupportController" class="support" guard-root>
 	<portal ng-if="!notFound">
 		<div class="row">
 				<div class="twelve cell">
 					<div class="six cell">
 						<h1>
-							<a href="support#/list-tickets" ng-click="displayTicketList()">
+							<a href="support#/list-tickets" navigation-trigger="displayTicketList()">
 								<i class="support"></i>
 								<i18n>support.title</i18n></a>
 						</h1>
@@ -45,7 +45,7 @@
                             </button>
                         </div>
                         <div ng-if="isCreating()">
-                            <button ng-click="cancelCreateTicket()" class="cell right-magnet">
+                            <button navigation-trigger="cancelCreateTicket()" class="cell right-magnet">
                                 <i18n>support.ticket.suivi</i18n><span>[["&nbsp;(" + tickets.size() + ")"]]</span>
                             </button>
                         </div>
