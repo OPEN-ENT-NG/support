@@ -1,4 +1,4 @@
-<article class="twelve cell">
+<article class="twelve cell" guard-root guard-ignore-template>
 	<form class="row">
 		<div class="row">
 			<label class="two cell center"><i18n>support.ticket.category</i18n></label>
@@ -20,12 +20,12 @@
 		</div>
 		<div class="row">
 			<label class="two cell center"><i18n>support.ticket.subject</i18n></label>
-			<input class="ten cell" type="text" ng-model="ticket.subject" />
+			<input class="ten cell" type="text" ng-model="ticket.subject" input-guard/>
 		</div>
 		<div class="row">
 			<label class="two cell center"><i18n>support.ticket.description</i18n></label>
-			<div class="ten cell">
-				<textarea ng-model="ticket.description"></textarea>
+			<div class="ten cell" input-guard>
+				<textarea ng-model="ticket.description" input-guard></textarea>
 			</div>
 		</div>
 		<div class="row ">
@@ -37,9 +37,9 @@
 		</div>
 		<div class="row">
 			<div ng-if="!ticket.processing">
-				<button class="right-magnet" ng-if="isEscalationActivated && canEscalate(ticket)" ng-click="createAndEscalateTicket()" translate content="support.ticket.save.and.escalate"></button>
-				<button class="right-magnet" ng-click="createTicket()" translate content="support.ticket.save"></button>
-				<button class="right-magnet cancel" ng-click="cancelCreateTicket()" translate content="support.ticket.cancel"></button>
+				<button class="right-magnet" ng-if="isEscalationActivated && canEscalate(ticket)" reset-guard="createAndEscalateTicket()" translate content="support.ticket.save.and.escalate"></button>
+				<button class="right-magnet" reset-guard="createTicket()" guard-ignore-template translate content="support.ticket.save"></button>
+				<button class="right-magnet cancel" navigation-trigger="cancelCreateTicket()" translate content="support.ticket.cancel"></button>
 			</div>
 			<button ng-if="ticket.processing === true" class="right-magnet disabled" disabled><i18n>support.ticket.processing</i18n></button>
 		</div>
