@@ -13,6 +13,13 @@
 .centered {
     text-align: center;
 }
+
+/* table component */
+.list-view-subject {
+    width: 500px;
+    display: flex
+}
+
 /* attachment component */
 .support-attachment .found-resources {
     height: unset!important;
