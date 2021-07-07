@@ -13,6 +13,12 @@
 .centered {
     text-align: center;
 }
+/* attachment component */
+.support-attachment .found-resources {
+    height: unset!important;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
 
 /*Centrage label ticket 10892*/
 .two.cell.center{
