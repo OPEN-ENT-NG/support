@@ -14,7 +14,7 @@
 			<span class="ten cell">
 				<select ng-model="ticket.school_id"
 					ng-init="ticket.school_id = schools[0].id"
-					ng-options="school.id as school.name for school in schools">
+					ng-options="school.id as school.name for school in schools | orderBy:'name'">
 				</select>
 			</span>
 		</div>
