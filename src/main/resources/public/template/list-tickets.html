@@ -64,8 +64,14 @@
                     <td ><input type="checkbox" ng-model="ticket.selected"></td>
                     <td class="one centered" ng-click="viewTicket(ticket.id)">[[ticket.id]]</td>
 					<td class="one" ng-click="viewTicket(ticket.id)">[[getStatusLabel(ticket.status)]]</td>
-					<td ng-class="canEscalate() && atLeastOneTicketEscalated() ? three : four" ng-click="viewTicket(ticket.id)"><b>[[ticket.subject]]</b>&nbsp;[[ticket.short_desc]]
-                        <span ng-show="ticket.short_desc.length >= 99">...</span></td>
+					<td ng-class="canEscalate() && atLeastOneTicketEscalated() ? three : four" ng-click="viewTicket(ticket.id)">
+						<div class="list-view-subject">
+							<b class="ellipsis">[[ticket.subject]]</b>
+							<span class="ellipsis">&nbsp;[[ticket.short_desc]]
+								<span ng-show="ticket.short_desc.length >= 99">...</span>
+							</span>
+						</div>
+					</td>
 					<td class="one" ng-click="viewTicket(ticket.id)">[[getCategoryLabel(ticket.category)]]</td>
 					<td class="one" ng-click="viewTicket(ticket.id)"><a href="/userbook/annuaire#[[ticket.owner]]">[[ticket.owner_name]]</a></td>
                     <td class="one" >[[ticket.profile]]</td>
