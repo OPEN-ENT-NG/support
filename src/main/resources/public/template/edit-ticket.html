@@ -25,7 +25,7 @@
 				<label class="two cell"><i18n>support.ticket.school</i18n></label>
 				<span class="four cell">
 					<select ng-model="ticket.school_id" 
-						ng-options="school.id as school.name for school in schools" input-guard>
+						ng-options="school.id as school.name for school in schools | orderBy:'name'" input-guard>
 					</select>
 				</span>
 			</div>
