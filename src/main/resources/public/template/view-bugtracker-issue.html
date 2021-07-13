@@ -44,7 +44,7 @@
 	<div ng-if="ticket.issue.showEditForm === true" class="row">
 		<label class="two cell"><i18n>support.issue.new.comment</i18n></label>
 		<div class="ten cell">
-			<textarea ng-model="ticket.issue.newComment"></textarea>
+			<editor ng-model="ticket.issue.newComment"></editor>
 		</div>
 		<div ng-if="!ticket.issue.processing">
 			<button class="right-magnet" ng-click="updateIssue()" translate content="support.issue.save"></button>

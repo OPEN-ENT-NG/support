@@ -48,14 +48,14 @@
 		<div class="row">
 			<label class="two cell"><i18n>support.ticket.description</i18n></label>
 			<div class="ten cell">
-				<textarea ng-model="editedTicket.description" input-guard></textarea>
+				<editor ng-model="editedTicket.description" input-guard></editor>
 			</div>
 		</div>
 
 		<div class="row">
 			<label class="two cell"><i18n>support.ticket.new.comment</i18n></label>
 			<div class="ten cell">
-				<textarea ng-model="editedTicket.newComment" input-guard></textarea>
+				<editor ng-model="editedTicket.newComment" input-guard></editor>
 			</div>
 			<div class="ten cell right-magnet" ng-if="ticket.attachments !== undefined && !ticket.attachments.isEmpty()">
 				<br>
