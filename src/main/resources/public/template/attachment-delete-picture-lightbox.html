@@ -1,0 +1,31 @@
+<lightbox show="removeAttachmentLightbox.isOpen" on-close="toggleAttachmentLightbox(false)">
+
+    <!-- Header -->
+    <section>
+        <h3>
+            <i18n>support.attachment.delete.title</i18n>
+        </h3>
+    </section>
+
+    <!-- Body -->
+    <section class="vertical-spacing-twice">
+        <!-- description to delete -->
+        <span><i18n>support.attachment.delete.description</i18n></span>
+    </section>
+
+    <!-- Footer -->
+    <section>
+        <!-- Button/submit -->
+        <div>
+            <!-- Submit mode -->
+            <button class="right-magnet" ng-click="removeAttachment()">
+                <i18n>support.delete</i18n>
+            </button>
+            <!-- Cancel mode  -->
+            <button class="right-magnet cancel" ng-click="toggleAttachmentLightbox(false)">
+                <i18n>support.ticket.cancel</i18n>
+            </button>
+        </div>
+    </section>
+
+</lightbox>

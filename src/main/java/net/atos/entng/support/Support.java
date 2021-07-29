@@ -19,6 +19,7 @@
 
 package net.atos.entng.support;
 
+import fr.wseduc.mongodb.MongoDb;
 import net.atos.entng.support.controllers.AttachmentController;
 import net.atos.entng.support.controllers.CommentController;
 import net.atos.entng.support.controllers.DisplayController;
@@ -31,7 +32,10 @@ import net.atos.entng.support.services.UserService;
 import net.atos.entng.support.services.impl.TicketServiceSqlImpl;
 import net.atos.entng.support.services.impl.UserServiceDirectoryImpl;
 
+import org.entcore.common.folders.FolderManager;
 import org.entcore.common.http.BaseServer;
+import org.entcore.common.share.impl.GenericShareService;
+import org.entcore.common.share.impl.MongoDbShareService;
 import org.entcore.common.sql.SqlConf;
 import org.entcore.common.sql.SqlConfs;
 import org.entcore.common.storage.Storage;
@@ -39,6 +43,8 @@ import org.entcore.common.storage.StorageFactory;
 import org.entcore.common.storage.impl.PostgresqlApplicationStorage;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.json.JsonObject;
+
+import java.util.HashMap;
 
 
 public class Support extends BaseServer {
@@ -61,6 +67,17 @@ public class Support extends BaseServer {
 		final Storage storage = new StorageFactory(vertx, config,
 				new PostgresqlApplicationStorage("support.attachments", Support.class.getSimpleName(),
 						new JsonObject().put("id", "document_id"))).getStorage();
+
+
+		String node = (String) vertx.sharedData().getLocalMap("server").get("node");
+		if (node == null) {
+			node = "";
+		}
+		GenericShareService shareService = new MongoDbShareService(vertx.eventBus(), MongoDb.getInstance(), "documents", securedActions, new HashMap<>());
+		String imageResizerAddress = node + config.getString("image-resizer-address", "wse.image.resizer");
+		final boolean useOldQueryChildren = config.getBoolean("old-query", false);
+		FolderManager folderManager = FolderManager.mongoManager("documents", storage, vertx, shareService, imageResizerAddress, useOldQueryChildren);
+
 
 		TicketServiceSql ticketServiceSql = new TicketServiceSqlImpl(bugTrackerType);
 		UserService userService = new UserServiceDirectoryImpl(eb);
@@ -87,7 +104,7 @@ public class Support extends BaseServer {
 		CommentController commentController = new CommentController();
 		addController(commentController);
 
-		AttachmentController attachmentController = new AttachmentController();
+		AttachmentController attachmentController = new AttachmentController(folderManager);
 		addController(attachmentController);
 
 		//suscribe to search engine
