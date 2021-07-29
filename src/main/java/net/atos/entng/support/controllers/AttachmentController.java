@@ -20,11 +20,14 @@
 package net.atos.entng.support.controllers;
 
 import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
+
+import fr.wseduc.rs.Delete;
 import net.atos.entng.support.filters.OwnerOrLocalAdmin;
 import net.atos.entng.support.services.AttachmentService;
 import net.atos.entng.support.services.impl.AttachmentServiceSqlImpl;
 
 import org.entcore.common.controller.ControllerHelper;
+import org.entcore.common.folders.FolderManager;
 import org.entcore.common.http.filter.ResourceFilter;
 import io.vertx.core.http.HttpServerRequest;
 
@@ -32,13 +35,14 @@ import fr.wseduc.rs.ApiDoc;
 import fr.wseduc.rs.Get;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
+import org.entcore.common.user.UserUtils;
 
 public class AttachmentController extends ControllerHelper {
 
-	private AttachmentService attachmentService;
+	private final AttachmentService attachmentService;
 
-	public AttachmentController() {
-		attachmentService = new AttachmentServiceSqlImpl();
+	public AttachmentController(FolderManager folderManager) {
+		attachmentService = new AttachmentServiceSqlImpl(folderManager);
 		crudService = attachmentService;
 	}
 
@@ -49,6 +53,19 @@ public class AttachmentController extends ControllerHelper {
 	public void listTicketAttachments(final HttpServerRequest request) {
 		final String ticketId = request.params().get("id");
 		attachmentService.listTicketAttachments(ticketId, arrayResponseHandler(request));
+	}
+
+	@Delete("/ticket/:id/attachment/:attachmentId")
+	@ApiDoc("delete attachment of a ticket")
+	@SecuredAction(value = "support.manager", type= ActionType.RESOURCE)
+	@ResourceFilter(OwnerOrLocalAdmin.class)
+	public void deleteTicketAttachment(final HttpServerRequest request) {
+		String ticketId = request.params().get("id");
+		String attachmentId = request.params().get("attachmentId");
+		UserUtils.getUserInfos(eb, request, user ->
+				attachmentService.deleteTicketAttachment(user, ticketId, attachmentId)
+						.onSuccess(result -> renderJson(request, result))
+						.onFailure(fail -> badRequest(request)));
 	}
 
 }

@@ -19,14 +19,26 @@
 
 package net.atos.entng.support.services;
 
+import io.vertx.core.Future;
+import io.vertx.core.json.JsonObject;
 import org.entcore.common.service.CrudService;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 
 import fr.wseduc.webutils.Either;
+import org.entcore.common.user.UserInfos;
 
 public interface AttachmentService extends CrudService {
 
-	public void listTicketAttachments(String ticketId, Handler<Either<String, JsonArray>> handler);
+	void listTicketAttachments(String ticketId, Handler<Either<String, JsonArray>> handler);
+
+	/** Proceed on delete ticket attachment
+	 *
+	 * @param userInfos		user info {@link UserInfos}
+	 * @param ticketId		ticket identifier {@link String}
+	 * @param attachmentId	attachment identifier {@link String}
+	 * @return {@link Future<JsonObject>}
+	 */
+	Future<JsonObject> deleteTicketAttachment(UserInfos userInfos, String ticketId, String attachmentId);
 
 }

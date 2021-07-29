@@ -1,10 +1,28 @@
-import {Controller, ng, idiom as lang, template, _, angular, notify, moment, Behaviours} from "entcore";
+import {
+	Controller,
+	ng,
+	idiom as lang,
+	template,
+	_,
+	angular,
+	notify,
+	moment,
+	Behaviours,
+	workspace,
+	toasts
+} from "entcore";
 import { models } from "../models/model";
+import {safeApply} from "../utils/safeApply";
+import {IAttachmentService} from "../services/attachment.service";
+import {Attachment} from "../models/Attachment";
+import service = workspace.v2.service;
+import {AxiosError, AxiosResponse} from "axios";
 
 declare let model: any;
 
 export const SupportController: Controller = ng.controller('SupportController',
-	['$scope', 'route', 'orderByFilter', '$timeout', function ($scope, route, orderByFilter, $timeout) {
+	['$scope', 'route', 'orderByFilter', '$timeout', 'AttachmentService',
+		function ($scope, route, orderByFilter, $timeout, attachmentService: IAttachmentService) {
 		route({
 			displayTicket: function (params) {
 				$scope.searchTicketNumber(params.ticketId);
@@ -24,8 +42,12 @@ export const SupportController: Controller = ng.controller('SupportController',
 			$scope.template = template;
 			$scope.me = model.me;
 
+			$scope.removeAttachmentLightbox = {attachment: null, isOpen: false};
+
+
 			$scope.tickets = model.tickets;
 			$scope.events = model.events;
+
 
 			// but-tracker management : direct communication between user and bt ?
 			model.isBugTrackerCommDirect(function(result){
@@ -624,6 +646,44 @@ export const SupportController: Controller = ng.controller('SupportController',
 
 		$scope.openBugTrackerIssue = function() {
 			template.open('main', 'view-bugtracker-issue');
+		};
+
+		/* ----------------------------
+               attachment option
+         ---------------------------- */
+
+		/**
+		 * toggle open/close attachment lightbox
+		 *
+		 * @param state boolean's state indicating if lightbox should be opened or closed
+		 * @param attachment {Attachment} attachment identifier sent as parameter to prepare deletion (is set null if state if false)
+		 * @returns void
+		 */
+		$scope.toggleAttachmentLightbox = (state: boolean, attachment?: Attachment): void => {
+			$scope.removeAttachmentLightbox.isOpen = state;
+			state ? $scope.removeAttachmentLightbox.attachment = attachment : $scope.removeAttachmentLightbox.attachment = null;
+			safeApply($scope);
+		};
+
+		/**
+		 * delete attachment and then close lightbox
+		 * @returns void
+		 */
+		$scope.removeAttachment = (): void => {
+			const attachment: Attachment = $scope.removeAttachmentLightbox.attachment;
+			attachmentService.delete(attachment.ticket_id, attachment.document_id)
+				.then(async (_: AxiosResponse) => {
+					toasts.info('support.attachment.delete.success');
+					$scope.ticket.getAttachments(function() {
+						$scope.toggleAttachmentLightbox(false);
+						safeApply($scope)
+					});
+				}).catch((err: AxiosError) => {
+					toasts.warning('support.attachment.delete.error');
+					$scope.toggleAttachmentLightbox(false);
+					console.error(err);
+					safeApply($scope);
+				});
 		};
 
 		$scope.editIssue = function() {

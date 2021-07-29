@@ -64,7 +64,8 @@
             <br>
             <span class="row" ng-repeat="attachment in ticket.attachments.all">
                 <i class="attachment ng-scope"></i>&nbsp;<a href="/workspace/document/[[attachment.document_id]]">[[attachment.name]]</a>
-                &nbsp;<em>[[attachment.owner_name]] <i18n>support.on</i18n> [[formatDate(attachment.created)]]</em>
+                &nbsp;<em>[[attachment.owner_name]] <i18n>support.on</i18n> [[formatDate(attachment.created)]]</em> -
+                <a ng-click="toggleAttachmentLightbox(true, {document_id: attachment.document_id, ticket_id: attachment.ticket_id})"><i18n>support.delete</i18n></a>
             </span>
         </div>
         <div class="ten cell right-magnet" ng-if="ticket.issue.attachments && ticket.issue.attachments.length>0">
@@ -119,4 +120,8 @@
         </div>
     </div>
 </article>
+
+<!-- lightbox to open confirmation for deleting attachment -->
+<div ng-include="'/support/public/template/attachment-delete-picture-lightbox.html'"></div>
+
 
