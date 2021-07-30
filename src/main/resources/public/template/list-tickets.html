@@ -66,8 +66,8 @@
 					<td class="one" ng-click="viewTicket(ticket.id)">[[getStatusLabel(ticket.status)]]</td>
 					<td ng-class="canEscalate() && atLeastOneTicketEscalated() ? three : four" ng-click="viewTicket(ticket.id)">
 						<div class="list-view-subject">
-							<b class="ellipsis">[[ticket.subject]]</b>
-							<span class="ellipsis">&nbsp;[[ticket.short_desc]]
+							<b class="ellipsis">[[ticket.subject]]</b>&nbsp;
+							<span class="ellipsis"  ng-bind-html="ticket.short_desc">
 								<span ng-show="ticket.short_desc.length >= 99">...</span>
 							</span>
 						</div>
