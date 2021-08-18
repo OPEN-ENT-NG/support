@@ -55,6 +55,14 @@ model.isEscalationActivated = function(callback){
 	}.bind(this));
 };
 
+model.isRichEditorActivated = function(callback){
+	http().get('/support/editor').done(function(result){
+		if(typeof callback === 'function'){
+			callback(result);
+		}
+	}.bind(this));
+};
+
 model.updateTicketStatus = function(itemArray, newStatus, cb, cbe){
 	http().postJson('/support/ticketstatus/' + newStatus, {ids:model.getItemsIds(itemArray)}).done(function (result) {
 		if(typeof cb === 'function'){

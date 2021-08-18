@@ -51,6 +51,7 @@ public class Support extends BaseServer {
 
 	public final static String SUPPORT_NAME = "SUPPORT";
     private static boolean escalationActivated;
+	private static boolean richEditorActivated;
     public static boolean bugTrackerCommDirect;
 
 	@Override
@@ -84,10 +85,17 @@ public class Support extends BaseServer {
 
         // Indicates if the user can have direct communication with redmine, or if the admin has to transfer the informations.
         bugTrackerCommDirect = config.getBoolean("bug-tracker-comm-direct", true);
+
 		// Escalation to a remote bug tracker (e.g. Redmine) is desactivated by default
 		escalationActivated = config.getBoolean("activate-escalation", false);
 		if(!escalationActivated) {
 			log.info("[Support] Escalation is desactivated");
+		}
+
+		// Rich Editor (for http link...) is desactivated by default
+		richEditorActivated = config.getBoolean("activate-rich-editor", false);
+		if(!richEditorActivated) {
+			log.info("[Support] Rich Editor is desactivated");
 		}
 
 		EscalationService escalationService = escalationActivated
@@ -115,6 +123,10 @@ public class Support extends BaseServer {
 
 	public static boolean escalationIsActivated() {
 		return escalationActivated;
+	}
+
+	public static boolean richEditorIsActivated() {
+		return richEditorActivated;
 	}
 
 }

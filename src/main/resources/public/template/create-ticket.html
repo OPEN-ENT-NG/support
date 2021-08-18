@@ -25,7 +25,8 @@
 		<div class="row">
 			<label class="two cell center"><i18n>support.ticket.description</i18n></label>
 			<div class="ten cell" input-guard>
-				<editor ng-model="ticket.description" input-guard></editor>
+				<textarea ng-model="ticket.description" ng-if="!isRichEditorActivated" input-guard></textarea>
+				<editor ng-model="ticket.description" ng-if="isRichEditorActivated" input-guard></editor>
 			</div>
 		</div>
 		<div class="row ">
