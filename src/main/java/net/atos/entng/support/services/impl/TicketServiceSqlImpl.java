@@ -75,7 +75,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 		// 2. Create ticket
 		ticket.put("owner", user.getUserId());
         ticket.put("locale", locale);
-		String returnedFields = "id, school_id, status, created, modified, escalation_status, escalation_date";
+		String returnedFields = "id, school_id, status, created, modified, escalation_status, escalation_date, substring(description, 0, 101)  as short_desc";
 		s.insert(resourceTable, ticket, returnedFields);
 
 		this.insertAttachments(attachments, user, s, null);

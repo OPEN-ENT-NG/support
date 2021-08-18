@@ -99,6 +99,12 @@ export const SupportController: Controller = ng.controller('SupportController',
 				}
 			});
 
+			model.isRichEditorActivated(function(result){
+				if(result && typeof result.isRichEditorActivated === 'boolean') {
+					$scope.isRichEditorActivated = result.isRichEditorActivated;
+				}
+			});
+
 			// Get user's Schools to build filter
 			$scope.schools = [];
 			model.getAdministeredStructures(function(result){

@@ -64,10 +64,14 @@
                     <td ><input type="checkbox" ng-model="ticket.selected"></td>
                     <td class="one centered" ng-click="viewTicket(ticket.id)">[[ticket.id]]</td>
 					<td class="one" ng-click="viewTicket(ticket.id)">[[getStatusLabel(ticket.status)]]</td>
-					<td ng-class="canEscalate() && atLeastOneTicketEscalated() ? three : four" ng-click="viewTicket(ticket.id)">
+					<td style="overflow: hidden;" ng-class="canEscalate() && atLeastOneTicketEscalated() ? three : four"
+						ng-click="viewTicket(ticket.id)">
 						<div class="list-view-subject">
 							<b class="ellipsis">[[ticket.subject]]</b>&nbsp;
-							<span class="ellipsis"  ng-bind-html="ticket.short_desc">
+							<span class="ellipsis" ng-if="!isRichEditorActivated">[[ticket.short_desc]]
+								<span ng-show="ticket.short_desc.length >= 99">...</span>
+							</span>
+							<span class="ellipsis" ng-if="isRichEditorActivated" ng-bind-html="ticket.short_desc">
 								<span ng-show="ticket.short_desc.length >= 99">...</span>
 							</span>
 						</div>

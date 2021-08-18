@@ -48,14 +48,16 @@
 		<div class="row">
 			<label class="two cell"><i18n>support.ticket.description</i18n></label>
 			<div class="ten cell">
-				<editor ng-model="editedTicket.description" input-guard></editor>
+				<textarea ng-model="editedTicket.description" ng-if="!isRichEditorActivated" input-guard></textarea>
+				<editor ng-model="editedTicket.description" ng-if="isRichEditorActivated" input-guard></editor>
 			</div>
 		</div>
 
 		<div class="row">
 			<label class="two cell"><i18n>support.ticket.new.comment</i18n></label>
 			<div class="ten cell">
-				<editor ng-model="editedTicket.newComment" input-guard></editor>
+				<textarea ng-model="editedTicket.newComment" ng-if="!isRichEditorActivated" input-guard></textarea>
+				<editor ng-model="editedTicket.newComment" ng-if="isRichEditorActivated" input-guard></editor>
 			</div>
 			<div class="ten cell right-magnet" ng-if="ticket.attachments !== undefined && !ticket.attachments.isEmpty()">
 				<br>
@@ -84,7 +86,8 @@
             <article class="reduce-block-eight" ng-if="!comment.isHistory">
                 <a href="/userbook/annuaire#[[comment.owner]]">[[comment.owner_name]]</a>
                 <em><i18n>support.on</i18n> [[formatDate(comment.created)]]</em>
-                <p class="with-newlines">[[comment.content]]</p>
+				<p class="with-newlines" ng-if="!isRichEditorActivated">[[comment.content]]</p>
+				<p class="with-newlines" ng-if="isRichEditorActivated" ng-bind-html="comment.content"></p>
             </article>
             <li class="row" ng-if="comment.isHistory">
                 <a href="/userbook/annuaire#[[comment.owner]]">[[comment.owner_name]]</a>

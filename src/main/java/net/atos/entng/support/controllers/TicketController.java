@@ -566,6 +566,14 @@ public class TicketController extends ControllerHelper {
         renderJson(request, result);
     }
 
+    @Get("/editor")
+    @ApiDoc("Return true if rich editor is activated. False otherwise")
+    @SecuredAction(value = "support.escalation.activation.status", type = ActionType.AUTHENTICATED)
+    public void isRichEditorActivated(final HttpServerRequest request) {
+        JsonObject result = new JsonObject().put("isRichEditorActivated", Support.richEditorIsActivated());
+        renderJson(request, result);
+    }
+
     @BusAddress("support.update.bugtracker")
     @ApiDoc("Update ticket with information from bugtracker")
     public void updateTicketFromBugTracker(final Message<JsonObject> message) {
