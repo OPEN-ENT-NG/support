@@ -63,6 +63,8 @@ public interface TicketServiceSql extends CrudService {
 
 	public void getTicketIdAndSchoolId(Number issueId, Handler<Either<String, JsonObject>> handler);
 
+	public void endInProgressEscalationAsync(String ticketId, UserInfos user, JsonObject issueJira, Handler<Either<String, JsonObject>> handler);
+
 	/**
 	 * @param attachmentMap : key = attachmentId in bug tracker, value = attachmentId in gridfs
 	 */

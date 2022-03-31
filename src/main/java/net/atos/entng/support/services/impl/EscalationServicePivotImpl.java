@@ -3,6 +3,7 @@ package net.atos.entng.support.services.impl;
 import fr.wseduc.webutils.Either;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.LoggerFactory;
+import net.atos.entng.support.constants.Ticket;
 import net.atos.entng.support.enums.BugTracker;
 import net.atos.entng.support.enums.TicketStatus;
 import net.atos.entng.support.helpers.EscalationPivotHelper;
@@ -105,7 +106,7 @@ public class EscalationServicePivotImpl implements EscalationService
     }
 
     @Override
-    public BugTracker getBugTrackerType() { 
+    public BugTracker getBugTrackerType() {
         return BugTracker.PIVOT;
     }
 
@@ -342,6 +343,9 @@ public class EscalationServicePivotImpl implements EscalationService
                 issueComments.add(crComment);
             }
         }
+        ticket.put(Ticket.ID_JIRA, issue.getString(Ticket.ID_JIRA));
+        ticket.put(Ticket.ID, issue.getString(Ticket.ID_JIRA));
+        ticket.put(Ticket.STATUT_JIRA, issue.getString(Ticket.STATUT_JIRA));
 
         JsonArray commentsToAdd = helper.compareComments(ticketComments, issueComments);
         JsonObject data = new JsonObject();
@@ -405,7 +409,7 @@ public class EscalationServicePivotImpl implements EscalationService
                         || !att.containsKey(ATTACHMENT_CONTENT_FIELD)) {
                     uploadedDocs.decrementAndGet();
                     continue;
-                } 
+                }
                 final String pjName = att.getString(ATTACHMENT_NAME_FIELD);
                 if(attsName.contains(pjName)){
                     uploadedDocs.decrementAndGet();
