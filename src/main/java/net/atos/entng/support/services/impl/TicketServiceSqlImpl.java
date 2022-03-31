@@ -576,7 +576,26 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 		} catch (NumberFormatException e) {
 			log.error("Invalid id_ent, saving issue with id 0");
 		}
-		this.updateTicketAfterEscalation(ticketId, EscalationStatus.IN_PROGRESS, issue, issueId, null, user, handler);
+		this.updateTicketAfterEscalation(ticketId, EscalationStatus.SUCCESSFUL, issue, issueId, null, user, handler);
+	}
+
+	@Override
+	public void endInProgressEscalationAsync(String ticketId, UserInfos user, JsonObject issueJira,Handler<Either<String, JsonObject>> handler) {
+		JsonObject issue = new JsonObject()
+				.put("issue",new JsonObject()
+						.put("id",issueJira.getString("id_jira"))
+						.put("status",issueJira.getString("status_jira"))
+						.put("date",new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS").format(new Date()))
+						.put("id_ent",ticketId));
+
+		Number issueId = 0;
+		try {
+			// use ticket id as issue id in database
+			issueId = Integer.parseInt(ticketId);
+		} catch (NumberFormatException e) {
+			log.error("Invalid id_ent, saving issue with id 0");
+		}
+		this.updateTicketAfterEscalation(ticketId, EscalationStatus.SUCCESSFUL, issue, issueId, null, user, handler);
 	}
 
 	@Override

@@ -25,6 +25,14 @@ import io.vertx.core.json.JsonObject;
 public enum BugTracker {
 
 	REDMINE {
+
+		@Override
+		public String extractIdFromIssueString(JsonObject issue) {
+			if (issue != null) {
+				return issue.getString("id_ent");
+			}
+			return "";
+		}
 		@Override
 		public String getLastIssueUpdateFromPostgresqlJson() {
 			return "->'issue'->>'updated_on'";
@@ -52,6 +60,14 @@ public enum BugTracker {
 		}
 	},
 	PIVOT {
+		@Override
+		public String extractIdFromIssueString(JsonObject issue) {
+			if (issue != null) {
+				return issue.getString("id_ent");
+			}
+			return "";
+		}
+
 		@Override
 		public String getLastIssueUpdateFromPostgresqlJson() {
 			return "->'issue'->>'date'";
@@ -82,7 +98,7 @@ public enum BugTracker {
 		}
 	};
 
-
+	public abstract String extractIdFromIssueString(JsonObject issue);
 	/**
 	 * @return SQL expression to extract last update time of bug tracker issue from JSON field stored in postgresql
 	 */

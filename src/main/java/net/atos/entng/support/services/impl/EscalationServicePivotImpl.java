@@ -342,6 +342,9 @@ public class EscalationServicePivotImpl implements EscalationService
                 issueComments.add(crComment);
             }
         }
+        ticket.put("id_jira",issue.getString("id_jira"));
+        ticket.put("id",issue.getString("id_jira"));
+        ticket.put("statut_jira", issue.getString("statut_jira"));
 
         JsonArray commentsToAdd = helper.compareComments(ticketComments, issueComments);
         JsonObject data = new JsonObject();
