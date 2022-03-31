@@ -31,10 +31,11 @@ import java.util.*;
 import java.util.concurrent.ConcurrentMap;
 
 import fr.wseduc.webutils.http.Renders;
+import net.atos.entng.support.constants.Ticket;
 import net.atos.entng.support.enums.BugTracker;
 import net.atos.entng.support.enums.EscalationStatus;
 import net.atos.entng.support.enums.TicketStatus;
-import net.atos.entng.support.helpers.impl.EscalationPivotHelperImpl;
+import net.atos.entng.support.helpers.DateHelper;
 import net.atos.entng.support.services.TicketServiceSql;
 
 import org.entcore.common.service.impl.SqlCrudService;
@@ -576,7 +577,26 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 		} catch (NumberFormatException e) {
 			log.error("Invalid id_ent, saving issue with id 0");
 		}
-		this.updateTicketAfterEscalation(ticketId, EscalationStatus.IN_PROGRESS, issue, issueId, null, user, handler);
+		this.updateTicketAfterEscalation(ticketId, EscalationStatus.SUCCESSFUL, issue, issueId, null, user, handler);
+	}
+
+	@Override
+	public void endInProgressEscalationAsync(String ticketId, UserInfos user, JsonObject issueJira, Handler<Either<String, JsonObject>> handler) {
+		JsonObject issue = new JsonObject()
+				.put(Ticket.ISSUE, new JsonObject()
+						.put(Ticket.ID, issueJira.getString(Ticket.ID_JIRA))
+						.put(Ticket.STATUS, issueJira.getString(Ticket.STATUS_JIRA))
+						.put(Ticket.DATE, DateHelper.convertDateFormat())
+						.put(Ticket.ID_ENT, ticketId));
+
+		Number issueId = 0;
+		try {
+			// use ticket id as issue id in database
+			issueId = Integer.parseInt(ticketId);
+		} catch (NumberFormatException e) {
+			log.error("Invalid id_ent, saving issue with id 0");
+		}
+		this.updateTicketAfterEscalation(ticketId, EscalationStatus.SUCCESSFUL, issue, issueId, null, user, handler);
 	}
 
 	@Override

@@ -26,8 +26,8 @@
 				<i18n>support.escalation.in.progress</i18n>
 			</span>
             <!-- Local administrator can see escalated ticket, even if escalation has been desactivated -->
-            <label class="six cell" ng-if="ticket.escalation_status === escalationStatuses.SUCCESSFUL && userIsLocalAdmin(ticket) === true"><i18n>support.ticket.infoRedmine</i18n></label>
-            <span class="three cell" ng-if="ticket.escalation_status === escalationStatuses.SUCCESSFUL && userIsLocalAdmin(ticket) === true">
+            <label class="six cell" ng-if="ticket.escalation_status === escalationStatuses.SUCCESSFUL && isEscalationActivated === true "><i18n>support.ticket.infoRedmine</i18n></label>
+            <span class="three cell" ng-if="ticket.escalation_status === escalationStatuses.SUCCESSFUL && isEscalationActivated === true">
                 <b>[[ticket.issue.id]]</b>&nbsp;([[ticket.issue.status.name]])
             </span>
 			<span ng-if="ticket.escalation_status === escalationStatuses.FAILED && isEscalationActivated === true">
