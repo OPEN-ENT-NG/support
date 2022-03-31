@@ -30,7 +30,9 @@ import java.util.concurrent.ConcurrentMap;
 
 import fr.wseduc.bus.BusAddress;
 import net.atos.entng.support.Support;
+import net.atos.entng.support.constants.Ticket;
 import net.atos.entng.support.enums.BugTrackerSyncType;
+import net.atos.entng.support.enums.EscalationStatus;
 import net.atos.entng.support.filters.Admin;
 import net.atos.entng.support.filters.OwnerOrLocalAdmin;
 import net.atos.entng.support.services.EscalationService;
@@ -152,6 +154,8 @@ public class TicketController extends ControllerHelper {
                                     ticket.getInteger("status"), user.getUserId(), 2, res -> {
                                         if (res.isLeft()) {
                                             log.error("Error creation historization : " + res.left().getValue());
+                                        } else {
+                                            sendTicketUpdateToIssue(request, ticketId, ticket, user);
                                         }
                                     });
                         } else {
@@ -592,7 +596,10 @@ public class TicketController extends ControllerHelper {
 
                     JsonObject ticket = response.getJsonObject("ticket");
                     ticket.put("owner", ticket.getString("owner_id"));
-                    String ticketId = ticket.getInteger("id").toString();
+                    if (message.body().getJsonObject(Ticket.ISSUE, new JsonObject()).getString(Ticket.ID_JIRA) == null) {
+                        ticket.put(Ticket.ID, message.body().getJsonObject(Ticket.ISSUE, new JsonObject()).getString(Ticket.ID_JIRA));
+                    }
+                    String ticketId = ticket.getString(Ticket.ID);
                     notifyTicketUpdated(null, ticketId, user, ticket);
                 }
                 message.reply(new JsonObject().put("status", "OK"));
@@ -725,11 +732,12 @@ public class TicketController extends ControllerHelper {
 
         return escalationResponse -> {
             if (escalationResponse.isRight()) {
-                final JsonObject issue = escalationResponse.right().getValue();
-                final Number issueId = escalationService.getBugTrackerType().extractIdFromIssue(issue);
+                final JsonObject issue = escalationResponse.right().getValue().getJsonObject(Ticket.ISSUE, new JsonObject());
+                final String issueIdString = escalationService.getBugTrackerType().extractIdFromIssueString(issue);
+                final Number issueId = Integer.parseInt(issueIdString);
 
                 // get the whole issue (i.e. with attachments' metadata and comments) to save it in database
-                escalationService.getIssue(issueId, getIssueHandler(request, issueId, ticketId, user, attachmentMap, doResponse));
+                escalationService.getIssue(issueId, getIssueHandler(request, issueId, ticketId, user, attachmentMap, doResponse, issue));
             } else {
                 ticketServiceSql.endFailedEscalation(ticketId, user, event -> {
                     if (event.isLeft()) {
@@ -746,7 +754,7 @@ public class TicketController extends ControllerHelper {
     private Handler<Either<String, JsonObject>> getIssueHandler(final HttpServerRequest request, final Number issueId,
                                                                 final String ticketId, final UserInfos user,
                                                                 final ConcurrentMap<Long, String> attachmentMap,
-                                                                final boolean doResponse) {
+                                                                final boolean doResponse, JsonObject issue) {
         return getWholeIssueResponse -> {
             if (getWholeIssueResponse.isRight()) {
                 final JsonObject wholeIssue = getWholeIssueResponse.right().getValue();
@@ -783,18 +791,18 @@ public class TicketController extends ControllerHelper {
                     // Bug tracker is async, can't get information of tracker issue
                     // Send dummy info to front
                     log.info("Bug tracker issue not fetched in asynchronous mode");
-                    ticketServiceSql.endInProgressEscalation(ticketId, user, event -> {
+                    ticketServiceSql.endInProgressEscalationAsync(ticketId, user, issue, event -> {
                         if (event.isLeft()) {
                             log.error("Error when trying to update escalation status to in_progress");
                         }
                     });
                     String status = I18n.getInstance().translate(
-                            "support.escalation.in.progress",
+                            "support.escalation.sucessful",
                             getHost(request), I18n.acceptLanguage(request));
                     if(doResponse) {
                         renderJson(request, new JsonObject().put("issue",
-                                new JsonObject().put("id", "#")
-                                        .put("status", new JsonObject().put("name", status))));
+                                new JsonObject().put(Ticket.ID, issue.getString(Ticket.ID_JIRA))
+                                        .put(Ticket.STATUS, new JsonObject().put(Ticket.NAME, EscalationStatus.SUCCESSFUL))));
                     }
                 }
             }

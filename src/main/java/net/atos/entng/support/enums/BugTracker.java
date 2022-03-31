@@ -21,10 +21,18 @@ package net.atos.entng.support.enums;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import net.atos.entng.support.constants.Ticket;
 
 public enum BugTracker {
 
 	REDMINE {
+		@Override
+		public String extractIdFromIssueString(JsonObject issue) {
+			if (issue != null) {
+				return issue.getString(Ticket.ID_ENT);
+			}
+			return "";
+		}
 		@Override
 		public String getLastIssueUpdateFromPostgresqlJson() {
 			return "->'issue'->>'updated_on'";
@@ -52,6 +60,14 @@ public enum BugTracker {
 		}
 	},
 	PIVOT {
+		@Override
+		public String extractIdFromIssueString(JsonObject issue) {
+			if (issue != null) {
+				return issue.getString(Ticket.ID_ENT);
+			}
+			return "";
+		}
+
 		@Override
 		public String getLastIssueUpdateFromPostgresqlJson() {
 			return "->'issue'->>'date'";
@@ -82,7 +98,7 @@ public enum BugTracker {
 		}
 	};
 
-
+	public abstract String extractIdFromIssueString(JsonObject issue);
 	/**
 	 * @return SQL expression to extract last update time of bug tracker issue from JSON field stored in postgresql
 	 */
