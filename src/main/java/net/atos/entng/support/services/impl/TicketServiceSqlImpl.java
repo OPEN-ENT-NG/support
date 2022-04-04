@@ -27,15 +27,14 @@ import java.text.DateFormat;
 import java.text.Format;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.TimeZone;
+import java.util.*;
 import java.util.concurrent.ConcurrentMap;
 
 import fr.wseduc.webutils.http.Renders;
 import net.atos.entng.support.enums.BugTracker;
 import net.atos.entng.support.enums.EscalationStatus;
 import net.atos.entng.support.enums.TicketStatus;
+import net.atos.entng.support.helpers.impl.EscalationPivotHelperImpl;
 import net.atos.entng.support.services.TicketServiceSql;
 
 import org.entcore.common.service.impl.SqlCrudService;
@@ -55,9 +54,9 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 
 	private final static String UPSERT_USER_QUERY = "SELECT support.merge_users(?,?)";
     protected static final Logger log = LoggerFactory.getLogger(Renders.class);
-
+	private final List<String> ALLOWED_SORT_BY_COLUMN = new ArrayList<>(Arrays.asList("id","modified","status","category","owner","event_count","subject"));
 	private final BugTracker bugTrackerType;
-
+	private final Logger LOGGER = LoggerFactory.getLogger(TicketServiceSqlImpl.class);
 	public TicketServiceSqlImpl(BugTracker bugTracker) {
 		super("support", "tickets");
 		bugTrackerType = bugTracker;
@@ -250,9 +249,23 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 			values.add(school_id);
 		}
 
-		query.append(" ORDER BY t.").append(sortBy).append(" ").append(order);
+
+		if(ALLOWED_SORT_BY_COLUMN.contains(sortBy)){
+			query.append(" ORDER BY t.");
+			query.append(sortBy);
+		}
+
+		if(order != null && (order.equals("ASC") || order.equals("DESC"))){
+			query.append(" " + order);
+		}else {
+			String message = String.format("[Support@%s::listTickets] this order is not valid"
+					, this.getClass().getSimpleName());
+			LOGGER.error(String.format(message));
+		}
+
 		if (page > 0) {
-			query.append(" LIMIT ").append(nbTicketsPerPage).append(" OFFSET ").append((page-1)*nbTicketsPerPage);
+			query.append(" LIMIT ?").append(" OFFSET ").append((page - 1) * nbTicketsPerPage);
+			values.add(nbTicketsPerPage);
 		}
 
 		sql.prepared(query.toString(), values, validResultHandler(handler));
@@ -324,9 +337,23 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 			values.add(school_id);
 		}
 
-		query.append(" ORDER BY t.").append(sortBy).append(" ").append(order)
-				.append(" LIMIT ").append(nbTicketsPerPage)
-				.append(" OFFSET ").append((page-1)*nbTicketsPerPage);
+		if(ALLOWED_SORT_BY_COLUMN.contains(sortBy)){
+			query.append(" ORDER BY t.");
+			query.append(sortBy);
+		}
+
+		if(order != null && (order.equals("ASC") || order.equals("DESC"))){
+			query.append(" " + order);
+		}else {
+			String message = String.format("[Support@%s::listMyTickets] this order is not valid"
+					, this.getClass().getSimpleName());
+			LOGGER.error(String.format(message));
+		}
+
+
+		query.append(" LIMIT ?").append(" OFFSET ").append((page - 1) * nbTicketsPerPage);
+
+		values.add(nbTicketsPerPage);
 
 		sql.prepared(query.toString(), values, validResultHandler(handler));
 	}
