@@ -29,6 +29,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentMap;
+import java.util.regex.Pattern;
 
 import fr.wseduc.webutils.http.Renders;
 import net.atos.entng.support.constants.Ticket;
@@ -121,10 +122,15 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 		} else if ( comments.size() > 0 ) {
 			for(Object o : comments) {
 				String newComment = (String)o;
+				String contentOfComment = newComment;
+				String[] elem = newComment.split(Pattern.quote("|"));
+				if (elem.length == Ticket.COMMENT_LENGTH) {
+					contentOfComment = " " + elem[0] + "|" + "\n" + elem[1] + "|" + "\n" + elem[2] + "|" + "\n" + "\n" + elem[3];
+				}
 				JsonArray commentValues = new JsonArray();
 				commentValues.add(parseId(ticketId))
 						.add(user.getUserId())
-						.add(newComment);
+						.add(contentOfComment);
 				s.prepared(insertCommentQuery, commentValues);
 			}
 		}
@@ -580,12 +586,12 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 		this.updateTicketAfterEscalation(ticketId, EscalationStatus.SUCCESSFUL, issue, issueId, null, user, handler);
 	}
 
-	@Override
-	public void endInProgressEscalationAsync(String ticketId, UserInfos user, JsonObject issueJira, Handler<Either<String, JsonObject>> handler) {
+    @Override
+    public void endInProgressEscalationAsync(String ticketId, UserInfos user, JsonObject issueJira, Handler<Either<String, JsonObject>> handler) {
 		JsonObject issue = new JsonObject()
 				.put(Ticket.ISSUE, new JsonObject()
-						.put(Ticket.ID, issueJira.getString(Ticket.ID_JIRA))
-						.put(Ticket.STATUS, issueJira.getString(Ticket.STATUS_JIRA))
+						.put(Ticket.ID, issueJira.getString(Ticket.ID_JIRA_FIELD))
+						.put(Ticket.STATUS, issueJira.getString(Ticket.STATUS_JIRA_FIELD))
 						.put(Ticket.DATE, DateHelper.convertDateFormat())
 						.put(Ticket.ID_ENT, ticketId));
 
@@ -594,10 +600,12 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 			// use ticket id as issue id in database
 			issueId = Integer.parseInt(ticketId);
 		} catch (NumberFormatException e) {
-			log.error("Invalid id_ent, saving issue with id 0");
+			String message = String.format("[Support@%s::endInProgressEscalationAsync] Support : Invalid id_ent, saving issue with id 0 : %s",
+					this.getClass().getSimpleName(), e.getMessage());
+			log.error(message);
 		}
 		this.updateTicketAfterEscalation(ticketId, EscalationStatus.SUCCESSFUL, issue, issueId, null, user, handler);
-	}
+    }
 
 	@Override
 	public void updateIssue(Number issueId, String content, Handler<Either<String, JsonObject>> handler) {
