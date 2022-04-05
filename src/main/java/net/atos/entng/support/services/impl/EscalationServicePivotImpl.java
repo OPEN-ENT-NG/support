@@ -6,6 +6,7 @@ import io.vertx.core.logging.LoggerFactory;
 import net.atos.entng.support.constants.Ticket;
 import net.atos.entng.support.enums.BugTracker;
 import net.atos.entng.support.enums.TicketStatus;
+import net.atos.entng.support.enums.TicketStatusJira;
 import net.atos.entng.support.helpers.EscalationPivotHelper;
 import net.atos.entng.support.helpers.impl.EscalationPivotHelperImpl;
 import net.atos.entng.support.services.EscalationService;
@@ -343,9 +344,12 @@ public class EscalationServicePivotImpl implements EscalationService
                 issueComments.add(crComment);
             }
         }
-        ticket.put(Ticket.ID_JIRA, issue.getString(Ticket.ID_JIRA));
-        ticket.put(Ticket.ID, issue.getString(Ticket.ID_JIRA));
-        ticket.put(Ticket.STATUT_JIRA, issue.getString(Ticket.STATUT_JIRA));
+        if (Ticket.SOURCE_CGI.equals(issue.getString(Ticket.SOURCE))) {
+            ticket.put(IDJIRA_FIELD, issue.getString(IDJIRA_FIELD));
+            ticket.put(Ticket.ID, issue.getString(IDJIRA_FIELD));
+            ticket.put(STATUSJIRA_FIELD, issue.getString(STATUSJIRA_FIELD));
+        }
+
 
         JsonArray commentsToAdd = helper.compareComments(ticketComments, issueComments);
         JsonObject data = new JsonObject();
@@ -452,6 +456,17 @@ public class EscalationServicePivotImpl implements EscalationService
         } else {
             ticketServiceSql.updateTicket(ticketId, data, userIws,
                     getAfterTicketUpdateHandler(ticketId, issueStatus, issue, updateStatus, handler) );
+        }
+        if (Ticket.SOURCE_CGI.equals(issue.getString(Ticket.SOURCE))) {
+            int statusForHisto = TicketStatusJira.getTicketStatusJira(issue.getString(STATUSJIRA_FIELD, "")).getStatus();
+            ticketServiceSql.createTicketHisto(ticketId, Ticket.JIRA_COMMENT_HEADER,
+                    statusForHisto, Ticket.ID, 2, res -> {
+                        if (res.isLeft()) {
+                            String message = String.format("[Support@%s::addAttachmentAndUpdate] Support : Error creation historization : %s",
+                                    this.getClass().getSimpleName(), res.left().getValue());
+                            log.error(message);
+                        }
+                    });
         }
     }
 

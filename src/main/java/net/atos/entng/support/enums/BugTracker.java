@@ -98,7 +98,11 @@ public enum BugTracker {
 		}
 	};
 
-	public abstract String extractIdFromIssueString(JsonObject issue);
+	/**
+	 * Extract "id" from JSON object sent by the bug tracker REST API
+	 */
+    public abstract String extractIdFromIssueString(JsonObject issue);
+
 	/**
 	 * @return SQL expression to extract last update time of bug tracker issue from JSON field stored in postgresql
 	 */
