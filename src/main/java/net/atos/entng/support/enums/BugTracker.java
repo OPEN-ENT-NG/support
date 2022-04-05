@@ -25,7 +25,6 @@ import io.vertx.core.json.JsonObject;
 public enum BugTracker {
 
 	REDMINE {
-
 		@Override
 		public String extractIdFromIssueString(JsonObject issue) {
 			if (issue != null) {

@@ -30,6 +30,7 @@ import java.util.concurrent.ConcurrentMap;
 
 import fr.wseduc.bus.BusAddress;
 import net.atos.entng.support.Support;
+import net.atos.entng.support.constants.Ticket;
 import net.atos.entng.support.enums.BugTrackerSyncType;
 import net.atos.entng.support.enums.EscalationStatus;
 import net.atos.entng.support.filters.Admin;
@@ -595,10 +596,7 @@ public class TicketController extends ControllerHelper {
 
                     JsonObject ticket = response.getJsonObject("ticket");
                     ticket.put("owner", ticket.getString("owner_id"));
-
-                    ticket.put("ideeee","tutut");
-
-                    ticket.put("id",message.body().getJsonObject("issue").getString("id_jira"));
+                    ticket.put("id", message.body().getJsonObject("issue").getString(Ticket.IDJIRA_FIELD));
                     String ticketId = ticket.getString("id");
                     notifyTicketUpdated(null, ticketId, user, ticket);
                 }
@@ -801,7 +799,7 @@ public class TicketController extends ControllerHelper {
                             getHost(request), I18n.acceptLanguage(request));
                     if(doResponse) {
                         renderJson(request, new JsonObject().put("issue",
-                                new JsonObject().put("id", issue.getString("id_jira"))
+                                new JsonObject().put("id", issue.getString(Ticket.IDJIRA_FIELD))
                                         .put("status", new JsonObject().put("name", EscalationStatus.SUCCESSFUL))));
                     }
                 }

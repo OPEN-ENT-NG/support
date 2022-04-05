@@ -3,6 +3,7 @@ package net.atos.entng.support.services.impl;
 import fr.wseduc.webutils.Either;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.LoggerFactory;
+import net.atos.entng.support.constants.Ticket;
 import net.atos.entng.support.enums.BugTracker;
 import net.atos.entng.support.enums.TicketStatus;
 import net.atos.entng.support.helpers.EscalationPivotHelper;
@@ -342,9 +343,12 @@ public class EscalationServicePivotImpl implements EscalationService
                 issueComments.add(crComment);
             }
         }
-        ticket.put("id_jira",issue.getString("id_jira"));
-        ticket.put("id",issue.getString("id_jira"));
-        ticket.put("statut_jira", issue.getString("statut_jira"));
+        if(Ticket.SOURCE_CGI.equals(issue.getString(Ticket.SOURCE))){
+            ticket.put(IDJIRA_FIELD,issue.getString(IDJIRA_FIELD));
+            ticket.put("id",issue.getString(IDJIRA_FIELD));
+            ticket.put(STATUSJIRA_FIELD, issue.getString(STATUSJIRA_FIELD));
+        }
+
 
         JsonArray commentsToAdd = helper.compareComments(ticketComments, issueComments);
         JsonObject data = new JsonObject();
@@ -452,7 +456,28 @@ public class EscalationServicePivotImpl implements EscalationService
             ticketServiceSql.updateTicket(ticketId, data, userIws,
                     getAfterTicketUpdateHandler(ticketId, issueStatus, issue, updateStatus, handler) );
         }
+        if (Ticket.SOURCE_CGI.equals(issue.getString(Ticket.SOURCE))){
+            int statusForHisto = applicationsMap.get(issue.getString(STATUSJIRA_FIELD));
+            ticketServiceSql.createTicketHisto(ticketId, Ticket.JIRA_COMMENT_HEADER,
+                    statusForHisto, Ticket.ID, 2, res -> {
+                        if (res.isLeft()) {
+                            log.error("Error creation historization : " + res.left().getValue());
+                        } else {
+                            res.right();
+                        }
+                    });
+        }
     }
+
+    public final static Map<String, Integer> applicationsMap = new HashMap<String, Integer>()
+    {
+        {
+            put(Ticket.NEW, 1);
+            put(Ticket.OPEN, 2);
+            put(Ticket.RESOLVED, 3);
+            put(Ticket.CLOSED, 4);
+        }
+    };
 
     /**
      * Used after updating a ticket with bugtracker info
