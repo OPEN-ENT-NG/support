@@ -797,11 +797,12 @@ public class TicketController extends ControllerHelper {
                         }
                     });
                     String status = I18n.getInstance().translate(
-                            "support.escalation.sucessful",
+
+                            "support.ticket.escalation.successful",
                             getHost(request), I18n.acceptLanguage(request));
                     if(doResponse) {
                         renderJson(request, new JsonObject().put("issue",
-                                new JsonObject().put(Ticket.ID, issue.getString(Ticket.ID_JIRA))
+                                new JsonObject().put(Ticket.ID, issue.getString(Ticket.ID_JIRA_FIELD))
                                         .put(Ticket.STATUS, new JsonObject().put(Ticket.NAME, EscalationStatus.SUCCESSFUL))));
                     }
                 }
