@@ -21,11 +21,18 @@ package net.atos.entng.support.enums;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import net.atos.entng.support.constants.Ticket;
 
 public enum BugTracker {
 
 	REDMINE {
+        @Override
+        public Number getIssueId(JsonObject issue) {
+            return this.extractIdFromIssue(issue);
+        }
+
 		@Override
 		public String extractIdFromIssueString(JsonObject issue) {
 			if (issue != null) {
@@ -60,6 +67,19 @@ public enum BugTracker {
 		}
 	},
 	PIVOT {
+        @Override
+        public Number getIssueId(JsonObject issue) {
+            Number issueId = 0;
+            String issueIdString = this.extractIdFromIssueString(issue.getJsonObject(Ticket.ISSUE, new JsonObject()));
+            try {
+                issueId = Integer.parseInt(issueIdString);
+            } catch (NumberFormatException e) {
+				e.printStackTrace();
+                issueId = null;
+            }
+            return issueId;
+        }
+
 		@Override
 		public String extractIdFromIssueString(JsonObject issue) {
 			if (issue != null) {
@@ -127,5 +147,10 @@ public enum BugTracker {
 	 * @return tracker sync type
 	 */
 	public abstract BugTrackerSyncType getBugTrackerSyncType();
+
+    /***
+     * @return issueid from the bugTracker
+     */
+    public abstract Number getIssueId(JsonObject issue);
 
 }
