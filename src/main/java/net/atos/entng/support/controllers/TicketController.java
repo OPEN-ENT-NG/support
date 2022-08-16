@@ -735,10 +735,10 @@ public class TicketController extends ControllerHelper {
                 final JsonObject issue = escalationResponse.right().getValue();
                 final Number issueId = escalationService.getBugTrackerType().getIssueId(issue);
 
-                if(issueId != null){
+                if (issueId != null) {
                     escalationService.getIssue(issueId, getIssueHandler(request, issueId, ticketId, user, attachmentMap, doResponse, issue));
                 } else {
-                    renderError(request, new JsonObject().put("error","Failed to parse integer"));
+                    badRequest(request);
                 }
                 // get the whole issue (i.e. with attachments' metadata and comments) to save it in database
             } else {
