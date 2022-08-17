@@ -732,12 +732,15 @@ public class TicketController extends ControllerHelper {
 
         return escalationResponse -> {
             if (escalationResponse.isRight()) {
-                final JsonObject issue = escalationResponse.right().getValue().getJsonObject(Ticket.ISSUE, new JsonObject());
-                final String issueIdString = escalationService.getBugTrackerType().extractIdFromIssueString(issue);
-                final Number issueId = Integer.parseInt(issueIdString);
+                final JsonObject issue = escalationResponse.right().getValue();
+                final Number issueId = escalationService.getBugTrackerType().getIssueId(issue);
 
+                if (issueId != null) {
+                    escalationService.getIssue(issueId, getIssueHandler(request, issueId, ticketId, user, attachmentMap, doResponse, issue));
+                } else {
+                    badRequest(request);
+                }
                 // get the whole issue (i.e. with attachments' metadata and comments) to save it in database
-                escalationService.getIssue(issueId, getIssueHandler(request, issueId, ticketId, user, attachmentMap, doResponse, issue));
             } else {
                 ticketServiceSql.endFailedEscalation(ticketId, user, event -> {
                     if (event.isLeft()) {
