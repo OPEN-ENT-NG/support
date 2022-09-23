@@ -609,6 +609,7 @@ public class TicketController extends ControllerHelper {
 
     @Get("/profile/:userId")
     @ApiDoc("Returns the profile of a user")
+    @SecuredAction(value = "", type = ActionType.AUTHENTICATED)
     public void getProfileString(final HttpServerRequest request) {
         final String userId = request.params().get("userId");
         TicketServiceNeo4jImpl ticketServiceNeo4j = new TicketServiceNeo4jImpl();
