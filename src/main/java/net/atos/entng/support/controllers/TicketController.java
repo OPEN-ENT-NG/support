@@ -596,10 +596,10 @@ public class TicketController extends ControllerHelper {
 
                     JsonObject ticket = response.getJsonObject("ticket");
                     ticket.put("owner", ticket.getString("owner_id"));
-                    if (message.body().getJsonObject(Ticket.ISSUE, new JsonObject()).getString(Ticket.ID_JIRA) == null) {
+                    if (message.body().getJsonObject(Ticket.ISSUE, new JsonObject()).getString(Ticket.ID_JIRA) != null) {
                         ticket.put(Ticket.ID, message.body().getJsonObject(Ticket.ISSUE, new JsonObject()).getString(Ticket.ID_JIRA));
                     }
-                    String ticketId = ticket.getString(Ticket.ID);
+                    String ticketId = ticket.getValue(Ticket.ID).toString();
                     notifyTicketUpdated(null, ticketId, user, ticket);
                 }
                 message.reply(new JsonObject().put("status", "OK"));
