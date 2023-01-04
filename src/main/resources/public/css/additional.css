@@ -22,9 +22,13 @@
 
 /* attachment component */
 .support-attachment .found-resources {
-    height: unset!important;
+    height: 200px!important;
     margin-bottom: 0;
     padding-bottom: 0;
+}
+
+.found-resources input[ng-model="linker.resource.title"]{
+    display: none!important;
 }
 
 /*Centrage label ticket 10892*/
