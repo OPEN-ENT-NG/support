@@ -1,5 +1,5 @@
     {
-      "name": "net.atos~support~1.15.0",
+      "name": "net.atos~support~1.15.0.1",
       "config": {
         "main" : "net.atos.entng.support.Support",
         "port" : 8027,
