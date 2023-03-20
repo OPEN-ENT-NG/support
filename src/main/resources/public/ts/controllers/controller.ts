@@ -17,6 +17,7 @@ import {IAttachmentService} from "../services/attachment.service";
 import {Attachment} from "../models/Attachment";
 import service = workspace.v2.service;
 import {AxiosError, AxiosResponse} from "axios";
+import {attachment} from "entcore/types/src/ts/editor/options";
 
 declare let model: any;
 
@@ -43,6 +44,7 @@ export const SupportController: Controller = ng.controller('SupportController',
 			$scope.me = model.me;
 
 			$scope.removeAttachmentLightbox = {attachment: null, isOpen: false};
+			$scope.addAttachmentLightbox = {attachment: null, isOpen: false};
 
 
 			$scope.tickets = model.tickets;
@@ -671,6 +673,12 @@ export const SupportController: Controller = ng.controller('SupportController',
 			safeApply($scope);
 		};
 
+
+		$scope.openAttachmentLightbox = (): void => {
+			$scope.addAttachmentLightbox.isOpen = true;
+		};
+
+
 		/**
 		 * delete attachment and then close lightbox
 		 * @returns void
@@ -691,6 +699,30 @@ export const SupportController: Controller = ng.controller('SupportController',
 					safeApply($scope);
 				});
 		};
+
+
+
+
+
+		/**
+		 * Adds attachments to document and closes media-library lightbox
+		 */
+		$scope.updateDocument = (): void => {
+			$scope.eventDocuments = angular.element(document.getElementsByTagName("media-library")).scope();
+			$scope.ticket.attachments = $scope.ticket.attachments ? $scope.ticket.attachments : [];
+			if ($scope.ticket.newAttachments) {
+				$scope.ticket.attachments = [...$scope.ticket.attachments, ...$scope.ticket.newAttachments];
+			}
+			$scope.addAttachmentLightbox.isOpen = false;
+		};
+
+		$scope.removeDocumentFromAttachments = (documentId: String): void => {
+			let removedDocument: Document = $scope.ticket.attachments.find((doc: Attachment) => doc.document_id == documentId);
+			$scope.ticket.attachments.splice($scope.ticket.attachments.indexOf(removedDocument), 1);
+			$scope.ticket.newAttachments.splice($scope.ticket.newAttachments.indexOf(removedDocument), 1);
+		};
+
+
 
 		$scope.editIssue = function() {
 			$scope.ticket.issue.showEditForm = true;

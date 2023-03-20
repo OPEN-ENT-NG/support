@@ -1,6 +1,7 @@
 {
     "support.attachment.processing.failed.ticket.cannot.be.created": "Erreur lors du traitement des pièces jointes. La demande n'a pas pu être créée",
     "support.attachment.processing.failed.ticket.cannot.be.updated": "Erreur lors du traitement des pièces jointes. La demande n'a pas pu être mise à jour",
+    "support.attachment": "Ajouter Pièces jointes",
     "support.comment.issue.successful": "Votre commentaire a été ajouté à la demande transmise",
     "support.error.comment.added.to.escalated.ticket.but.synchronization.failed": "Erreur : le commentaire a été ajouté à la demande transmise, mais l'ENT n'a pas pu être synchronisé",
     "support.error.comment.has.not.been.added.to.escalated.ticket": "Erreur : le commentaire n'a pas pu être ajoutée à la demande transmise",

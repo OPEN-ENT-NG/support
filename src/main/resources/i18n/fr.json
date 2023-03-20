@@ -6,6 +6,7 @@
     "support.attachment.delete.success": "La pièce jointe a été supprimé",
     "support.attachment.delete.error": "Erreur lors de la suppression de la pièce jointe",
     "support.delete": "Supprimer",
+    "support.attachment": "Ajouter Pièces jointes",
     "support.comment.issue.successful": "Votre commentaire a été ajouté à la demande transmise",
     "support.comment.status.modification.successful":"Les statuts ont été modifiés.",
     "support.error.comment.added.to.escalated.ticket.but.synchronization.failed": "Erreur : le commentaire a été ajouté à la demande transmise, mais l'ENT n'a pas pu être synchronisé",
