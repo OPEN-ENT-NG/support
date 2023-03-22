@@ -673,11 +673,9 @@ export const SupportController: Controller = ng.controller('SupportController',
 			safeApply($scope);
 		};
 
-
 		$scope.openAttachmentLightbox = (): void => {
 			$scope.addAttachmentLightbox.isOpen = true;
 		};
-
 
 		/**
 		 * delete attachment and then close lightbox
@@ -700,10 +698,6 @@ export const SupportController: Controller = ng.controller('SupportController',
 				});
 		};
 
-
-
-
-
 		/**
 		 * Adds attachments to document and closes media-library lightbox
 		 */
@@ -719,8 +713,6 @@ export const SupportController: Controller = ng.controller('SupportController',
 		$scope.removeDocumentFromAttachments = (documentId: String): void => {
 			$scope.ticket.newAttachments = $scope.ticket.newAttachments.filter(deletedAttachment => deletedAttachment._id !== documentId);
 		};
-
-
 
 		$scope.editIssue = function() {
 			$scope.ticket.issue.showEditForm = true;
