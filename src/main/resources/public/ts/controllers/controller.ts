@@ -710,16 +710,14 @@ export const SupportController: Controller = ng.controller('SupportController',
 		$scope.updateDocument = (): void => {
 			$scope.eventDocuments = angular.element(document.getElementsByTagName("media-library")).scope();
 			$scope.ticket.attachments = $scope.ticket.attachments ? $scope.ticket.attachments : [];
-			if ($scope.ticket.newAttachments) {
-				$scope.ticket.attachments = [...$scope.ticket.attachments, ...$scope.ticket.newAttachments];
+			if ($scope.eventDocuments.documents) {
+				$scope.ticket.attachments = [...$scope.ticket.attachments, ...$scope.eventDocuments.documents];
 			}
 			$scope.addAttachmentLightbox.isOpen = false;
 		};
 
 		$scope.removeDocumentFromAttachments = (documentId: String): void => {
-			let removedDocument: Document = $scope.ticket.attachments.find((doc: Attachment) => doc.document_id == documentId);
-			$scope.ticket.attachments.splice($scope.ticket.attachments.indexOf(removedDocument), 1);
-			$scope.ticket.newAttachments.splice($scope.ticket.newAttachments.indexOf(removedDocument), 1);
+			$scope.ticket.newAttachments = $scope.ticket.newAttachments.filter(deletedAttachment => deletedAttachment._id !== documentId);
 		};
 
 
