@@ -33,7 +33,27 @@
 			<div class="two cell">&nbsp;
 			</div>
 			<div class="ten cell">
-				<attachments class="support-attachment" apps="['workspace']" ng-model="ticket.newAttachments"></attachments>
+				<!--Attachment button-->
+				<button class="editEvent-attachments-buttonSection-button left-magnet" ng-click="openAttachmentLightbox()">
+					<i class="attachment"></i>
+					<i18n>support.attachment</i18n>
+				</button>
+				<!--List of attachment files-->
+				<div class="editEvent-attachments-fileSection row">
+					<div ng-repeat="attachment in ticket.newAttachments"
+						 class="right-spacing three cell bottom-spacing editEvent-attachments-fileSection-list">
+						<div class="editEvent-attachments-fileSection-list-item ">
+							<div ng-click="downloadAttachment(ticket, attachment)"
+								 class="editEvent-attachments-fileSection-list-item-title">
+								[[attachment.metadata.filename]]
+							</div>
+							<i class="cross top-spacing horizontal-margin-small
+				    editEvent-attachments-fileSection-list-item-cross"
+							   ng-click="removeDocumentFromAttachments(attachment._id)"></i>
+							<span class="tooltip-title left-spacing-small">[[attachment.metadata.filename]]</span>
+						</div>
+					</div>
+				</div>
 			</div>
 		</div>
 		<div class="row">
@@ -46,3 +66,5 @@
 		</div>
 	</form>
 </article>
+
+<div ng-include="'/support/public/template/add-attachment-lightbox.html'"></div>
