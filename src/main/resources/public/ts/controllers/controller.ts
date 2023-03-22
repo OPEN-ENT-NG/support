@@ -46,10 +46,8 @@ export const SupportController: Controller = ng.controller('SupportController',
 			$scope.removeAttachmentLightbox = {attachment: null, isOpen: false};
 			$scope.addAttachmentLightbox = {attachment: null, isOpen: false};
 
-
 			$scope.tickets = model.tickets;
 			$scope.events = model.events;
-
 
 			// but-tracker management : direct communication between user and bt ?
 			model.isBugTrackerCommDirect(function(result){
