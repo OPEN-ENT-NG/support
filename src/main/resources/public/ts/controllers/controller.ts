@@ -17,6 +17,7 @@ import {IAttachmentService} from "../services/attachment.service";
 import {Attachment} from "../models/Attachment";
 import service = workspace.v2.service;
 import {AxiosError, AxiosResponse} from "axios";
+import {attachment} from "entcore/types/src/ts/editor/options";
 
 declare let model: any;
 
@@ -43,11 +44,10 @@ export const SupportController: Controller = ng.controller('SupportController',
 			$scope.me = model.me;
 
 			$scope.removeAttachmentLightbox = {attachment: null, isOpen: false};
-
+			$scope.addAttachmentLightbox = {attachment: null, isOpen: false};
 
 			$scope.tickets = model.tickets;
 			$scope.events = model.events;
-
 
 			// but-tracker management : direct communication between user and bt ?
 			model.isBugTrackerCommDirect(function(result){
@@ -671,6 +671,10 @@ export const SupportController: Controller = ng.controller('SupportController',
 			safeApply($scope);
 		};
 
+		$scope.openAttachmentLightbox = (): void => {
+			$scope.addAttachmentLightbox.isOpen = true;
+		};
+
 		/**
 		 * delete attachment and then close lightbox
 		 * @returns void
@@ -690,6 +694,22 @@ export const SupportController: Controller = ng.controller('SupportController',
 					console.error(err);
 					safeApply($scope);
 				});
+		};
+
+		/**
+		 * Adds attachments to document and closes media-library lightbox
+		 */
+		$scope.updateDocument = (): void => {
+			$scope.eventDocuments = angular.element(document.getElementsByTagName("media-library")).scope();
+			$scope.ticket.attachments = $scope.ticket.attachments ? $scope.ticket.attachments : [];
+			if ($scope.eventDocuments.documents) {
+				$scope.ticket.attachments = [...$scope.ticket.attachments, ...$scope.eventDocuments.documents];
+			}
+			$scope.addAttachmentLightbox.isOpen = false;
+		};
+
+		$scope.removeDocumentFromAttachments = (documentId: String): void => {
+			$scope.ticket.newAttachments = $scope.ticket.newAttachments.filter(deletedAttachment => deletedAttachment._id !== documentId);
 		};
 
 		$scope.editIssue = function() {
