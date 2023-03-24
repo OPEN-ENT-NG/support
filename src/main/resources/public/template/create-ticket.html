@@ -62,7 +62,7 @@
 				<button class="right-magnet" reset-guard="createTicket()" guard-ignore-template translate content="support.ticket.save"></button>
 				<button class="right-magnet cancel" navigation-trigger="cancelCreateTicket()" translate content="support.ticket.cancel"></button>
 			</div>
-			<button ng-if="ticket.processing === true" class="right-magnet disabled" ng-disabled="ticket.processing === true"><i18n>support.ticket.processing</i18n>&nbsp;<i class="loading"></i></button>
+			<button ng-if="ticket.processing === true" class="right-magnet disabled"><i18n>support.ticket.processing</i18n>&nbsp;<i class="loading"></i></button>
 		</div>
 	</form>
 </article>
