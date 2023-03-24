@@ -34,7 +34,7 @@
 			</div>
 			<div class="ten cell">
 				<!--Attachment button-->
-				<button class="editEvent-attachments-buttonSection-button left-magnet" ng-click="openAttachmentLightbox()">
+				<button class="editEvent-attachments-buttonSection-button left-magnet" ng-click="openAttachmentLightbox()" ng-disabled="ticket.processing === true">
 					<i class="attachment"></i>
 					<i18n>support.attachment</i18n>
 				</button>
@@ -47,7 +47,7 @@
 								 class="editEvent-attachments-fileSection-list-item-title">
 								[[attachment.metadata.filename]]
 							</div>
-							<i class="cross top-spacing horizontal-margin-small
+							<i ng-hide="ticket.processing === true" class="cross top-spacing horizontal-margin-small
 				    editEvent-attachments-fileSection-list-item-cross"
 							   ng-click="removeDocumentFromAttachments(attachment._id)"></i>
 							<span class="tooltip-title left-spacing-small">[[attachment.metadata.filename]]</span>
@@ -62,7 +62,7 @@
 				<button class="right-magnet" reset-guard="createTicket()" guard-ignore-template translate content="support.ticket.save"></button>
 				<button class="right-magnet cancel" navigation-trigger="cancelCreateTicket()" translate content="support.ticket.cancel"></button>
 			</div>
-			<button ng-if="ticket.processing === true" class="right-magnet disabled" disabled><i18n>support.ticket.processing</i18n></button>
+			<button ng-if="ticket.processing === true" class="right-magnet disabled"><i18n>support.ticket.processing</i18n>&nbsp;<i class="loading"></i></button>
 		</div>
 	</form>
 </article>
