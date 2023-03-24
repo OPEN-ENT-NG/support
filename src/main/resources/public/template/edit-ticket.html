@@ -3,7 +3,7 @@
 		<div class="row">
 			<label class="two cell"><i18n>support.ticket.id</i18n></label>
 			<span class="four cell">[[editedTicket.id]]</span>
-			<label class="two cell margin-left-label"><i18n>support.ticket.status</i18n></label>
+			<label class="two cell left-spacing-four"><i18n>support.ticket.status</i18n></label>
 			<span class="three cell">
 				<select ng-model="editedTicket.status"
 					ng-options="object.value as object.i18nValue for (key, object) in statuses" input-guard>
@@ -13,7 +13,7 @@
 		<div class="row">
 			<label class="two cell"><i18n>support.ticket.author</i18n></label>
             <span class="four cell"> <a href="/userbook/annuaire#[[ticket.owner]]">[[ticket.owner_name]]</a>[["&nbsp;" + "(" + ticket.profile + ")"]]</span>
-			<label class="two cell margin-left-label"><i18n>support.ticket.creation.date</i18n></label>
+			<label class="two cell left-spacing-four"><i18n>support.ticket.creation.date</i18n></label>
 			<span class="three cell">[[formatDate(editedTicket.created)]]</span>
 		</div>
 		<div class="row">
@@ -23,14 +23,14 @@
 			</div>
 			<div ng-if="schools.length > 1">
 				<label class="two cell"><i18n>support.ticket.school</i18n></label>
-				<span class="four cell select-flex">
+				<span class="four cell flex">
 					<select ng-model="ticket.school_id" 
 						ng-options="school.id as school.name for school in schools | orderBy:'name'" input-guard>
 					</select>
 				</span>
 			</div>
 			
-			<label class="two cell margin-left-label"><i18n>support.ticket.modification.date</i18n></label>
+			<label class="two cell left-spacing-four"><i18n>support.ticket.modification.date</i18n></label>
 			<span class="two cell">[[formatDate(editedTicket.modified)]]</span>
 		</div>
 		<div class="row">
