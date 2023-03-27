@@ -40,6 +40,7 @@ import net.atos.entng.support.helpers.DateHelper;
 import net.atos.entng.support.services.TicketServiceSql;
 
 import org.entcore.common.service.impl.SqlCrudService;
+import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlStatementsBuilder;
 import org.entcore.common.user.DefaultFunctions;
 import org.entcore.common.user.UserInfos;
@@ -233,8 +234,8 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 			}
 		}
 		else {
-            query.append(" WHERE t.school_id IN (?)");
-            values.add(user.getStructures().get(0)); // SUPER_ADMIN, has only 1 structure.
+            query.append(" WHERE t.school_id IN ").append(Sql.listPrepared(user.getStructures())).append(" ");
+            values.addAll(new JsonArray(user.getStructures())); // SUPER_ADMIN, has only 1 structure.
 			if (oneApplicant) {
 				query.append(" AND t.owner").append(applicantIsMe?"=":"!=").append("?");
 				values.add(user.getUserId());
