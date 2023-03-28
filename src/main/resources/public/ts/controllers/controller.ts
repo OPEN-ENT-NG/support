@@ -394,6 +394,7 @@ export const SupportController: Controller = ng.controller('SupportController',
 						notify.info('support.ticket.has.been.created');
 						template.open('main', 'list-tickets');
 						template.open('filters', 'filters');
+						$scope.goPage(1, true);
 						$scope.escalateTicketNow(thisTicket);
 					});
 
