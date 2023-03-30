@@ -43,6 +43,9 @@ export const SupportController: Controller = ng.controller('SupportController',
 			$scope.template = template;
 			$scope.me = model.me;
 
+			$scope.myDemandsLabel = lang.translate('support.ticket.status.my.demands')
+			$scope.otherDemandsLabel = lang.translate('support.ticket.status.other.demands')
+
 			$scope.removeAttachmentLightbox = {attachment: null, isOpen: false};
 			$scope.addAttachmentLightbox = {attachment: null, isOpen: false};
 
@@ -138,26 +141,52 @@ export const SupportController: Controller = ng.controller('SupportController',
 			$scope.display.filters.ticket_id ="";
 
 			$scope.switchAll = function(){
-				for(var filter in $scope.display.filters){
-					if (filter !== "school_id" && filter !== "ticket_id") {
+				for (let filter in $scope.display.filters) {
+					if (filter !== "school_id" && filter !== "ticket_id"
+						&& filter !== "mydemands" && filter != "otherdemands") {
 						$scope.display.filters[filter] = $scope.display.filters.all;
 					}
-				}
-				if($scope.userIsLocalAdmin()) {
-					// no need to update if the checkbox isn't visible.
-					$scope.display.filters.mydemands = $scope.display.filters.all;
 				}
 				$scope.goPage(1, true);
 			};
 
 			$scope.checkAll = function(){
 				$scope.display.filters.all = true;
-				for(var filter in $scope.display.filters){
-					$scope.display.filters.all = $scope.display.filters[filter] &&
-						$scope.display.filters.mydemands &&
-						$scope.display.filters.all;
+				for (let filter in $scope.display.filters) {
+					if (filter !== "mydemands" && filter != "otherdemands"){
+						$scope.display.filters.all = $scope.display.filters[filter] && $scope.display.filters.all;
+					}
 				}
 			};
+
+			$scope.seeMyDemands = async (isChecked: boolean): Promise<void> => {
+				if (!isChecked && !$scope.display.filters.otherdemands) {
+					$scope.display.filters.otherdemands = true;
+
+				}
+				if (!isChecked) {
+					$scope.display.filters.mydemands = false;
+					$scope.goPage(1, true);
+				} else {
+					$scope.display.filters.mydemands = true;
+					$scope.goPage(1, true);
+
+				}
+			}
+
+			$scope.seeOtherDemands = async (isChecked: boolean): Promise<void> => {
+				if (!isChecked && !$scope.display.filters.mydemands) {
+					$scope.display.filters.mydemands = true;
+
+				}
+				if (!isChecked) {
+					$scope.display.filters.otherdemands = false;
+					$scope.goPage(1, true);
+				} else {
+					$scope.display.filters.otherdemands = true;
+					$scope.goPage(1, true);
+				}
+			}
 
 			$scope.onStatusChange = function () {
 				$scope.checkAll();
