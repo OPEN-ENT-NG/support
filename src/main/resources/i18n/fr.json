@@ -120,6 +120,7 @@
     "support.label.status":"Statut",
     "support.histo.back":"Retour",
     "support.search.title" : "{0} sur la catégorie {1} ({2})",
+    "file.too.large.limit" : "Le fichier joint est trop lourd, la limite est de ",
     "actualites": "Actualités",
     "collaborativeeditor": "Pad",
     "sharebigfiles": "Téléchargement de fichier lourd",

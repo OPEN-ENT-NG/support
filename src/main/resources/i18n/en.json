@@ -78,5 +78,6 @@
     "support.ticket.validation.error.duplicate.in.new.attachments": "Il y a des doublons dans les pièces jointes que vous souhaitez ajouter",
     "support.ticket.validation.error.subject.is.empty": "Le champ 'Sujet' doit être renseigné",
     "support.ticket.validation.error.subject.too.long": "Le champ 'Sujet' ne doit pas dépasser 255 caractères",
-    "support.title": "Support"
+    "support.title": "Support",
+    "file.too.large.limit" : "Le fichier joint est trop lourd, la limite est de "
 }
