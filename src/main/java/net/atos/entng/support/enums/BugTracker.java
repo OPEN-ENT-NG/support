@@ -19,27 +19,9 @@
 
 package net.atos.entng.support.enums;
 
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-import net.atos.entng.support.constants.JiraTicket;
-
 public enum BugTracker {
 
 	REDMINE {
-		@Override
-		public Number getIssueId(JsonObject issue) {
-			return this.extractIdFromIssue(issue);
-		}
-
-		@Override
-		public String extractIdFromIssueString(JsonObject issue) {
-			if (issue != null) {
-				return issue.getString(JiraTicket.ID_ENT);
-			}
-			return "";
-		}
 		@Override
 		public String getLastIssueUpdateFromPostgresqlJson() {
 			return "->'issue'->>'updated_on'";
@@ -51,42 +33,11 @@ public enum BugTracker {
 		}
 
 		@Override
-		public Number extractIdFromIssue(JsonObject issue) {
-
-			return issue.getJsonObject("issue").getLong("id");
-		}
-
-		@Override
-		public JsonArray extractAttachmentsFromIssue(JsonObject issue) {
-			return issue.getJsonObject("issue").getJsonArray("attachments", null);
-		}
-
-		@Override
 		public BugTrackerSyncType getBugTrackerSyncType() {
 			return BugTrackerSyncType.SYNC;
 		}
 	},
 	PIVOT {
-		@Override
-		public Number getIssueId(JsonObject issue) {
-			Number issueId;
-			String issueIdString = this.extractIdFromIssueString(issue.getJsonObject(JiraTicket.ISSUE, new JsonObject()));
-			try {
-				issueId = Integer.parseInt(issueIdString);
-			} catch (NumberFormatException e) {
-				e.printStackTrace();
-				issueId = null;
-			}
-			return issueId;
-		}
-
-		@Override
-		public String extractIdFromIssueString(JsonObject issue) {
-			if (issue != null) {
-				return issue.getString(JiraTicket.ID_ENT);
-			}
-			return "";
-		}
 
 		@Override
 		public String getLastIssueUpdateFromPostgresqlJson() {
@@ -99,29 +50,10 @@ public enum BugTracker {
 		}
 
 		@Override
-		public Number extractIdFromIssue(JsonObject issue) {
-			if (issue != null) {
-				return issue.getInteger("id_ent");
-			}
-			return 0;
-		}
-
-		@Override
-		public JsonArray extractAttachmentsFromIssue(JsonObject issue) {
-			//return issue.getObject("issue").getArray("attachments", null);
-			return null;
-		}
-
-		@Override
 		public BugTrackerSyncType getBugTrackerSyncType() {
 			return BugTrackerSyncType.ASYNC;
 		}
 	};
-
-	/**
-	 * Extract "id" from JSON object sent by the bug tracker REST API
-	 */
-    public abstract String extractIdFromIssueString(JsonObject issue);
 
 	/**
 	 * @return SQL expression to extract last update time of bug tracker issue from JSON field stored in postgresql
@@ -134,23 +66,7 @@ public enum BugTracker {
 	public abstract String getStatusIdFromPostgresqlJson();
 
 	/**
-	 * Extract "id" from JSON object sent by the bug tracker REST API
-	 */
-	public abstract Number extractIdFromIssue(JsonObject issue);
-
-	/**
-	 * Extract "attachments" from JSON object sent by the bug tracker REST API
-	 */
-	public abstract JsonArray extractAttachmentsFromIssue(JsonObject issue);
-
-	/**
 	 * @return tracker sync type
 	 */
 	public abstract BugTrackerSyncType getBugTrackerSyncType();
-
-    /***
-     * @return issueid from the bugTracker
-     */
-	public abstract Number getIssueId(JsonObject issue);
-
 }

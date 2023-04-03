@@ -19,11 +19,18 @@
 
 package net.atos.entng.support.services;
 
+import java.util.List;
 import java.util.concurrent.ConcurrentMap;
 
+import net.atos.entng.support.Ticket;
+import net.atos.entng.support.Issue;
+import net.atos.entng.support.Comment;
+import net.atos.entng.support.Attachment;
 import net.atos.entng.support.enums.BugTracker;
 
+import org.entcore.common.utils.Id;
 import org.entcore.common.user.UserInfos;
+
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
@@ -43,18 +50,16 @@ public interface EscalationService {
 	/**
 	 * Parameters "ticket", "comments" and "attachments" are used to create a ticket in bug tracker
 	 *
-	 * @param attachmentMap : emptyMap that must be filled by function escalateTicket. key = attachmentId in bug tracker, value = attachmentId in gridfs
 	 */
-	public void escalateTicket(HttpServerRequest request, JsonObject ticket, JsonArray comments, JsonArray attachments,
-							   ConcurrentMap<Long, String> attachmentMap, UserInfos user, JsonObject issue,
-							   Handler<Either<String, JsonObject>> handler);
+	public void escalateTicket(HttpServerRequest request, Ticket ticket,
+							   UserInfos user, Issue issue, Handler<Either<String, Issue>> handler);
 
-	public void getIssue(Number issueId, Handler<Either<String, JsonObject>> handler);
+	public void getIssue(Number issueId, Handler<Either<String, Issue>> handler);
 
-	public void commentIssue(Number issueId, JsonObject comment, Handler<Either<String,JsonObject>> handler);
+	public void commentIssue(Number issueId, Comment comment, Handler<Either<String,Void>> handler);
 
 	public void updateTicketFromBugTracker(Message<JsonObject> message, Handler<Either<String, JsonObject>> handler);
 
-	void syncAttachments(String ticketId, JsonArray attachments, Handler<Either<String, JsonObject>> handler);
+	void syncAttachments(String ticketId, List<Attachment> attachments, Handler<Either<String, Id<Issue, Integer>>> handler);
 
 }

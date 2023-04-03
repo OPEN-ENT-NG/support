@@ -3,6 +3,11 @@ package net.atos.entng.support.services.impl;
 import fr.wseduc.webutils.Either;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.LoggerFactory;
+import net.atos.entng.support.Ticket;
+import net.atos.entng.support.Issue;
+import net.atos.entng.support.Comment;
+import net.atos.entng.support.Attachment;
+import net.atos.entng.support.WorkspaceAttachment;
 import net.atos.entng.support.constants.JiraTicket;
 import net.atos.entng.support.enums.BugTracker;
 import net.atos.entng.support.enums.TicketStatus;
@@ -12,6 +17,7 @@ import net.atos.entng.support.helpers.impl.EscalationPivotHelperImpl;
 import net.atos.entng.support.services.EscalationService;
 import net.atos.entng.support.services.TicketServiceSql;
 import net.atos.entng.support.services.UserService;
+import org.entcore.common.utils.Id;
 import org.entcore.common.bus.ErrorMessage;
 import org.entcore.common.bus.WorkspaceHelper;
 import org.entcore.common.notification.TimelineHelper;
@@ -117,17 +123,16 @@ public class EscalationServicePivotImpl implements EscalationService
      * @param ticket Json Object containing local ticket info
      * @param comments Json Array with all comments, comments info are serialized
      * @param attachmentsIds Ids of attachments in workspace
-     * @param attachmentMap unused in async mode
      * @param user User infos
      */
     @Override
-    public void escalateTicket(final HttpServerRequest request, final JsonObject ticket,
-                               final JsonArray comments, final JsonArray attachmentsIds,
-                               final ConcurrentMap<Long, String> attachmentMap, final UserInfos user,
-                               final JsonObject issue,
-                               final Handler<Either<String, JsonObject>> handler) {
+    public void escalateTicket(final HttpServerRequest request, final Ticket ticket,
+                               final UserInfos user,
+                               final Issue issue,
+                               final Handler<Either<String, Issue>> handler) {
 
-        doTicketEscalation(ticket, comments, attachmentsIds, issue, user, handler);
+        JsonObject ticketJson = ticket.toJsonObject();
+        doTicketEscalation(ticketJson, ticketJson.getJsonArray("comments"), ticketJson.getJsonArray("attachments"), issue.toJsonObject(), user, handler);
     }
 
     /**
@@ -142,7 +147,7 @@ public class EscalationServicePivotImpl implements EscalationService
     private void doTicketEscalation(final JsonObject ticket, final JsonArray comments,
                                     final JsonArray attachmentsIds, final JsonObject issue,
                                     final UserInfos escalationUser,
-                                    final Handler<Either<String, JsonObject>> handler) {
+                                    final Handler<Either<String, Issue>> handler) {
 
         final JsonArray finalComments = helper.serializeComments(comments);
         final JsonArray attachments = new JsonArray();
@@ -182,7 +187,7 @@ public class EscalationServicePivotImpl implements EscalationService
      * Not possible in async mode, placeholder behavior.
      */
     @Override
-    public void getIssue(Number issueId, Handler<Either<String, JsonObject>> handler) {
+    public void getIssue(Number issueId, Handler<Either<String, Issue>> handler) {
         handler.handle(new Either.Left<>("OK"));
     }
 
@@ -190,7 +195,7 @@ public class EscalationServicePivotImpl implements EscalationService
      * Escalate ticket with all comments, including new
      */
     @Override
-    public void commentIssue(Number issueId, JsonObject comment, Handler<Either<String, JsonObject>> handler) {
+    public void commentIssue(Number issueId, Comment comment, Handler<Either<String, Void>> handler) {
         ticketServiceSql.getTicketForEscalationService( issueId.toString(), getTicketForEscalationHandler(handler) );
     }
 
@@ -199,19 +204,28 @@ public class EscalationServicePivotImpl implements EscalationService
      * @param handler Final handler
      * @return handler to process SQL response
      */
-    private Handler<Either<String, JsonObject>> getTicketForEscalationHandler (
-            final Handler<Either<String,JsonObject>> handler) {
+    private Handler<Either<String, Ticket>> getTicketForEscalationHandler (
+            final Handler<Either<String,Void>> handler) {
         return getTicketResponse -> {
             if (getTicketResponse.isLeft()) {
-                handler.handle(getTicketResponse);
+                handler.handle(new Either.Left<String, Void>(getTicketResponse.left().getValue()));
             } else {
-                JsonObject ticket = getTicketResponse.right().getValue();
-                if (ticket == null || ticket.size() == 0) {
+                Ticket ticket = getTicketResponse.right().getValue();
+                if (ticket == null || ticket.id == null) {
                     handler.handle(new Either.Left<>("Ticket not escalated"));
                 } else {
-                    JsonArray comments = new JsonArray(ticket.getString("comments"));
-                    JsonArray attachments = new JsonArray(ticket.getString("attachments"));
-                    doTicketEscalation(ticket, comments, attachments, null, null, handler);
+                    JsonObject ticketJson = ticket.toJsonObject();
+                    doTicketEscalation(ticketJson, ticketJson.getJsonArray("comments"), ticketJson.getJsonArray("attachments"), null, null, new Handler<Either<String,Issue>>()
+                    {
+                        @Override
+                        public void handle(Either<String, Issue> result)
+                        {
+                            if(result.isLeft())
+                                handler.handle(new Either.Left<String, Void>(result.left().getValue()));
+                            else
+                                handler.handle(new Either.Right<String, Void>(null));
+                        }
+                    });
                 }
             }
         };
@@ -242,7 +256,7 @@ public class EscalationServicePivotImpl implements EscalationService
                 log.error("Error when calling service getTicketWithEscalation : " + getTicketResponse.left().getValue());
                 handler.handle(new Either.Left<>("Error when calling service getTicketWithEscalation."));
             } else {
-                updateTicketWithBugtrackerData(idEnt, getTicketResponse.right().getValue(), issue, handler);
+                updateTicketWithBugtrackerData(idEnt, getTicketResponse.right().getValue().toJsonObject(), issue, handler);
             }
         });
     }
@@ -479,7 +493,7 @@ public class EscalationServicePivotImpl implements EscalationService
      * @param handler final handler to answer to
      * @return handler to send back to calling function
      */
-    private Handler<Either<String, JsonObject>> getAfterTicketUpdateHandler(final String ticketId,
+    private Handler<Either<String, Ticket>> getAfterTicketUpdateHandler(final String ticketId,
                                                                             final int issueStatus,
                                                                             final JsonObject issue,
                                                                             final boolean statusUpdated,
@@ -513,8 +527,16 @@ public class EscalationServicePivotImpl implements EscalationService
                     log.error("Invalid id_ent, saving issue with id 0");
                 }
                 JsonObject dataIssue = new JsonObject().put("issue", issue);
+                Issue issueObj = new Issue(issueId.intValue(), dataIssue);
+                JsonArray jsonAttachments = issue.getJsonArray("attachments", new JsonArray());
+                for(Object o : jsonAttachments)
+                {
+                    if(!(o instanceof JsonObject)) continue;
+                    JsonObject jsonAtt = (JsonObject) o;
+                    issueObj.attachments.add(new WorkspaceAttachment(null, jsonAtt.getString("name"), jsonAtt.getInteger("size"), jsonAtt.getString("id")));
+                }
                 ticketServiceSql.endSuccessfulEscalation(
-                        ticketId, dataIssue, issueId, null, userIws, handler
+                        ticketId, issueObj, issueId, userIws, handler
                 );
             }
         };
@@ -524,8 +546,8 @@ public class EscalationServicePivotImpl implements EscalationService
      * Attachments can't be synced in asynchronous mode, ignore the step
      */
     @Override
-    public void syncAttachments(String ticketId, JsonArray attachments, Handler<Either<String, JsonObject>> handler) {
-        handler.handle(new Either.Right<>(new JsonObject()));
+    public void syncAttachments(String ticketId, List<Attachment> attachments, Handler<Either<String, Id<Issue, Integer>>> handler) {
+        handler.handle(new Either.Right<>(new Id<Issue, Integer>(null)));
     }
 
     /**
@@ -534,7 +556,7 @@ public class EscalationServicePivotImpl implements EscalationService
     private void getDataAndCreateIssue(final JsonObject ticket, final JsonArray attachments,
                                        final JsonArray comments, final JsonObject issue,
                                        final UserInfos escalationUser,
-                                       final Handler<Either<String,JsonObject>> handler) {
+                                       final Handler<Either<String,Issue>> handler) {
         TicketServiceNeo4jImpl.getUserEscalateInfo(
                 ticket.getString("owner_id"),
                 ticket.getString("school_id"),
@@ -546,7 +568,7 @@ public class EscalationServicePivotImpl implements EscalationService
                         } else if (event.right().getValue().size() == 0){
                             log.error("No data associated to ticket : " + Long.toString(ticket.getLong("id")));
 
-                            handler.handle(new Either.Right<>(new JsonObject().put("status", "ko")));
+                            handler.handle(new Either.Right<>(new Issue(null, new JsonObject().put("status", "ko"))));
                         } else {
                             JsonObject neoData = event.right().getValue().getJsonObject(0);
                             EscalationServicePivotImpl.this.createIssue(ticket,
@@ -659,12 +681,21 @@ public class EscalationServicePivotImpl implements EscalationService
      * Create handler to process create issue response
      * @return handler
      */
-    private Handler<Message<JsonObject>> getCreateIssueHandler(final Handler<Either<String, JsonObject>> handler) {
+    private Handler<Message<JsonObject>> getCreateIssueHandler(final Handler<Either<String, Issue>> handler) {
         return event -> {
             if (!"ok".equals(event.body().getString("status"))) {
                 handler.handle(new Either.Left<>("support.escalation.error"));
             } else {
-                handler.handle(new Either.Right<>(event.body()));
+                JsonObject issue = event.body();
+                JsonObject innerIssue = issue.getJsonObject(JiraTicket.ISSUE, new JsonObject());
+                String issueIdString = innerIssue.getString(JiraTicket.ID_ENT, "");
+                try {
+                    Integer issueId = Integer.parseInt(issueIdString);
+                    handler.handle(new Either.Right<>(new Issue(issueId, event.body())));
+                } catch (NumberFormatException e) {
+                    e.printStackTrace();
+                    handler.handle(new Either.Right<>(new Issue(null, event.body())));
+                }
             }
         };
     }
