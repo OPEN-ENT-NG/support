@@ -32,7 +32,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Pattern;
 
 import fr.wseduc.webutils.http.Renders;
-import net.atos.entng.support.constants.Ticket;
+import net.atos.entng.support.constants.JiraTicket;
 import net.atos.entng.support.enums.BugTracker;
 import net.atos.entng.support.enums.EscalationStatus;
 import net.atos.entng.support.enums.TicketStatus;
@@ -125,7 +125,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 				String newComment = (String)o;
 				String contentOfComment = newComment;
 				String[] elem = newComment.split(Pattern.quote("|"));
-				if (elem.length == Ticket.COMMENT_LENGTH) {
+				if (elem.length == JiraTicket.COMMENT_LENGTH) {
 					contentOfComment = " " + elem[0] + "|" + "\n" + elem[1] + "|" + "\n" + elem[2] + "|" + "\n" + "\n" + elem[3];
 				}
 				JsonArray commentValues = new JsonArray();
@@ -590,11 +590,11 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
     @Override
     public void endInProgressEscalationAsync(String ticketId, UserInfos user, JsonObject issueJira, Handler<Either<String, JsonObject>> handler) {
 		JsonObject issue = new JsonObject()
-				.put(Ticket.ISSUE, new JsonObject()
-						.put(Ticket.ID, issueJira.getString(Ticket.ID_JIRA_FIELD))
-						.put(Ticket.STATUS, issueJira.getString(Ticket.STATUS_JIRA_FIELD))
-						.put(Ticket.DATE, DateHelper.convertDateFormat())
-						.put(Ticket.ID_ENT, ticketId));
+				.put(JiraTicket.ISSUE, new JsonObject()
+						.put(JiraTicket.ID, issueJira.getString(JiraTicket.ID_JIRA_FIELD))
+						.put(JiraTicket.STATUS, issueJira.getString(JiraTicket.STATUS_JIRA_FIELD))
+						.put(JiraTicket.DATE, DateHelper.convertDateFormat())
+						.put(JiraTicket.ID_ENT, ticketId));
 
 		Number issueId = 0;
 		try {

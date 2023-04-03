@@ -1,6 +1,6 @@
 package net.atos.entng.support.constants;
 
-public class Ticket {
+public class JiraTicket {
     public static final String ID = "id";
     public static final String ISSUE = "issue";
     public static final String ID_JIRA = "id_jira";

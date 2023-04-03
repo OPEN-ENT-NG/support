@@ -23,7 +23,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import net.atos.entng.support.constants.Ticket;
+import net.atos.entng.support.constants.JiraTicket;
 
 public enum BugTracker {
 
@@ -36,7 +36,7 @@ public enum BugTracker {
 		@Override
 		public String extractIdFromIssueString(JsonObject issue) {
 			if (issue != null) {
-				return issue.getString(Ticket.ID_ENT);
+				return issue.getString(JiraTicket.ID_ENT);
 			}
 			return "";
 		}
@@ -70,7 +70,7 @@ public enum BugTracker {
 		@Override
 		public Number getIssueId(JsonObject issue) {
 			Number issueId;
-			String issueIdString = this.extractIdFromIssueString(issue.getJsonObject(Ticket.ISSUE, new JsonObject()));
+			String issueIdString = this.extractIdFromIssueString(issue.getJsonObject(JiraTicket.ISSUE, new JsonObject()));
 			try {
 				issueId = Integer.parseInt(issueIdString);
 			} catch (NumberFormatException e) {
@@ -83,7 +83,7 @@ public enum BugTracker {
 		@Override
 		public String extractIdFromIssueString(JsonObject issue) {
 			if (issue != null) {
-				return issue.getString(Ticket.ID_ENT);
+				return issue.getString(JiraTicket.ID_ENT);
 			}
 			return "";
 		}

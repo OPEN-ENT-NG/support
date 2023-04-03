@@ -1,6 +1,6 @@
 package net.atos.entng.support.enums;
 
-import net.atos.entng.support.constants.Ticket;
+import net.atos.entng.support.constants.JiraTicket;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -8,10 +8,10 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public enum TicketStatusJira {
-    NEW(Ticket.NEW, 1),
-    OPEN(Ticket.OPEN, 2),
-    RESOLVED(Ticket.RESOLVED, 3),
-    CLOSED(Ticket.CLOSED, 4);
+    NEW(JiraTicket.NEW, 1),
+    OPEN(JiraTicket.OPEN, 2),
+    RESOLVED(JiraTicket.RESOLVED, 3),
+    CLOSED(JiraTicket.CLOSED, 4);
 
     private final Integer status;
     private final String name;
