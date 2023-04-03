@@ -3,7 +3,7 @@ package net.atos.entng.support.services.impl;
 import fr.wseduc.webutils.Either;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.LoggerFactory;
-import net.atos.entng.support.constants.Ticket;
+import net.atos.entng.support.constants.JiraTicket;
 import net.atos.entng.support.enums.BugTracker;
 import net.atos.entng.support.enums.TicketStatus;
 import net.atos.entng.support.enums.TicketStatusJira;
@@ -344,9 +344,9 @@ public class EscalationServicePivotImpl implements EscalationService
                 issueComments.add(crComment);
             }
         }
-        if (Ticket.SOURCE_CGI.equals(issue.getString(Ticket.SOURCE))) {
+        if (JiraTicket.SOURCE_CGI.equals(issue.getString(JiraTicket.SOURCE))) {
             ticket.put(IDJIRA_FIELD, issue.getString(IDJIRA_FIELD));
-            ticket.put(Ticket.ID, issue.getString(IDJIRA_FIELD));
+            ticket.put(JiraTicket.ID, issue.getString(IDJIRA_FIELD));
             ticket.put(STATUSJIRA_FIELD, issue.getString(STATUSJIRA_FIELD));
         }
 
@@ -457,10 +457,10 @@ public class EscalationServicePivotImpl implements EscalationService
             ticketServiceSql.updateTicket(ticketId, data, userIws,
                     getAfterTicketUpdateHandler(ticketId, issueStatus, issue, updateStatus, handler) );
         }
-        if (Ticket.SOURCE_CGI.equals(issue.getString(Ticket.SOURCE))) {
+        if (JiraTicket.SOURCE_CGI.equals(issue.getString(JiraTicket.SOURCE))) {
             int statusForHisto = TicketStatusJira.getTicketStatusJira(issue.getString(STATUSJIRA_FIELD, "")).getStatus();
-            ticketServiceSql.createTicketHisto(ticketId, Ticket.JIRA_COMMENT_HEADER,
-                    statusForHisto, Ticket.ID, 2, res -> {
+            ticketServiceSql.createTicketHisto(ticketId, JiraTicket.JIRA_COMMENT_HEADER,
+                    statusForHisto, JiraTicket.ID, 2, res -> {
                         if (res.isLeft()) {
                             String message = String.format("[Support@%s::addAttachmentAndUpdate] Support : Error creation historization : %s",
                                     this.getClass().getSimpleName(), res.left().getValue());

@@ -30,7 +30,7 @@ import java.util.concurrent.ConcurrentMap;
 
 import fr.wseduc.bus.BusAddress;
 import net.atos.entng.support.Support;
-import net.atos.entng.support.constants.Ticket;
+import net.atos.entng.support.constants.JiraTicket;
 import net.atos.entng.support.enums.BugTrackerSyncType;
 import net.atos.entng.support.enums.EscalationStatus;
 import net.atos.entng.support.filters.Admin;
@@ -597,10 +597,10 @@ public class TicketController extends ControllerHelper {
 
                     JsonObject ticket = response.getJsonObject("ticket");
                     ticket.put("owner", ticket.getString("owner_id"));
-                    if (message.body().getJsonObject(Ticket.ISSUE, new JsonObject()).getString(Ticket.ID_JIRA) != null) {
-                        ticket.put(Ticket.ID, message.body().getJsonObject(Ticket.ISSUE, new JsonObject()).getString(Ticket.ID_JIRA));
+                    if (message.body().getJsonObject(JiraTicket.ISSUE, new JsonObject()).getString(JiraTicket.ID_JIRA) != null) {
+                        ticket.put(JiraTicket.ID, message.body().getJsonObject(JiraTicket.ISSUE, new JsonObject()).getString(JiraTicket.ID_JIRA));
                     }
-                    String ticketId = ticket.getValue(Ticket.ID).toString();
+                    String ticketId = ticket.getValue(JiraTicket.ID).toString();
                     notifyTicketUpdated(null, ticketId, user, ticket);
                 }
                 message.reply(new JsonObject().put("status", "OK"));
@@ -807,8 +807,8 @@ public class TicketController extends ControllerHelper {
                             getHost(request), I18n.acceptLanguage(request));
                     if(doResponse) {
                         renderJson(request, new JsonObject().put("issue",
-                                new JsonObject().put(Ticket.ID, issue.getString(Ticket.ID_JIRA_FIELD))
-                                        .put(Ticket.STATUS, new JsonObject().put(Ticket.NAME, EscalationStatus.SUCCESSFUL))));
+                                new JsonObject().put(JiraTicket.ID, issue.getString(JiraTicket.ID_JIRA_FIELD))
+                                        .put(JiraTicket.STATUS, new JsonObject().put(JiraTicket.NAME, EscalationStatus.SUCCESSFUL))));
                     }
                 }
             }
