@@ -192,14 +192,14 @@ models.Ticket.prototype.isAttachmentDuplicated = function(attachment) {
 
 models.Ticket.prototype.getBugTrackerIssue = function(callback) {
 	http().get('/support/ticket/' + this.id + '/bugtrackerissue').done(function(result){
-		if(result.length > 0 && result[0] && result[0].content) {
+		if(result != null && result.content) {
 			// JSON type in PostgreSQL is sent as a JSON string. Parse it
-			var content = JSON.parse(result[0].content);
+			var content = result.content;
 			if(content && content.issue) {
 
 				this.issue = content.issue;
 
-				var attachments = JSON.parse(result[0].attachments);
+				var attachments = result.attachments;
 				if(attachments && attachments.length > 0) {
 					// add fields "document_id" and "gridfs_id" to each attachment in variable "content.issue"
 					this.issue.attachments = _.map(this.issue.attachments, function(pAttachment) {

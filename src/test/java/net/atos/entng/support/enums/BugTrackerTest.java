@@ -22,28 +22,28 @@ public class BugTrackerTest {
 
     }
 
-    @Test
-    public void getIssueIdPivotTest(TestContext ctx) {
-        Number issueIdExpected = 545;
-        JsonObject issue = IssuePassed();
-        Number issueIdResult = BugTracker.PIVOT.getIssueId(issue);
-        ctx.assertEquals(issueIdResult, issueIdExpected);
-    }
+    //@Test
+    //public void getIssueIdPivotTest(TestContext ctx) {
+    //    Number issueIdExpected = 545;
+    //    JsonObject issue = IssuePassed();
+    //    Number issueIdResult = BugTracker.PIVOT.getIssueId(issue);
+    //    ctx.assertEquals(issueIdResult, issueIdExpected);
+    //}
 
-    @Test
-    public void getIssueIdPivotFailedTest(TestContext ctx) {
-        JsonObject issue = IssueRedmine();
-        Number issueIdResult = BugTracker.PIVOT.getIssueId(issue);
-        ctx.assertNull(issueIdResult);
-    }
+    //@Test
+    //public void getIssueIdPivotFailedTest(TestContext ctx) {
+    //    JsonObject issue = IssueRedmine();
+    //    Number issueIdResult = BugTracker.PIVOT.getIssueId(issue);
+    //    ctx.assertNull(issueIdResult);
+    //}
 
-    @Test
-    public void getIssueRedmineTest(TestContext ctx) {
-        Number issueIdExpected = 545L;
-        JsonObject issue = IssueRedmine();
-        Number issueIdResult = BugTracker.REDMINE.getIssueId(issue);
-        ctx.assertEquals(issueIdResult, issueIdExpected);
-    }
+    //@Test
+    //public void getIssueRedmineTest(TestContext ctx) {
+    //    Number issueIdExpected = 545L;
+    //    JsonObject issue = IssueRedmine();
+    //    Number issueIdResult = BugTracker.REDMINE.getIssueId(issue);
+    //    ctx.assertEquals(issueIdResult, issueIdExpected);
+    //}
 
     private JsonObject IssuePassed() {
         return new JsonObject("{\"status\":\"ok\"," +

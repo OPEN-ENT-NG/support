@@ -30,12 +30,14 @@ import io.vertx.core.json.JsonObject;
 
 import fr.wseduc.webutils.Either;
 
+import net.atos.entng.support.Ticket;
+import net.atos.entng.support.Issue;
+
 public interface TicketServiceSql extends CrudService {
 
-	public void createTicket(JsonObject ticket, JsonArray attachments, UserInfos user, String locale, Handler<Either<String, JsonObject>> handler);
+	public void createTicket(JsonObject ticket, JsonArray attachments, UserInfos user, String locale, Handler<Either<String, Ticket>> handler);
 
-	public void updateTicket(String id, JsonObject data, UserInfos user,
-			Handler<Either<String, JsonObject>> handler);
+	public void updateTicket(String id, JsonObject data, UserInfos user, Handler<Either<String, Ticket>> handler);
 
 	public void listTickets(UserInfos user, Integer page, List<String> statuses, List<String> applicants, String school_id, String sortBy, String order, Integer nbTicketsPerPage, Handler<Either<String, JsonArray>> handler);
 
@@ -52,24 +54,21 @@ public interface TicketServiceSql extends CrudService {
 	 *
 	 * Else (escalation is not allowed) return null.
 	 */
-	public void getTicketWithEscalation(String ticketId, Handler<Either<String, JsonObject>> handler);
+	public void getTicketWithEscalation(String ticketId, Handler<Either<String, Ticket>> handler);
 
     /**
      * Get ticket in format usable in escalation service
      * @param ticketId Id of the ticket to get
      * @param handler Handler that will process the response
      */
-	public void getTicketForEscalationService( String ticketId, Handler<Either<String, JsonObject>> handler);
+	public void getTicketForEscalationService( String ticketId, Handler<Either<String, Ticket>> handler);
 
 	public void getTicketIdAndSchoolId(Number issueId, Handler<Either<String, JsonObject>> handler);
 
 	public void endInProgressEscalationAsync(String ticketId, UserInfos user, JsonObject issueJira, Handler<Either<String, JsonObject>> handler);
 
-	/**
-	 * @param attachmentMap : key = attachmentId in bug tracker, value = attachmentId in gridfs
-	 */
-	public void endSuccessfulEscalation(String ticketId, JsonObject issue, Number issueId,
-			ConcurrentMap<Long, String> attachmentMap, UserInfos user, Handler<Either<String, JsonObject>> handler);
+	public void endSuccessfulEscalation(String ticketId, Issue issue, Number issueId,
+			UserInfos user, Handler<Either<String, JsonObject>> handler);
 
 	/**
 	 * End escalation in "In progress" state. Used for asynchronous bug trackers
@@ -78,7 +77,7 @@ public interface TicketServiceSql extends CrudService {
 
 	public void endFailedEscalation(String ticketId, UserInfos user, Handler<Either<String, JsonObject>> handler);
 
-	public void updateIssue(Number issueId, String content, Handler<Either<String, JsonObject>> handler);
+	public void updateIssue(Number issueId, Issue content, Handler<Either<String, JsonObject>> handler);
 
     public void updateEventCount(String ticketId, Handler<Either<String, JsonObject>> handler);
 
@@ -86,14 +85,14 @@ public interface TicketServiceSql extends CrudService {
 
     public void getTicketFromIssueId(String issueId, Handler<Either<String, JsonObject>> handler);
 
-	public void getLastIssuesUpdate(Handler<Either<String, JsonArray>> handler);
+	public void getLastIssuesUpdate(Handler<Either<String, String>> handler);
 
 	/**
 	 * Given a list of issue ids (parameter "issueIds"), return the issue ids that exist in database and their attachments' ids
 	 */
 	public void listExistingIssues(Number[] issueIds, Handler<Either<String, JsonArray>> handler);
 
-	public void getIssue(String ticketId, Handler<Either<String, JsonArray>> handler);
+	public void getIssue(String ticketId, Handler<Either<String, Issue>> handler);
 
 	public void getIssueAttachmentName(String gridfsId, Handler<Either<String, JsonObject>> handler);
 

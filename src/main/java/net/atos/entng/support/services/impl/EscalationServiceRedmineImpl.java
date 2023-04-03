@@ -42,6 +42,7 @@ import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlResult;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.user.UserInfos;
+import org.entcore.common.utils.Id;
 
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
@@ -61,10 +62,16 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import net.atos.entng.support.Ticket;
+import net.atos.entng.support.Issue;
+import net.atos.entng.support.Comment;
 import net.atos.entng.support.enums.BugTracker;
 import net.atos.entng.support.services.EscalationService;
 import net.atos.entng.support.services.TicketServiceSql;
 import net.atos.entng.support.services.UserService;
+import net.atos.entng.support.Attachment;
+import net.atos.entng.support.WorkspaceAttachment;
+import net.atos.entng.support.GridFSAttachment;
 
 public class EscalationServiceRedmineImpl implements EscalationService {
 
@@ -171,16 +178,15 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 		log.info("[Support] Data will be pulled from Redmine every " + delayInMinutes + " minutes");
 		final Long delay = TimeUnit.MILLISECONDS.convert(delayInMinutes, TimeUnit.MINUTES);
 
-		ticketServiceSql.getLastIssuesUpdate(new Handler<Either<String, JsonArray>>() {
+		ticketServiceSql.getLastIssuesUpdate(new Handler<Either<String, String>>() {
 			@Override
-			public void handle(Either<String, JsonArray> event) {
+			public void handle(Either<String, String> event) {
 				final String lastUpdate;
 				final DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
 				df.setTimeZone(TimeZone.getTimeZone("GMT"));
 				if (event.isRight() && event.right().getValue() != null) {
-					JsonObject jo = (JsonObject) event.right().getValue().getJsonObject(0);
+					String date = event.right().getValue();
 
-					String date = jo.getString("last_update", null);
 					if (date != null) {
 						try {
 							Date d = df.parse(date);
@@ -219,16 +225,19 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 	 * @inheritDoc
 	 */
 	@Override
-	public void escalateTicket(final HttpServerRequest request, final JsonObject ticket, final JsonArray comments,
-			final JsonArray attachmentsIds, final ConcurrentMap<Long, String> attachmentMap, final UserInfos user,
-			final JsonObject issue, final Handler<Either<String, JsonObject>> handler) {
+	public void escalateTicket(final HttpServerRequest request, final Ticket ticket,
+			final UserInfos user, final Issue issue, final Handler<Either<String, Issue>> handler) {
 
+		JsonObject ticketJson = ticket.toJsonObject();
+		JsonArray comments = ticketJson.getJsonArray("comments");
+		JsonArray attachmentsIds = ticketJson.getJsonArray("attachments");
 		/*
 		 * Escalation steps 1) if there are attachments, upload each attachement.
 		 * Redmine returns a token for each attachement 2) create the issue with all its
 		 * attachments 3) update the issue with all comments
 		 */
 		final JsonArray attachments = new JsonArray();
+		final List<Attachment> issueAttachments = new ArrayList<Attachment>();
 
 		if (attachmentsIds != null && attachmentsIds.size() > 0) {
 			final AtomicInteger successfulUploads = new AtomicInteger(0);
@@ -265,8 +274,7 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 																.getString("token");
 														String attachmentIdInRedmine = token.substring(0,
 																token.indexOf('.'));
-														attachmentMap.put(Long.valueOf(attachmentIdInRedmine),
-																file.getDocument().getString("_id"));
+														issueAttachments.add(new WorkspaceAttachment(Integer.valueOf(attachmentIdInRedmine), filename, file.getDocument().getString("_id")));
 
 														JsonObject attachment = new JsonObject().put("token", token)
 																.put("filename", filename)
@@ -278,8 +286,8 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 														if (successfulUploads.incrementAndGet() == attachmentsIds
 																.size()) {
 															EscalationServiceRedmineImpl.this.createIssue(request,
-																	ticket, attachments, user,
-																	getCreateIssueHandler(request, comments, handler));
+																	ticketJson, attachments, user,
+																	getCreateIssueHandler(request, comments, issueAttachments, handler));
 														}
 													} else {
 														log.error(
@@ -289,7 +297,7 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 
 														// Return error message as soon as one upload failed
 														if (failedUploads.incrementAndGet() == 1) {
-															handler.handle(new Either.Left<String, JsonObject>(
+															handler.handle(new Either.Left<String, Issue>(
 																	"support.escalation.error.upload.attachment.failed"));
 														}
 													}
@@ -306,13 +314,13 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 
 			}
 		} else {
-			this.createIssue(request, ticket, attachments, user, getCreateIssueHandler(request, comments, handler));
+			this.createIssue(request, ticketJson, attachments, user, getCreateIssueHandler(request, comments, null, handler));
 		}
 
 	}
 
-	private Handler<HttpClientResponse> getCreateIssueHandler(final HttpServerRequest request, final JsonArray comments,
-			final Handler<Either<String, JsonObject>> handler) {
+	private Handler<HttpClientResponse> getCreateIssueHandler(final HttpServerRequest request, final JsonArray comments, final List<Attachment> attachments,
+			final Handler<Either<String, Issue>> handler) {
 
 		return new Handler<HttpClientResponse>() {
 			@Override
@@ -324,28 +332,28 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 						if (resp.statusCode() == 201) { // Issue creation was successful
 							try {
 								final JsonObject response = new JsonObject(data.toString());
+								Issue issue = new Issue(response.getJsonObject("issue").getInteger("id"), response);
 								if (comments == null || comments.size() == 0) {
-									handler.handle(new Either.Right<String, JsonObject>(response));
+									handler.handle(new Either.Right<String, Issue>(issue));
 									return;
 								}
+								if(attachments != null)
+									issue.attachments.addAll(attachments);
 
-								// 3) Add all comments to the redmine issue
-								Number issueId = EscalationServiceRedmineImpl.this.getBugTrackerType()
-										.extractIdFromIssue(response);
-								EscalationServiceRedmineImpl.this.updateIssue(issueId,
-										aggregateComments(request, comments), getUpdateIssueHandler(response, handler));
+								EscalationServiceRedmineImpl.this.updateIssue(issue.id.get(),
+										new Comment(aggregateComments(request, comments).getString("content")), getUpdateIssueHandler(issue, handler));
 
 							} catch (Exception e) {
 								log.error(
 										"Redmine issue was created. Error when trying to update it, i.e. when adding comment",
 										e);
-								handler.handle(new Either.Left<String, JsonObject>("support.escalation.error"));
+								handler.handle(new Either.Left<String, Issue>("support.escalation.error"));
 							}
 						} else {
 							log.error("Error during escalation. Could not create redmine issue. Response status is "
 									+ resp.statusCode() + " instead of 201.");
 							log.error(data.toString());
-							handler.handle(new Either.Left<String, JsonObject>("support.escalation.error"));
+							handler.handle(new Either.Left<String, Issue>("support.escalation.error"));
 						}
 					}
 				});
@@ -354,8 +362,7 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 
 	}
 
-	private Handler<HttpClientResponse> getUpdateIssueHandler(final JsonObject response,
-			final Handler<Either<String, JsonObject>> handler) {
+	private Handler<HttpClientResponse> getUpdateIssueHandler(final Issue issue, final Handler<Either<String, Issue>> handler) {
 
 		return new Handler<HttpClientResponse>() {
 			@Override
@@ -365,13 +372,13 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 					@Override
 					public void handle(Buffer buffer) {
 						if (event.statusCode() == 200) {
-							handler.handle(new Either.Right<String, JsonObject>(response));
+							handler.handle(new Either.Right<String, Issue>(issue));
 						} else {
 							log.error(
 									"Error during escalation. Could not update redmine issue to add comment. Response status is "
 											+ event.statusCode() + " instead of 200.");
 							log.error(buffer.toString());
-							handler.handle(new Either.Left<String, JsonObject>("support.error.escalation.incomplete"));
+							handler.handle(new Either.Left<String, Issue>("support.error.escalation.incomplete"));
 						}
 					}
 				});
@@ -526,19 +533,19 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 		description.append(label).append(": ").append(value).append("\n");
 	}
 
-	private void updateIssue(final Number issueId, final JsonObject comment,
+	private void updateIssue(final Number issueId, final Comment comment,
 			final Handler<HttpClientResponse> handler) {
 		updateIssue(issueId, comment, null, handler);
 	}
 
-	private void updateIssue(final Number issueId, final JsonObject comment, JsonArray attachments,
+	private void updateIssue(final Number issueId, final Comment comment, JsonArray attachments,
 			final Handler<HttpClientResponse> handler) {
 		String path = "/issues/" + issueId + ".json";
 		String url = proxyIsDefined ? ("http://" + redmineHost + ":" + redminePort + path) : path;
 
 		JsonObject data = new JsonObject();
 		if (comment != null) {
-			data.put("notes", comment.getString("content"));
+			data.put("notes", comment.content);
 			data.put("status_id", REDMINE_COMMENTAIRE_STATUS_ID);
 			data.put("assigned_to_id", REDMINE_SUPPORT_GROUP_ID);
 		}
@@ -642,13 +649,14 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 
 										// Step 3a)
 										EscalationServiceRedmineImpl.this.getIssue(issueId,
-												new Handler<Either<String, JsonObject>>() {
+												new Handler<Either<String, Issue>>() {
 													@Override
-													public void handle(final Either<String, JsonObject> getIssueEvent) {
+													public void handle(final Either<String, Issue> getIssueEvent) {
 														if (getIssueEvent.isLeft()) {
 															log.error(getIssueEvent.left().getValue());
 														} else {
-															final JsonObject issue = getIssueEvent.right().getValue();
+															final Issue issue = getIssueEvent.right().getValue();
+															final JsonObject issueJson = issue.getContent();
 															// check if this issue had already been received.
 															ticketServiceSql.getTicketFromIssueId(issueId.toString(),
 																	new Handler<Either<String, JsonObject>>() {
@@ -673,7 +681,7 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 																						ticketDate = dfTicket
 																								.parse(ticket.getString(
 																										"issue_update_date"));
-																						issueDate = dfIssue.parse(issue
+																						issueDate = dfIssue.parse(issueJson
 																								.getJsonObject("issue")
 																								.getString(
 																										"updated_on"));
@@ -689,7 +697,7 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 																					// Step 3b) : update issue in
 																					// postgresql
 																					ticketServiceSql.updateIssue(
-																							issueId, issue.toString(),
+																							issueId, issue,
 																							new Handler<Either<String, JsonObject>>() {
 																								@Override
 																								public void handle(
@@ -711,8 +719,8 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 																														updateIssueEvent
 																																.right()
 																																.getValue(),
-																														issue);
-																										Long newStatus = issue.getJsonObject("issue").getJsonObject("status").getLong("id");
+																														issueJson);
+																										Long newStatus = issueJson.getJsonObject("issue").getJsonObject("status").getLong("id");
 																										if (newStatus == 5l) {
                                                                                                             newStatus = 4l;
                                                                                                         } else if (newStatus >= 4l) {
@@ -722,7 +730,7 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 																												.updateTicketIssueUpdateDateAndStatus(
 																														ticket.getLong(
 																																"id"),
-																														issue.getJsonObject(
+																														issueJson.getJsonObject(
 																																"issue")
 																																.getString(
 																																		"updated_on"),
@@ -752,7 +760,7 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 																					// Step 3c) : If "new" attachments
 																					// have been added in Redmine,
 																					// download them
-																					final JsonArray redmineAttachments = issue
+																					final JsonArray redmineAttachments = issueJson
 																							.getJsonObject("issue")
 																							.getJsonArray("attachments",
 																									null);
@@ -1074,7 +1082,7 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 	}
 
 	@Override
-	public void getIssue(final Number issueId, final Handler<Either<String, JsonObject>> handler) {
+	public void getIssue(final Number issueId, final Handler<Either<String, Issue>> handler) {
 		String path = "/issues/" + issueId + ".json?include=journals,attachments";
 		String url = proxyIsDefined ? ("http://" + redmineHost + ":" + redminePort + path) : path;
 
@@ -1086,13 +1094,22 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 					@Override
 					public void handle(Buffer data) {
 						JsonObject response = new JsonObject(data.toString());
-						if (resp.statusCode() == 200) {
-							handler.handle(new Either.Right<String, JsonObject>(response));
+						if (resp.statusCode() == 200)
+						{
+							Issue issue = new Issue(issueId.intValue(), response);
+							JsonArray attachments = response.getJsonObject("issue", new JsonObject()).getJsonArray("attachments", new JsonArray());
+							for(Object o : attachments)
+							{
+								if(!(o instanceof JsonObject)) continue;
+								JsonObject att = (JsonObject) o;
+								issue.attachments.add(new GridFSAttachment(att.getInteger("id"), att.getString("filename"), att.getInteger("filesize")));
+							}
+							handler.handle(new Either.Right<String, Issue>(issue));
 						} else {
 							log.error("Error when getting a redmine ticket. Response status is " + resp.statusCode()
 									+ " instead of 200.");
 							log.error(response.toString());
-							handler.handle(new Either.Left<String, JsonObject>(
+							handler.handle(new Either.Left<String, Issue>(
 									"support.error.comment.added.to.escalated.ticket.but.synchronization.failed"));
 						}
 					}
@@ -1126,7 +1143,7 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 	}
 
 	@Override
-	public void commentIssue(Number issueId, JsonObject comment, final Handler<Either<String, JsonObject>> handler) {
+	public void commentIssue(Number issueId, Comment comment, final Handler<Either<String, Void>> handler) {
 
 		this.updateIssue(issueId, comment, new Handler<HttpClientResponse>() {
 			@Override
@@ -1135,13 +1152,13 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 				event.bodyHandler(new Handler<Buffer>() {
 					@Override
 					public void handle(Buffer buffer) {
-						if (event.statusCode() == 200) {
-							handler.handle(new Either.Right<String, JsonObject>(new JsonObject()));
+						if (event.statusCode() >= 200 && event.statusCode() < 300) {
+							handler.handle(new Either.Right<String, Void>(null));
 						} else {
 							log.error("Error : could not update redmine issue to add comment. Response status is "
 									+ event.statusCode() + " instead of 200.");
 							log.error(buffer.toString());
-							handler.handle(new Either.Left<String, JsonObject>(
+							handler.handle(new Either.Left<String, Void>(
 									"support.error.comment.has.not.been.added.to.escalated.ticket"));
 						}
 					}
@@ -1159,16 +1176,12 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 		handler.handle(new Either.Left<String, JsonObject>("Not implemented in synchronous mode"));
 	}
 
-	private void uploadDocuments(final Integer issueId, Set<String> exists, JsonArray documents,
-			final Handler<Either<String, JsonObject>> handler) {
+	private void uploadDocuments(final Integer issueId, Set<String> exists, List<Attachment> documents,
+			final Handler<Either<String, Id<Issue, Integer>>> handler) {
 		Set<String> d = new HashSet<>();
-		for (Object o : documents) {
-			if (!(o instanceof JsonObject))
-				continue;
-			JsonObject j = (JsonObject) o;
-			String documentId = j.getString("id");
-			if (documentId != null && !exists.contains(documentId)) {
-				d.add(documentId);
+		for (Attachment a : documents) {
+			if (a.documentId != null && !exists.contains(a.documentId)) {
+				d.add(a.documentId);
 			}
 		}
 		final AtomicInteger count = new AtomicInteger(d.size());
@@ -1212,7 +1225,7 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 																public void handle(HttpClientResponse resp) {
 																	resp.exceptionHandler(
 																			excep -> log.error("client error", excep));
-																	if (resp.statusCode() == 200) {
+																	if (resp.statusCode() >= 200 && resp.statusCode() < 300) {
 																		insertBugTrackerAttachment(
 																				bugTrackerAttachments,
 																				new Handler<Either<String, JsonObject>>() {
@@ -1220,15 +1233,13 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 																					public void handle(
 																							Either<String, JsonObject> r) {
 																						handler.handle(
-																								new Either.Right<String, JsonObject>(
-																										new JsonObject()
-																												.put("issue_id",
-																														issueId)));
+																								new Either.Right<String, Id<Issue, Integer>>(
+																										new Id<Issue, Integer>(issueId)));
 																					}
 																				});
 																	} else {
 																		handler.handle(
-																				new Either.Left<String, JsonObject>(
+																				new Either.Left<String, Id<Issue, Integer>>(
 																						"upload.attachments.error : "
 																								+ resp.statusMessage()));
 																	}
@@ -1236,11 +1247,11 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 															});
 												} else {
 													if (uploadError.get()) {
-														handler.handle(new Either.Left<String, JsonObject>(
+														handler.handle(new Either.Left<String, Id<Issue, Integer>>(
 																"upload.attachments.error"));
 													} else {
 														handler.handle(
-																new Either.Right<String, JsonObject>(new JsonObject()));
+																new Either.Right<String, Id<Issue, Integer>>(new Id<Issue, Integer>(null)));
 													}
 												}
 											}
@@ -1262,13 +1273,13 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 		for (int i = 0; i < values.size(); i += 5) {
 			query.append(" support.merge_attachment_bydoc(?,?,?,?,?), ");
 		}
-		sql.prepared(query.deleteCharAt(query.length() - 1).toString(), values,
+		sql.prepared(query.deleteCharAt(query.length() - 2).toString(), values,
 				SqlResult.validRowsResultHandler(handler));
 	}
 
 	@Override
-	public void syncAttachments(final String ticketId, final JsonArray attachments,
-			final Handler<Either<String, JsonObject>> handler) {
+	public void syncAttachments(final String ticketId, final List<Attachment> attachments,
+			final Handler<Either<String, Id<Issue, Integer>>> handler) {
 		getIssueId(ticketId, new Handler<Integer>() {
 			@Override
 			public void handle(final Integer issueId) {
@@ -1288,12 +1299,12 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 										}
 										uploadDocuments(issueId, exists, attachments, handler);
 									} else {
-										handler.handle(new Either.Left<String, JsonObject>(r.left().getValue()));
+										handler.handle(new Either.Left<String, Id<Issue, Integer>>(r.left().getValue()));
 									}
 								}
 							}));
 				} else {
-					handler.handle(new Either.Right<String, JsonObject>(new JsonObject()));
+					handler.handle(new Either.Right<String, Id<Issue, Integer>>(null));
 				}
 			}
 		});

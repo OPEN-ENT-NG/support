@@ -53,6 +53,12 @@ import fr.wseduc.webutils.Either;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+import net.atos.entng.support.Ticket;
+import net.atos.entng.support.Issue;
+import net.atos.entng.support.Attachment;
+import net.atos.entng.support.WorkspaceAttachment;
+import net.atos.entng.support.Comment;
+
 public class TicketServiceSqlImpl extends SqlCrudService implements TicketServiceSql {
 
 	private final static String UPSERT_USER_QUERY = "SELECT support.merge_users(?,?)";
@@ -67,7 +73,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 
 	@Override
 	public void createTicket(JsonObject ticket, JsonArray attachments, UserInfos user, String locale,
-			Handler<Either<String, JsonObject>> handler) {
+			Handler<Either<String, Ticket>> handler) {
 
 		SqlStatementsBuilder s = new SqlStatementsBuilder();
 
@@ -82,12 +88,11 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 
 		this.insertAttachments(attachments, user, s, null);
 
-		sql.transaction(s.build(), validUniqueResultHandler(1, handler));
+		sql.transaction(s.build(), validUniqueResultHandler(1, toTicketHandler(handler)));
 	}
 
 	@Override
-	public void updateTicket(String ticketId, JsonObject data, UserInfos user,
-			Handler<Either<String, JsonObject>> handler) {
+	public void updateTicket(String ticketId, JsonObject data, UserInfos user, Handler<Either<String, Ticket>> handler) {
 
 		SqlStatementsBuilder s = new SqlStatementsBuilder();
 
@@ -107,7 +112,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 
 		String updateTicketQuery = "UPDATE support.tickets" +
 				" SET " + sb.toString() + "modified = timezone('UTC', NOW()) " +
-				"WHERE id = ? RETURNING modified, subject, owner, school_id";
+				"WHERE id = ? RETURNING id, modified, subject, owner, school_id";
 		s.prepared(updateTicketQuery, values);
 
 		// 3. Insert comment(s)
@@ -141,7 +146,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 		this.insertAttachments(attachments, user, s, ticketId);
 
 		// Send queries to event bus
-		sql.transaction(s.build(), validUniqueResultHandler(1, handler));
+		sql.transaction(s.build(), validUniqueResultHandler(1, toTicketHandler(handler, attachments)));
 	}
 
 
@@ -399,7 +404,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 	 * Else (escalation is not allowed) return null.
 	 */
 	@Override
-	public void getTicketWithEscalation(String ticketId, Handler<Either<String, JsonObject>> handler) {
+	public void getTicketWithEscalation(String ticketId, Handler<Either<String, Ticket>> handler) {
 		StringBuilder query = new StringBuilder();
 		JsonArray values = new JsonArray();
 
@@ -422,7 +427,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 
 		query.append( escalateTicketInfoQuery("updated_ticket AS t", "") );
 
-		sql.prepared(query.toString(), values, validUniqueResultHandler(handler));
+		sql.prepared(query.toString(), values, validUniqueResultHandler(toTicketHandler(handler)));
 	}
 
 	/**
@@ -454,21 +459,76 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 	 * @param ticketId Id of the ticket to get
 	 * @param handler Handler that will process the response
 	 */
-	public void getTicketForEscalationService( String ticketId, Handler<Either<String, JsonObject>> handler) {
+	public void getTicketForEscalationService( String ticketId, Handler<Either<String, Ticket>> handler) {
 		StringBuilder query = new StringBuilder();
 		JsonArray values = new JsonArray();
 
 		query.append( escalateTicketInfoQuery("support.tickets AS t", "WHERE t.id = ?") );
 		values.add(Long.valueOf(ticketId));
 
-		sql.prepared(query.toString(), values, validUniqueResultHandler(handler));
+		sql.prepared(query.toString(), values, validUniqueResultHandler(toTicketHandler(handler)));
 
+	}
+
+	private Handler<Either<String, JsonObject>> toTicketHandler(Handler<Either<String, Ticket>> handler)
+	{
+		return this.toTicketHandler(handler, null);
+	}
+
+	private Handler<Either<String, JsonObject>> toTicketHandler(Handler<Either<String, Ticket>> handler, JsonArray additionalAttachments)
+	{
+		return new Handler<Either<String, JsonObject>>()
+		{
+			@Override
+			public void handle(Either<String, JsonObject> result)
+			{
+				if(result.isLeft() == true)
+					handler.handle(new Either.Left<String, Ticket>(result.left().getValue()));
+				else
+				{
+					JsonObject sqlTicket = result.right().getValue();
+
+					Ticket ticket = new Ticket(sqlTicket.getInteger("id"));
+					ticket.status = TicketStatus.fromStatus(sqlTicket.getInteger("status"));
+					ticket.subject = sqlTicket.getString("subject");
+					ticket.description = sqlTicket.getString("description");
+					ticket.category = sqlTicket.getString("category");
+					ticket.schoolId = sqlTicket.getString("school_id");
+					ticket.ownerId = sqlTicket.getString("owner_id", sqlTicket.getString("owner"));
+					ticket.ownerName = sqlTicket.getString("owner_name");
+					ticket.created = sqlTicket.getString("created");
+					ticket.modified = sqlTicket.getString("modified");
+					ticket.escalationStatus = sqlTicket.getInteger("escalation_status");
+					ticket.escalationDate = sqlTicket.getString("escalation_date");
+
+					JsonArray attachments = new JsonArray(sqlTicket.getString("attachments", "[]"));
+					JsonArray attachmentsNames = new JsonArray(sqlTicket.getString("attachmentsNames", sqlTicket.getString("attachmentsnames", "[]")));
+					for(int i = 0; i < attachments.size(); ++i)
+						ticket.attachments.add(new WorkspaceAttachment(null, attachmentsNames.getString(i), attachments.getString(i)));
+
+					if(additionalAttachments != null)
+						for(int i = 0; i < additionalAttachments.size(); ++i)
+						{
+							JsonObject att = additionalAttachments.getJsonObject(i);
+							ticket.attachments.add(new WorkspaceAttachment(null, att.getString("name"), att.getInteger("size"), att.getString("id")));
+						}
+
+					JsonArray comments = new JsonArray(sqlTicket.getString("comments", "[]"));
+					for(int i = 0; i < comments.size(); ++i)
+					{
+						JsonObject c = comments.getJsonObject(i);
+						ticket.comments.add(new Comment(c.getInteger("id"), c.getString("content"), c.getString("owner_name"), c.getString("created")));
+					}
+
+					handler.handle(new Either.Right<String, Ticket>(ticket));
+				}
+			}
+		};
 	}
 
 
 	private void updateTicketAfterEscalation(String ticketId, EscalationStatus targetStatus,
-			JsonObject issue, Number issueId, ConcurrentMap<Long, String> attachmentMap,
-			UserInfos user, Handler<Either<String, JsonObject>> handler) {
+			Issue issue, Number issueId, UserInfos user, Handler<Either<String, JsonObject>> handler) {
 
 		// 1. Update escalation status
 		String query = "UPDATE support.tickets"
@@ -498,16 +558,15 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 
 			JsonArray insertValues = new JsonArray().add(issueId)
 					.add(parseId(ticketId))
-					.add(issue)
+					.add(issue.getContent())
 					.add(user.getUserId());
 
 			statements.prepared(insertQuery, insertValues);
 
 			// 4. Insert attachment (document from workspace) metadata
-			if(issue.size() > 0) {
-				JsonArray attachments = bugTrackerType.extractAttachmentsFromIssue(issue);
-				if(attachments != null && attachments.size() > 0
-						&& attachmentMap != null && !attachmentMap.isEmpty()) {
+			if(issue != null) {
+				List<Attachment> attachments = issue.attachments;
+				if(attachments != null && attachments.size() > 0) {
 					/*
 					 * Example of "attachments" array with one attachment :
 					 *
@@ -527,22 +586,24 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 
 					JsonArray attachmentsValues = new fr.wseduc.webutils.collections.JsonArray();
 
-					for (Object o : attachments) {
-						if(!(o instanceof JsonObject)) continue;
-						JsonObject attachment = (JsonObject) o;
-						attachmentsQuery.append("support.merge_attachment_bydoc(?, ?, ?, ?, ?),");
+					for (Attachment attachment : attachments)
+					{
+						if(attachment.bugTrackerId == null || attachment.documentId == null)
+							continue;
+						Long attachmentIdInBugTracker = new Long(attachment.bugTrackerId);
 
-						Number attachmentIdInBugTracker = attachment.getLong("id");
+						attachmentsQuery.append("support.merge_attachment_bydoc(?, ?, ?, ?, ?),");
 						attachmentsValues.add(attachmentIdInBugTracker)
 							.add(issueId)
-							.add(attachmentMap.get(attachmentIdInBugTracker))
-							.add(attachment.getString("filename"))
-							.add(attachment.getInteger("filesize"));
+							.add(attachment.bugTrackerId)
+							.add(attachment.name)
+							.add(attachment.size);
 					}
 					// remove trailing comma
 					attachmentsQuery.deleteCharAt(attachmentsQuery.length() - 1);
 
-					statements.prepared(attachmentsQuery.toString(), attachmentsValues);
+					if(attachmentsValues.size() > 0)
+						statements.prepared(attachmentsQuery.toString(), attachmentsValues);
 				}
 			}
 
@@ -555,16 +616,15 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 	 * 	@inheritDoc
 	 */
 	@Override
-	public void endSuccessfulEscalation(String ticketId, JsonObject issue, Number issueId,
-			ConcurrentMap<Long, String> attachmentMap,
+	public void endSuccessfulEscalation(String ticketId, Issue issue, Number issueId,
 			UserInfos user, Handler<Either<String, JsonObject>> handler) {
 
-		this.updateTicketAfterEscalation(ticketId, EscalationStatus.SUCCESSFUL, issue, issueId, attachmentMap, user, handler);
+		this.updateTicketAfterEscalation(ticketId, EscalationStatus.SUCCESSFUL, issue, issueId, user, handler);
 	}
 
 	@Override
 	public void endFailedEscalation(String ticketId, UserInfos user, Handler<Either<String, JsonObject>> handler) {
-		this.updateTicketAfterEscalation(ticketId, EscalationStatus.FAILED, null, null, null, user, handler);
+		this.updateTicketAfterEscalation(ticketId, EscalationStatus.FAILED, null, null, user, handler);
 	}
 
 	/**
@@ -584,7 +644,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 		} catch (NumberFormatException e) {
 			log.error("Invalid id_ent, saving issue with id 0");
 		}
-		this.updateTicketAfterEscalation(ticketId, EscalationStatus.SUCCESSFUL, issue, issueId, null, user, handler);
+		this.updateTicketAfterEscalation(ticketId, EscalationStatus.SUCCESSFUL, new Issue(issueId.intValue(), issue), issueId, user, handler);
 	}
 
     @Override
@@ -605,11 +665,11 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 					this.getClass().getSimpleName(), e.getMessage());
 			log.error(message);
 		}
-		this.updateTicketAfterEscalation(ticketId, EscalationStatus.SUCCESSFUL, issue, issueId, null, user, handler);
+		this.updateTicketAfterEscalation(ticketId, EscalationStatus.SUCCESSFUL, new Issue(issueId.intValue(), issue), issueId, user, handler);
     }
 
 	@Override
-	public void updateIssue(Number issueId, String content, Handler<Either<String, JsonObject>> handler) {
+	public void updateIssue(Number issueId, Issue content, Handler<Either<String, JsonObject>> handler) {
 		StringBuilder query = new StringBuilder();
 		JsonArray values = new JsonArray();
 
@@ -625,19 +685,32 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 			.append(" WHERE id = ?")
 			.append(" RETURNING (SELECT status_id FROM old_issue)");
 
-		values.add(content)
+		values.add(content.getContent().toString())
 			.add(issueId);
 
 		sql.prepared(query.toString(), values, validUniqueResultHandler(handler));
 	}
 
 	@Override
-	public void getLastIssuesUpdate(Handler<Either<String, JsonArray>> handler) {
+	public void getLastIssuesUpdate(Handler<Either<String, String>> handler) {
 		String query = "SELECT max(content"
 				+ bugTrackerType.getLastIssueUpdateFromPostgresqlJson()
 				+ ") AS last_update FROM support.bug_tracker_issues";
 
-		sql.raw(query, validResultHandler(handler));
+		sql.raw(query, validResultHandler(new Handler<Either<String, JsonArray>>()
+		{
+			@Override
+			public void handle(Either<String, JsonArray> res)
+			{
+				if(res.isLeft())
+					handler.handle(new Either.Left<String, String>(res.left().getValue()));
+				else
+				{
+					JsonObject r = res.right().getValue().getJsonObject(0);
+					handler.handle(new Either.Right<String, String>(r != null ? r.getString("last_update") : null));
+				}
+			}
+		}));
 	}
 
 	/**
@@ -676,7 +749,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 	}
 
 	@Override
-	public void getIssue(String ticketId, Handler<Either<String, JsonArray>> handler) {
+	public void getIssue(String ticketId, Handler<Either<String, Issue>> handler) {
 		/* Field "attachments" will contain for instance :
 		 *  [{"id":931,"document_id":null,"gridfs_id":"13237cd7-9567-4810-a85e-39414093e3b5"},
 			 {"id":932,"document_id":null,"gridfs_id":"17223f70-d9a8-4983-92b1-d867fc881d44"},
@@ -692,7 +765,35 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 			.append(" GROUP BY i.id");
 		JsonArray values = new JsonArray().add(parseId(ticketId));
 
-		sql.prepared(query.toString(), values, validResultHandler(handler));
+		sql.prepared(query.toString(), values, validUniqueResultHandler(this.toIssueHandler(handler)));
+	}
+
+	private Handler<Either<String, JsonObject>> toIssueHandler(Handler<Either<String, Issue>> handler)
+	{
+		return new Handler<Either<String, JsonObject>>()
+		{
+			@Override
+			public void handle(Either<String, JsonObject> result)
+			{
+				if(result.isLeft() == true)
+					handler.handle(new Either.Left<String, Issue>(result.left().getValue()));
+				else
+				{
+					JsonObject sqlIssue = result.right().getValue();
+					String content = sqlIssue.getString("content");
+					Issue issue = new Issue(sqlIssue.getInteger("id"), content == null ? null : new JsonObject(content));
+
+					JsonArray attachments = new JsonArray(sqlIssue.getString("attachments", "[]"));
+					for(int i = 0; i < attachments.size(); ++i)
+					{
+						JsonObject a = attachments.getJsonObject(i);
+						issue.attachments.add(new Attachment(a.getInteger("id"), (String) null, a.getString("document_id"), a.getString("gridfs_id")));
+					}
+
+					handler.handle(new Either.Right<String, Issue>(issue));
+				}
+			}
+		};
 	}
 
 	@Override

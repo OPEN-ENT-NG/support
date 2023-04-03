@@ -72,9 +72,9 @@
         <div class="ten cell right-magnet" ng-if="ticket.issue.attachments && ticket.issue.attachments.length>0">
                 <br>
             <div ng-repeat="attachment in ticket.issue.attachments">
-                <span class="row" ng-if="! ticket.isAttachmentDuplicated(attachment)">
-                    <i class="attachment ng-scope"></i>&nbsp;<a ng-if="attachment.document_id !== null" href="/workspace/document/[[attachment.document_id]]">[[attachment.filename]]</a>
-                    <a ng-if="attachment.gridfs_id !== null" href="/support/gridfs/[[attachment.gridfs_id]]">[[attachment.filename]]</a>
+                <span class="row" ng-if="ticket.isAttachmentDuplicated(attachment) == false && (attachment.document_id != null || attachment.gridfs_id != null)">
+                    <i class="attachment ng-scope"></i>&nbsp;<a ng-if="attachment.document_id != null" href="/workspace/document/[[attachment.document_id]]">[[attachment.filename]]</a>
+                    <a ng-if="attachment.gridfs_id != null" href="/support/gridfs/[[attachment.gridfs_id]]">[[attachment.filename]]</a>
                     &nbsp;<em>[[attachment.author.name]] <i18n>support.on</i18n> [[formatDate(attachment.created_on)]]</em>
                 </span>
             </div>

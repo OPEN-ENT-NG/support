@@ -30,4 +30,16 @@ public enum TicketStatus {
 	public int status(){
 		return status;
 	}
+
+	public static TicketStatus fromStatus(Integer status)
+	{
+		if(status == null)
+			return null;
+
+		for(TicketStatus ts: TicketStatus.values())
+		  if(ts.status == status.intValue())
+  		    return ts;
+
+  		return null;
+	}
 }
