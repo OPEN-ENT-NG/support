@@ -18,6 +18,7 @@ import {Attachment} from "../models/Attachment";
 import service = workspace.v2.service;
 import {AxiosError, AxiosResponse} from "axios";
 import {attachment} from "entcore/types/src/ts/editor/options";
+import {DEMANDS} from "../core/enum/demands.enum";
 
 declare let model: any;
 
@@ -142,8 +143,7 @@ export const SupportController: Controller = ng.controller('SupportController',
 
 			$scope.switchAll = function(){
 				for (let filter in $scope.display.filters) {
-					if (filter !== "school_id" && filter !== "ticket_id"
-						&& filter !== "mydemands" && filter != "otherdemands") {
+					if (filter == statusEnum.properties[filter].value) {
 						$scope.display.filters[filter] = $scope.display.filters.all;
 					}
 				}
@@ -153,39 +153,20 @@ export const SupportController: Controller = ng.controller('SupportController',
 			$scope.checkAll = function(){
 				$scope.display.filters.all = true;
 				for (let filter in $scope.display.filters) {
-					if (filter !== "mydemands" && filter != "otherdemands"){
+					if (filter !== DEMANDS.MYDEMANDS && filter != DEMANDS.OTHERDEMANDS){
 						$scope.display.filters.all = $scope.display.filters[filter] && $scope.display.filters.all;
 					}
 				}
 			};
 
-			$scope.seeMyDemands = async (isChecked: boolean): Promise<void> => {
-				if (!isChecked && !$scope.display.filters.otherdemands) {
-					$scope.display.filters.otherdemands = true;
-
+			$scope.changeDemands = async (filterKey: DEMANDS) => {
+				$scope.display.filters[filterKey] = !$scope.display.filters[filterKey];
+				let unCheckedDemandsKeys: string[] = Object.keys(DEMANDS).filter((demandSingleKey: string) => !$scope.display.filters[DEMANDS[demandSingleKey]]);
+				if (unCheckedDemandsKeys.length == Object.keys(DEMANDS).length) {
+					unCheckedDemandsKeys.filter((unCheckedDemandSingleKey: string) => DEMANDS[unCheckedDemandSingleKey] != filterKey)
+						.forEach((unCheckedDemandSingleKey: string) => $scope.display.filters[DEMANDS[unCheckedDemandSingleKey]] = true);
 				}
-				if (!isChecked) {
-					$scope.display.filters.mydemands = false;
-					$scope.goPage(1, true);
-				} else {
-					$scope.display.filters.mydemands = true;
-					$scope.goPage(1, true);
-
-				}
-			}
-
-			$scope.seeOtherDemands = async (isChecked: boolean): Promise<void> => {
-				if (!isChecked && !$scope.display.filters.mydemands) {
-					$scope.display.filters.mydemands = true;
-
-				}
-				if (!isChecked) {
-					$scope.display.filters.otherdemands = false;
-					$scope.goPage(1, true);
-				} else {
-					$scope.display.filters.otherdemands = true;
-					$scope.goPage(1, true);
-				}
+				$scope.goPage(1, true);
 			}
 
 			$scope.onStatusChange = function () {

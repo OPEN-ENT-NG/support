@@ -1,40 +1,48 @@
 import {ng} from "entcore";
 import {RootsConst} from "../../core/constants/roots.const";
-import {ILocationService, IScope, IWindowService} from "angular";
+import {ILocationService, IScope, isFunction, IWindowService} from "angular";
 
-
-interface ILabelShareProps{
+interface ILabelShareProperties {
     name: string;
     isChecked: boolean;
-    onSort? : () => void;
+    onSort?: () => void;
 }
 
-interface ILabelShareScope extends IScope, ILabelShareProps{
-    vm : IViewModel;
+interface ILabelShareScope extends IScope {
+    vm: ILabelShareProperties;
 }
 
-interface IViewModel extends ng.IController, ILabelShareProps{
+interface IViewModel extends ng.IController {
 
-    sort? : () => void;
+    sort?(): void;
 }
 
-class Controller implements IViewModel{
-    //const vm: IViewModel = <IViewModel>this;
+class Controller implements IViewModel {
     public name: string;
-    public isChecked:boolean;
+    public isChecked: boolean;
+
     constructor(private $scope: ILabelShareScope,
-                private $location:ILocationService,
+                private $location: ILocationService,
                 private $window: IWindowService
-                /*  inject service etc..just as we do in controller */)
-    {}
+                /*  inject service etc..just as we do in controller */) {
+    }
 
-    $onInit() {}
+    $onInit() {
+    }
 
-    $onDestroy() {}
+    $onDestroy() {
+    }
+
+    sort = () => {
+        if (isFunction(this.$scope.vm.onSort)) {
+            this.$scope.vm.isChecked = !this.isChecked;
+            this.$scope.vm.onSort();
+        }
+    }
 }
 
-function directive(){
-    return{
+function directive() {
+    return {
         restrict: 'E',
         templateUrl: `${RootsConst.directive}directive-label-share/directive-label-share.html`,
         scope: {
@@ -45,17 +53,13 @@ function directive(){
         controllerAs: 'vm',
         bindToController: true,
         replace: false,
-        controller: ['$scope','$location','$window',Controller],
+        controller: ['$scope', '$location', '$window', Controller],
         link: function (scope: ILabelShareScope,
                         element: ng.IAugmentedJQuery,
                         attrs: ng.IAttributes,
-                        vm: IViewModel){
-            vm.sort=(): void =>{
-                vm.isChecked = !vm.isChecked;
-                scope.$eval(vm.onSort)(vm.isChecked);
-            }
-
+                        vm: IViewModel) {
         }
     }
 }
-export const directiveLabelShare = ng.directive('directiveLabelShare',directive)
+
+export const directiveLabelShare = ng.directive('directiveLabelShare', directive)
