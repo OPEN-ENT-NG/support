@@ -103,6 +103,7 @@
     "support.ticket.table.last.update.of.escalated.ticket": "Demande transmise mise à jour le",
     "support.ticket.table.status": "Statut",
     "support.ticket.table.subject": "Sujet",
+    "support.ticket.table.school": "Structure du demandeur",
     "support.ticket.validation.error.already.linked.to.ticket": " est déjà liée à la demande",
     "support.ticket.validation.error.attachment": "La pièce jointe ",
     "support.ticket.validation.error.attachments.already.linked.to.ticket": "Les pièces jointes suivantes sont déjà liées à la demande : ",
