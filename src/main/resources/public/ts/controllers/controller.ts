@@ -18,6 +18,7 @@ import {Attachment} from "../models/Attachment";
 import service = workspace.v2.service;
 import {AxiosError, AxiosResponse} from "axios";
 import {attachment} from "entcore/types/src/ts/editor/options";
+import {DEMANDS} from "../core/enum/demands.enum";
 
 declare let model: any;
 
@@ -42,6 +43,9 @@ export const SupportController: Controller = ng.controller('SupportController',
 			$scope.lang = lang;
 			$scope.template = template;
 			$scope.me = model.me;
+
+			$scope.myDemandsLabel = lang.translate('support.ticket.status.my.demands')
+			$scope.otherDemandsLabel = lang.translate('support.ticket.status.other.demands')
 
 			$scope.removeAttachmentLightbox = {attachment: null, isOpen: false};
 			$scope.addAttachmentLightbox = {attachment: null, isOpen: false};
@@ -138,26 +142,32 @@ export const SupportController: Controller = ng.controller('SupportController',
 			$scope.display.filters.ticket_id ="";
 
 			$scope.switchAll = function(){
-				for(var filter in $scope.display.filters){
-					if (filter !== "school_id" && filter !== "ticket_id") {
+				for (let filter in $scope.display.filters) {
+					if (filter !== "school_id" && filter !== "ticket_id" && filter != DEMANDS.MYDEMANDS && filter != DEMANDS.OTHERDEMANDS) {
 						$scope.display.filters[filter] = $scope.display.filters.all;
 					}
-				}
-				if($scope.userIsLocalAdmin()) {
-					// no need to update if the checkbox isn't visible.
-					$scope.display.filters.mydemands = $scope.display.filters.all;
 				}
 				$scope.goPage(1, true);
 			};
 
 			$scope.checkAll = function(){
 				$scope.display.filters.all = true;
-				for(var filter in $scope.display.filters){
-					$scope.display.filters.all = $scope.display.filters[filter] &&
-						$scope.display.filters.mydemands &&
-						$scope.display.filters.all;
+				for (let filter in $scope.display.filters) {
+					if (filter !== DEMANDS.MYDEMANDS && filter != DEMANDS.OTHERDEMANDS){
+						$scope.display.filters.all = $scope.display.filters[filter] && $scope.display.filters.all;
+					}
 				}
 			};
+
+			$scope.changeDemands = async (filterKey: DEMANDS) => {
+				$scope.display.filters[filterKey] = !$scope.display.filters[filterKey];
+				let unCheckedDemandsKeys: string[] = Object.keys(DEMANDS).filter((demandSingleKey: string) => !$scope.display.filters[DEMANDS[demandSingleKey]]);
+				if (unCheckedDemandsKeys.length == Object.keys(DEMANDS).length) {
+					unCheckedDemandsKeys.filter((unCheckedDemandSingleKey: string) => DEMANDS[unCheckedDemandSingleKey] != filterKey)
+						.forEach((unCheckedDemandSingleKey: string) => $scope.display.filters[DEMANDS[unCheckedDemandSingleKey]] = true);
+				}
+				$scope.goPage(1, true);
+			}
 
 			$scope.onStatusChange = function () {
 				$scope.checkAll();

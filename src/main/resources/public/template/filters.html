@@ -34,15 +34,26 @@
                     <i18n>[[status.i18nValue]]</i18n>
                 </label>
             </li>
-            <li ng-if="userIsLocalAdmin()">
-                <label class="checkbox cell"><input type="checkbox" ng-model="display.filters.mydemands" ng-change="onStatusChange()" />
-                    <i18n>support.ticket.status.my.demands</i18n>
-                </label>
+        </ul>
+    </div>
+    <div class="cell checkbox-filters" ng-if="userIsLocalAdmin()">
+        <div class="cell">
+            <i18n>support.filter.tickets.other</i18n>
+        </div>
+        <ul>
+            <li>
+                <directive-label-share
+                        name="myDemandsLabel"
+                        on-sort="changeDemands('mydemands')"
+                        is-checked="display.filters.mydemands">
+                </directive-label-share>
             </li>
-            <li ng-if="userIsLocalAdmin()">
-                <label class="checkbox cell"><input type="checkbox" ng-model="display.filters.otherdemands" ng-change="onStatusChange()" />
-                    <i18n>support.ticket.status.other.demands</i18n>
-                </label>
+            <li>
+                <directive-label-share
+                        name="otherDemandsLabel"
+                        on-sort="changeDemands('otherdemands')"
+                        is-checked="display.filters.otherdemands">
+                </directive-label-share>
             </li>
         </ul>
     </div>
