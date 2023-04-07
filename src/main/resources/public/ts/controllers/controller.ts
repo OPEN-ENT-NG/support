@@ -143,7 +143,7 @@ export const SupportController: Controller = ng.controller('SupportController',
 
 			$scope.switchAll = function(){
 				for (let filter in $scope.display.filters) {
-					if (filter !== "school_id" && filter !== "ticket_id") {
+					if (filter !== "school_id" && filter !== "ticket_id" && filter != DEMANDS.MYDEMANDS && filter != DEMANDS.OTHERDEMANDS) {
 						$scope.display.filters[filter] = $scope.display.filters.all;
 					}
 				}
