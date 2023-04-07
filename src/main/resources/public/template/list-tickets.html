@@ -36,6 +36,7 @@
 								'order-by': (sort.expression === sortCategoryFunction && sort.reverse === true)}">
 						<i18n>support.ticket.table.category</i18n>
 					</th>
+					<th class="one"><i18n>support.ticket.table.school</i18n></th>
 					<th class="one" ng-click="switchSortBy('owner')"
 					ng-class="{'order-by-reversed': (sort.expression === 'owner' && sort.reverse === false),
 								'order-by': (sort.expression === 'owner' && sort.reverse === true)}">
@@ -77,6 +78,7 @@
 						</div>
 					</td>
 					<td class="one" ng-click="viewTicket(ticket.id)">[[getCategoryLabel(ticket.category)]]</td>
+					<td class="one" ng-click="viewTicket(ticket.id)">[[getSchoolName(ticket.school_id)]]</td>
 					<td class="one" ng-click="viewTicket(ticket.id)"><a href="/userbook/annuaire#[[ticket.owner]]">[[ticket.owner_name]]</a></td>
                     <td class="one" >[[ticket.profile]]</td>
 					<td class="one smallFontSize" ng-click="viewTicket(ticket.id)">[[formatDate(ticket.modified)]]</td>
