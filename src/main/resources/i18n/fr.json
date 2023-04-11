@@ -93,6 +93,7 @@
     "support.ticket.status.my.demands":"Mes demandes",
     "support.ticket.status.other.demands":"Autres demandes",
     "support.ticket.filter.allschools":"Tous les établissements",
+    "support.ticket.filter.allcategories": "Sélectionnez la catégorie concernée",
     "support.ticket.subject": "Sujet",
     "support.ticket.suivi":"Suivi de mes demandes",
     "support.ticket.table.author": "Demandeur",
