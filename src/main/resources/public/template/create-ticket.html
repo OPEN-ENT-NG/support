@@ -4,8 +4,9 @@
 			<label class="two cell center"><i18n>support.ticket.category</i18n></label>
 			<span class="ten cell">
 				<select ng-model="ticket.category"
-					ng-init="ticket.category = ticket.category || apps[0].address"
+					ng-init="ticket.category = ticket.category"
 					ng-options="app.address as app.displayName for app in apps | orderBy:'displayName'">
+					<option value="" selected="selected">[[ lang.translate('support.ticket.filter.allcategories') ]]</option>
 				</select>
 			</span>
 		</div>
@@ -59,7 +60,7 @@
 		<div class="row">
 			<div ng-if="!ticket.processing">
 				<button class="right-magnet" ng-if="isEscalationActivated && canEscalate(ticket)" reset-guard="createAndEscalateTicket()" translate content="support.ticket.save.and.escalate"></button>
-				<button class="right-magnet" reset-guard="createTicket()" guard-ignore-template translate content="support.ticket.save"></button>
+				<button class="right-magnet" reset-guard="createTicket()" ng-disabled="ticket.category == null" guard-ignore-template translate content="support.ticket.save"></button>
 				<button class="right-magnet cancel" navigation-trigger="cancelCreateTicket()" translate content="support.ticket.cancel"></button>
 			</div>
 			<button ng-if="ticket.processing === true" class="right-magnet disabled"><i18n>support.ticket.processing</i18n>&nbsp;<i class="loading"></i></button>
