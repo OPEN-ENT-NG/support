@@ -64,6 +64,7 @@
     "support.ticket.status.opened": "Ouvert",
     "support.ticket.status.resolved": "Résolu",
     "support.ticket.filter.allschool":"Tous les établissements",
+    "support.ticket.filter.allcategories": "Sélectionnez la catégorie concernée",
     "support.ticket.subject": "Sujet",
     "support.ticket.table.author": "Demandeur",
     "support.ticket.table.category": "Catégorie",
