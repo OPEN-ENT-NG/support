@@ -27,6 +27,7 @@ import static org.entcore.common.http.response.DefaultResponseHandler.arrayRespo
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.stream.Collectors;
 
 import fr.wseduc.bus.BusAddress;
 import net.atos.entng.support.Support;
@@ -44,6 +45,7 @@ import org.entcore.common.controller.ControllerHelper;
 import org.entcore.common.events.EventHelper;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
+import org.entcore.common.http.filter.OwnerOnly;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.user.DefaultFunctions;
@@ -335,6 +337,7 @@ public class TicketController extends ControllerHelper {
 
     @Post("/ticketstatus/:newStatus")
     @ApiDoc("Update multiple ticket status")
+    @SecuredAction(value = "", type = ActionType.RESOURCE)
     @ResourceFilter(OwnerOrLocalAdmin.class)
     public void updateTicketStatus(final HttpServerRequest request) {
         final Integer newStatus = Integer.valueOf(request.params().get("newStatus"));
@@ -816,7 +819,8 @@ public class TicketController extends ControllerHelper {
 
     @Get("/ticket/:id/bugtrackerissue")
     @ApiDoc("Get bug tracker issue saved in postgresql")
-    @SecuredAction(value = "support.escalation.activation.status", type = ActionType.AUTHENTICATED)
+    @SecuredAction(value = "", type = ActionType.RESOURCE)
+    @ResourceFilter(OwnerOrLocalAdmin.class)
     public void getBugTrackerIssue(final HttpServerRequest request) {
         final String ticketId = request.params().get("id");
         ticketServiceSql.getIssue(ticketId, arrayResponseHandler(request));
@@ -891,6 +895,8 @@ public class TicketController extends ControllerHelper {
 
     @Get("/events/:id")
     @ApiDoc("Get historization of a ticket")
+    @SecuredAction(value = "", type = ActionType.RESOURCE)
+    @ResourceFilter(OwnerOrLocalAdmin.class)
     public void getHistorization(final HttpServerRequest request) {
         final String ticketId = request.params().get("id");
         UserUtils.getUserInfos(eb, request, user -> {
