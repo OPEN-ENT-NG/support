@@ -19,12 +19,14 @@ import service = workspace.v2.service;
 import {AxiosError, AxiosResponse} from "axios";
 import {attachment} from "entcore/types/src/ts/editor/options";
 import {DEMANDS} from "../core/enum/demands.enum";
+import {ITicketService} from "../services";
+import {IBodyTicket} from "../models/Ticket";
 
 declare let model: any;
 
 export const SupportController: Controller = ng.controller('SupportController',
-	['$scope', 'route', 'orderByFilter', '$timeout', 'AttachmentService',
-		function ($scope, route, orderByFilter, $timeout, attachmentService: IAttachmentService) {
+	['$scope', 'route', 'orderByFilter', '$timeout', 'AttachmentService', 'TicketService',
+		function ($scope, route, orderByFilter, $timeout, attachmentService: IAttachmentService, ticketService: ITicketService) {
 		route({
 			displayTicket: function (params) {
 				$scope.searchTicketNumber(params.ticketId);
@@ -274,6 +276,7 @@ export const SupportController: Controller = ng.controller('SupportController',
 				return;
 			}
 			template.open('main', 'view-ticket');
+			$scope.changeStatusAfterOpenTicket();
 			$scope.ticket.getAttachments();
 			$scope.ticket.getComments(function() {
 				$scope.initHisto(id.toString());
@@ -287,6 +290,17 @@ export const SupportController: Controller = ng.controller('SupportController',
 		$scope.viewTicket = function(ticketId) {
 			window.location.hash = '/ticket/' + ticketId;
 		};
+
+		$scope.changeStatusAfterOpenTicket = async function () {
+			if ($scope.userIsLocalAdmin($scope.ticket) && $scope.ticket.status == model.ticketStatusEnum.NEW) {
+				ticketService.update($scope.ticket.id, <IBodyTicket>{status: model.ticketStatusEnum.OPENED})
+					.then(() => {
+						$scope.ticket.status = model.ticketStatusEnum.OPENED;
+						safeApply($scope);
+					})
+					.catch((e) =>notify.error(lang.translate('support.ticket.status.error')));
+			}
+		}
 
 		// called when opening ticket and updating
 		$scope.initHisto = function(ticketId) {
