@@ -275,8 +275,8 @@ export const SupportController: Controller = ng.controller('SupportController',
 				$scope.$apply();
 				return;
 			}
-			$scope.changeStatusAfterOpenTicket();
-			await template.open('main', 'view-ticket');
+			await $scope.changeStatusAfterOpenTicket();
+			template.open('main', 'view-ticket');
 			$scope.ticket.getAttachments();
 			$scope.ticket.getComments(function () {
 				$scope.initHisto(id.toString());
