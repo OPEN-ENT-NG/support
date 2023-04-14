@@ -27,7 +27,6 @@ import static org.entcore.common.http.response.DefaultResponseHandler.arrayRespo
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.stream.Collectors;
 
 import fr.wseduc.bus.BusAddress;
 import net.atos.entng.support.Support;
@@ -45,7 +44,6 @@ import org.entcore.common.controller.ControllerHelper;
 import org.entcore.common.events.EventHelper;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
-import org.entcore.common.http.filter.OwnerOnly;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.user.DefaultFunctions;

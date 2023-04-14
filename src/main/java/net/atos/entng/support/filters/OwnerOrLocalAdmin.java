@@ -31,10 +31,8 @@ import org.entcore.common.user.DefaultFunctions;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserInfos.Function;
 import io.vertx.core.Handler;
-import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
 
 import fr.wseduc.webutils.http.Binding;
 
@@ -80,17 +78,14 @@ public class OwnerOrLocalAdmin implements ResourcesProvider {
 				}
 			}
 			query.append(")");
-			Sql.getInstance().prepared(query.toString(), values, new Handler<Message<JsonObject>>() {
-				@Override
-				public void handle(Message<JsonObject> message) {
-					request.resume();
-					Long count = SqlResult.countResult(message);
-					if(userFunctions.get(DefaultFunctions.SUPER_ADMIN) != null) {
-						// super admin is authorized
-						handler.handle(true);
-					} else {
-						handler.handle(count != null && count == ticketIds.size());
-					}
+			Sql.getInstance().prepared(query.toString(), values, result -> {
+				request.resume();
+				Long count = SqlResult.countResult(result);
+				if(userFunctions.get(DefaultFunctions.SUPER_ADMIN) != null) {
+					// super admin is authorized
+					handler.handle(true);
+				} else {
+					handler.handle(count != null && count == ticketIds.size());
 				}
 			});
 		});
