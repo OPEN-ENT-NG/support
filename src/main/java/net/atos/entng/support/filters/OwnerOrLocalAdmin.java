@@ -51,6 +51,7 @@ public class OwnerOrLocalAdmin implements ResourcesProvider {
 				handler.handle(false);
 			}
 		}
+		request.pause();
 		getTicketIdsFromBody(request).onComplete(ids -> {
 			ticketIds.addAll(ids.result());
 
