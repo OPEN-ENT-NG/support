@@ -68,7 +68,7 @@ publish () {
     echo "sonatypeUsername=$NEXUS_SONATYPE_USERNAME" >> "?/.gradle/gradle.properties"
     echo "sonatypePassword=$NEXUS_SONATYPE_PASSWORD" >> "?/.gradle/gradle.properties"
   fi
-  docker-compose run --rm -u "$USER_UID:$GROUP_GID" gradle gradle publish
+  gradle publish
 }
 
 testNode () {
@@ -76,15 +76,15 @@ testNode () {
   rm -rf */build
   case `uname -s` in
     MINGW*)
-      docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install --no-bin-links && node_modules/gulp/bin/gulp.js drop-cache &&  npm test"
+      npm install --no-bin-links && node_modules/gulp/bin/gulp.js drop-cache &&  npm test
       ;;
     *)
-      docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install && node_modules/gulp/bin/gulp.js drop-cache && npm test"
+      npm install && node_modules/gulp/bin/gulp.js drop-cache && npm test
   esac
 }
 
 testGradle() {
-  docker-compose run --rm -u "$USER_UID:$GROUP_GID" gradle gradle test --no-build-cache --rerun-tasks
+  gradle test --no-build-cache --rerun-tasks
 }
 
 for param in "$@"
