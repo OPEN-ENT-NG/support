@@ -20,10 +20,7 @@
 package net.atos.entng.support;
 
 import fr.wseduc.mongodb.MongoDb;
-import net.atos.entng.support.controllers.AttachmentController;
-import net.atos.entng.support.controllers.CommentController;
-import net.atos.entng.support.controllers.DisplayController;
-import net.atos.entng.support.controllers.TicketController;
+import net.atos.entng.support.controllers.*;
 import net.atos.entng.support.enums.BugTracker;
 import net.atos.entng.support.events.SupportSearchingEvents;
 import net.atos.entng.support.services.EscalationService;
@@ -111,6 +108,7 @@ public class Support extends BaseServer {
 		commentSqlConf.setSchema("support");
 		CommentController commentController = new CommentController();
 		addController(commentController);
+		addController(new ConfigController());
 
 		AttachmentController attachmentController = new AttachmentController(folderManager);
 		addController(attachmentController);
