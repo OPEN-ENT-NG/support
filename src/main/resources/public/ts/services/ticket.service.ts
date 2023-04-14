@@ -1,6 +1,6 @@
 import {ng} from 'entcore'
 import http, {AxiosResponse} from "axios";
-import {IBodyTicket} from "../models/Ticket";
+import {IBodyTicket} from "../models/ticket.model";
 
 export interface ITicketService {
     update(ticketId: number, body: IBodyTicket): Promise<AxiosResponse>;
