@@ -47,7 +47,11 @@ public class OwnerOrLocalAdmin implements ResourcesProvider {
 	public void authorize(final HttpServerRequest request, final Binding binding, final UserInfos user, final Handler<Boolean> handler) {
 		Set<Integer> ticketIds = new HashSet<>();
 		if (request.params().contains("id")) {
-			ticketIds.add(Integer.parseInt(request.params().get("id")));
+			try {
+				ticketIds.add(Integer.parseInt(request.params().get("id")));
+			} catch (NumberFormatException e) {
+				handler.handle(false);
+			}
 		}
 		getTicketIdsFromBody(request).onComplete(ids -> {
 			ticketIds.addAll(ids.result());
@@ -61,7 +65,6 @@ public class OwnerOrLocalAdmin implements ResourcesProvider {
 			query.append(" WHERE t.id IN (");
 			bindInSqlKeyword(query, values, new HashSet<>(ticketIds));
 			query.append(")");
-
 			query.append(" AND (t.owner = ?"); // Check if current user is the ticket's owner
 			values.add(user.getUserId());
 
@@ -93,17 +96,9 @@ public class OwnerOrLocalAdmin implements ResourcesProvider {
 		});
 	}
 
-	private void bindInSqlKeyword(StringBuilder query, JsonArray values, Set<Object> bindings) {
-		bindings.forEach(binding -> {
-			query.append("?,");
-			values.add(binding);
-		});
-		query.deleteCharAt(query.length() - 1);
-	}
-
 	private Future<Set<Integer>> getTicketIdsFromBody(HttpServerRequest request) {
 		Promise<Set<Integer>> promise = Promise.promise();
-		Set<Integer> idsFromBody = new HashSet<>();
+		HashSet<Integer> idsFromBody = new HashSet<>();
 		if (request.headers().contains("Content-Type") && request.headers().get("Content-Type").equals("application/json")){
 			RequestUtils.bodyToJson(request, body -> {
 				if (body != null && body.containsKey("ids")) {
@@ -115,5 +110,13 @@ public class OwnerOrLocalAdmin implements ResourcesProvider {
 			promise.complete(idsFromBody);
 		}
 		return promise.future();
+	}
+
+	private void bindInSqlKeyword(StringBuilder query, JsonArray values, Set<Object> bindings) {
+		bindings.forEach(binding -> {
+			query.append("?,");
+			values.add(binding);
+		});
+		query.deleteCharAt(query.length() - 1);
 	}
 }

@@ -351,7 +351,7 @@ public class TicketController extends ControllerHelper {
                             createTicketHistoMultiple(ids, I18n.getInstance().translate("support.ticket.histo.mass.modification",
                                     getHost(request), I18n.acceptLanguage(request)), newStatus, user.getUserId());
                             request.response().setStatusCode(200).end();
-                            if(escalationService.getBugTrackerType().getBugTrackerSyncType()
+                            if(escalationService != null && escalationService.getBugTrackerType().getBugTrackerSyncType()
                                     == BugTrackerSyncType.ASYNC) {
                                 updateIssuesStatus(request, ids);
                             }
