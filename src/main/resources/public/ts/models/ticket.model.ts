@@ -1,6 +1,6 @@
 import {Attachment} from "./Attachment";
 
-export interface IBodyTicket {
+export interface ITicketResponse {
     id: number;
     subject: string;
     description: string;
@@ -33,7 +33,7 @@ export class Ticket {
         this._attachments = null;
     }
 
-    build(data: IBodyTicket): Ticket {
+    build(data: ITicketResponse): Ticket {
         this._id = data.id;
         this._subject = data.subject;
         this._description = data.description;

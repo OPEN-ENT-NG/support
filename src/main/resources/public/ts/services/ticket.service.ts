@@ -1,9 +1,9 @@
 import {ng} from 'entcore'
 import http, {AxiosResponse} from "axios";
-import {IBodyTicket} from "../models/ticket.model";
+import {ITicketResponse} from "../models/ticket.model";
 
 export interface ITicketService {
-    update(ticketId: number, body: IBodyTicket): Promise<AxiosResponse>;
+    update(ticketId: number, body: ITicketResponse): Promise<AxiosResponse>;
 }
 
 export const ticketService: ITicketService = {
@@ -11,10 +11,10 @@ export const ticketService: ITicketService = {
      * update ticket informations
      *
      * @param ticketId  {number} ticket identifier
-     * @param body  {IBodyTicket} ticket changes
+     * @param body  {ITicketResponse} ticket changes
      * @returns {Promise<AxiosResponse>} result Axios
      */
-    update: async (ticketId: number, body: IBodyTicket): Promise<AxiosResponse> => {
+    update: async (ticketId: number, body: ITicketResponse): Promise<AxiosResponse> => {
         return http.put(`/support/ticket/${ticketId}`, body);
     }
 };
