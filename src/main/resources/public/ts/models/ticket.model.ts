@@ -11,6 +11,9 @@ export interface ITicketResponse {
     attachments: [];
 }
 
+export interface ITicketPayload{
+}
+
 export class Ticket {
     private _id: number;
     private _subject: string;

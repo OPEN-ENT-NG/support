@@ -20,7 +20,7 @@ import {AxiosError, AxiosResponse} from "axios";
 import {attachment} from "entcore/types/src/ts/editor/options";
 import {DEMANDS} from "../core/enum/demands.enum";
 import {ITicketService} from "../services";
-import {ITicketResponse} from "../models/ticket.model";
+import {ITicketPayload} from "../models/ticket.model";
 
 declare let model: any;
 
@@ -294,7 +294,7 @@ export const SupportController: Controller = ng.controller('SupportController',
 		$scope.changeStatusAfterOpenTicket = async function () {
 			if ($scope.userIsLocalAdmin($scope.ticket) && $scope.ticket.status == model.ticketStatusEnum.NEW) {
 				try {
-					await ticketService.update($scope.ticket.id, <ITicketResponse>{status: model.ticketStatusEnum.OPENED})
+					await ticketService.update($scope.ticket.id, <ITicketPayload>{status: model.ticketStatusEnum.OPENED})
 					$scope.ticket.status = model.ticketStatusEnum.OPENED;
 					safeApply($scope);
 				}catch (e){
