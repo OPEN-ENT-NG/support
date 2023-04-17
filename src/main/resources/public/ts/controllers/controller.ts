@@ -260,7 +260,7 @@ export const SupportController: Controller = ng.controller('SupportController',
 			}
 		};
 
-		$scope.openTicket = async function (id) {
+		$scope.openTicket = async (id: string): Promise<void> => {
 			if (!$scope.ticket || ($scope.ticket && $scope.ticket.id !== id))
 				$scope.ticket = _.find(model.tickets.all, function (ticket) {
 					return ticket.id === id;
@@ -291,7 +291,7 @@ export const SupportController: Controller = ng.controller('SupportController',
 			window.location.hash = '/ticket/' + ticketId;
 		};
 
-		$scope.changeStatusAfterOpenTicket = async function () {
+		$scope.changeStatusAfterOpenTicket = async (): Promise<void> => {
 			if ($scope.userIsLocalAdmin($scope.ticket) && $scope.ticket.status == model.ticketStatusEnum.NEW) {
 				try {
 					await ticketService.update($scope.ticket.id, <ITicketPayload>{status: model.ticketStatusEnum.OPENED})

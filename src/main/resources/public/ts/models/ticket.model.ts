@@ -11,7 +11,7 @@ export interface ITicketResponse {
     attachments: [];
 }
 
-export interface ITicketPayload{
+export interface ITicketPayload {
     status: number;
 }
 
