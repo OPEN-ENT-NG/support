@@ -4,7 +4,10 @@
   "additionalProperties": false,
   "properties": {
     "ids": {
-      "type": "array"
+      "type": "array",
+      "items": {
+        "type": "integer"
+      }
     }
   },
   "required": [
