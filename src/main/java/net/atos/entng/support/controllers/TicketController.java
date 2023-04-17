@@ -335,6 +335,7 @@ public class TicketController extends ControllerHelper {
 
     @Post("/ticketstatus/:newStatus")
     @ApiDoc("Update multiple ticket status")
+    @SecuredAction(value = "", type = ActionType.RESOURCE)
     @ResourceFilter(OwnerOrLocalAdmin.class)
     public void updateTicketStatus(final HttpServerRequest request) {
         final Integer newStatus = Integer.valueOf(request.params().get("newStatus"));
@@ -348,7 +349,7 @@ public class TicketController extends ControllerHelper {
                             createTicketHistoMultiple(ids, I18n.getInstance().translate("support.ticket.histo.mass.modification",
                                     getHost(request), I18n.acceptLanguage(request)), newStatus, user.getUserId());
                             request.response().setStatusCode(200).end();
-                            if(escalationService.getBugTrackerType().getBugTrackerSyncType()
+                            if(escalationService != null && escalationService.getBugTrackerType().getBugTrackerSyncType()
                                     == BugTrackerSyncType.ASYNC) {
                                 updateIssuesStatus(request, ids);
                             }
@@ -816,7 +817,8 @@ public class TicketController extends ControllerHelper {
 
     @Get("/ticket/:id/bugtrackerissue")
     @ApiDoc("Get bug tracker issue saved in postgresql")
-    @SecuredAction(value = "support.escalation.activation.status", type = ActionType.AUTHENTICATED)
+    @SecuredAction(value = "", type = ActionType.RESOURCE)
+    @ResourceFilter(OwnerOrLocalAdmin.class)
     public void getBugTrackerIssue(final HttpServerRequest request) {
         final String ticketId = request.params().get("id");
         ticketServiceSql.getIssue(ticketId, arrayResponseHandler(request));
@@ -891,6 +893,8 @@ public class TicketController extends ControllerHelper {
 
     @Get("/events/:id")
     @ApiDoc("Get historization of a ticket")
+    @SecuredAction(value = "", type = ActionType.RESOURCE)
+    @ResourceFilter(OwnerOrLocalAdmin.class)
     public void getHistorization(final HttpServerRequest request) {
         final String ticketId = request.params().get("id");
         UserUtils.getUserInfos(eb, request, user -> {
