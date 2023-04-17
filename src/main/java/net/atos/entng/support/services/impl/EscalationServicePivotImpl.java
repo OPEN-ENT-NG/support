@@ -14,6 +14,7 @@ import net.atos.entng.support.services.TicketServiceSql;
 import net.atos.entng.support.services.UserService;
 import org.entcore.common.bus.ErrorMessage;
 import org.entcore.common.bus.WorkspaceHelper;
+import org.entcore.common.messaging.to.ClientMessage;
 import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.user.UserInfos;
@@ -427,7 +428,7 @@ public class EscalationServicePivotImpl implements EscalationService
                     break;
                 }
 
-                storage.writeBuffer(pjContent, "", pjName, attachmentMetaData -> {
+                storage.writeBuffer(pjContent, "", pjName, ClientMessage.SYSTEM_ORIGINATOR, attachmentMetaData -> {
                     if("error".equals(attachmentMetaData.getString("status"))) {
                         log.error("Error when saving attachment " + pjName);
                     } else {

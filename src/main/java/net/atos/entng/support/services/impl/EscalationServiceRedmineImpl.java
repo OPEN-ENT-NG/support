@@ -35,6 +35,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.entcore.common.bus.WorkspaceHelper;
 import org.entcore.common.bus.WorkspaceHelper.Document;
+import org.entcore.common.messaging.to.ClientMessage;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.StatementsBuilder;
 import org.entcore.common.notification.TimelineHelper;
@@ -864,7 +865,7 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 			@Override
 			public void handle(Buffer data) {
 				// store attachment
-				storage.writeBuffer(data, attachment.getString("content_type", ""), attachment.getString("filename"),
+				storage.writeBuffer(data, attachment.getString("content_type", ""), attachment.getString("filename"), ClientMessage.SYSTEM_ORIGINATOR,
 						new Handler<JsonObject>() {
 							@Override
 							public void handle(JsonObject attachmentMetaData) {
