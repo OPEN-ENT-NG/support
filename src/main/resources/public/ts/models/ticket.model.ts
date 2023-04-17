@@ -12,6 +12,7 @@ export interface ITicketResponse {
 }
 
 export interface ITicketPayload{
+    status: number;
 }
 
 export class Ticket {
