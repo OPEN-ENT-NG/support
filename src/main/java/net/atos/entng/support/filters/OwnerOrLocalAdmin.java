@@ -94,11 +94,11 @@ public class OwnerOrLocalAdmin implements ResourcesProvider {
 
 	private Future<Set<Integer>> getTicketIdsFromBody(HttpServerRequest request) {
 		Promise<Set<Integer>> promise = Promise.promise();
-		HashSet<Integer> idsFromBody = new HashSet<>();
-		if (request.headers().contains("Content-Type") && request.headers().get("Content-Type").equals("application/json")){
+		final Set<Integer> idsFromBody = new HashSet<>();
+		if (request.headers().contains("Content-Type") && request.headers().get("Content-Type").contains("application/json")){
 			RequestUtils.bodyToJson(request, body -> {
 				if (body != null && body.containsKey("ids")) {
-					idsFromBody.addAll(new HashSet<>(body.getJsonArray("ids").getList()));
+					idsFromBody.addAll(body.getJsonArray("ids").getList());
 				}
 				promise.complete(idsFromBody);
 			});
