@@ -89,6 +89,7 @@
     "support.ticket.status.closed": "Fermé",
     "support.ticket.status.new": "Nouveau",
     "support.ticket.status.opened": "Ouvert",
+    "support.ticket.status.waiting": "En attente de réponse utilisateur",
     "support.ticket.status.resolved": "Résolu",
     "support.ticket.status.my.demands":"Mes demandes",
     "support.ticket.status.other.demands":"Autres demandes",

@@ -13,6 +13,7 @@ public class Ticket {
     public static final String SOURCE_CGI = "CGI";
     public static final String NEW = "Nouveau";
     public static final String OPEN = "Ouvert";
+    public static final String WAITING = "En attente de réponse utilisateur";
     public static final String RESOLVED = "Resolu";
     public static final String CLOSED = "Ferme";
     public static final String JIRA_COMMENT_HEADER = "Modification du statut Jira";
