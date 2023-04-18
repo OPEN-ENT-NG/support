@@ -293,13 +293,25 @@ export const SupportController: Controller = ng.controller('SupportController',
 
 		$scope.changeStatusAfterOpenTicket = async (): Promise<void> => {
 			if ($scope.userIsLocalAdmin($scope.ticket) && $scope.ticket.status == model.ticketStatusEnum.NEW) {
-				try {
-					await ticketService.update($scope.ticket.id, <ITicketPayload>{status: model.ticketStatusEnum.OPENED})
-					$scope.ticket.status = model.ticketStatusEnum.OPENED;
-					safeApply($scope);
-				}catch (e){
-					notify.error(lang.translate('support.ticket.status.error'))
-				}
+				await $scope.changeStatus(model.ticketStatusEnum.OPENED);
+			}
+		}
+
+		$scope.changeStatusAfterResponse = async (): Promise<void> => {
+			if ($scope.userIsLocalAdmin($scope.ticket) && $scope.ticket.status == model.ticketStatusEnum.OPENED) {
+				await $scope.changeStatus(model.ticketStatusEnum.WAITING);
+			} else if (!$scope.userIsLocalAdmin($scope.ticket) && $scope.ticket.status == model.ticketStatusEnum.WAITING) {
+				await $scope.changeStatus(model.ticketStatusEnum.OPENED);
+			}
+		}
+
+		$scope.changeStatus = async (statusEnum: number): Promise<void> => {
+			try {
+				await ticketService.update($scope.ticket.id, <ITicketPayload>{status: model.ticketStatusEnum.properties[statusEnum].value});
+				$scope.ticket.status = model.ticketStatusEnum.properties[statusEnum].value;
+				safeApply($scope);
+			} catch (e) {
+				notify.error(lang.translate('support.ticket.status.error'));
 			}
 		}
 
@@ -534,6 +546,7 @@ export const SupportController: Controller = ng.controller('SupportController',
 
 		$scope.updateTicket = function(){
 			$scope.checkUpdateTicket($scope.editedTicket);
+			$scope.changeStatusAfterResponse();
 			if(!$scope.editedTicket.processing){
 				return;
 			}

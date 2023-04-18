@@ -62,6 +62,7 @@
     "support.ticket.status.closed": "Fermé",
     "support.ticket.status.new": "Nouveau",
     "support.ticket.status.opened": "Ouvert",
+    "support.ticket.status.waiting": "En attente de réponse utilisateur",
     "support.ticket.status.resolved": "Résolu",
     "support.ticket.status.error": "Le statut n'a pas pu être changé",
     "support.ticket.filter.allschool":"Tous les établissements",
