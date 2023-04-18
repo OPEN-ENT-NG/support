@@ -305,20 +305,10 @@ export const SupportController: Controller = ng.controller('SupportController',
 			}
 		}
 
-		$scope.changeStatus = async (status: number): Promise<void> => {
+		$scope.changeStatus = async (statusEnum: number): Promise<void> => {
 			try {
-				switch (status) {
-					case model.ticketStatusEnum.WAITING:
-						await ticketService.update($scope.ticket.id, <ITicketPayload>{status: model.ticketStatusEnum.WAITING});
-						$scope.ticket.status = model.ticketStatusEnum.WAITING;
-						break;
-					case model.ticketStatusEnum.OPENED:
-						await ticketService.update($scope.ticket.id, <ITicketPayload>{status: model.ticketStatusEnum.OPENED});
-						$scope.ticket.status = model.ticketStatusEnum.OPENED;
-						break;
-					default:
-						return;
-				}
+				await ticketService.update($scope.ticket.id, <ITicketPayload>{status: model.ticketStatusEnum.properties[statusEnum].value});
+				$scope.ticket.status = model.ticketStatusEnum.properties[statusEnum].value;
 				safeApply($scope);
 			} catch (e) {
 				notify.error(lang.translate('support.ticket.status.error'));
