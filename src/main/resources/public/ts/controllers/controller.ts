@@ -293,26 +293,26 @@ export const SupportController: Controller = ng.controller('SupportController',
 
 		$scope.changeStatusAfterOpenTicket = async (): Promise<void> => {
 			if ($scope.userIsLocalAdmin($scope.ticket) && $scope.ticket.status == model.ticketStatusEnum.NEW) {
-				await $scope.changeStatus("open");
+				await $scope.changeStatus(model.ticketStatusEnum.OPENED);
 			}
 		}
 
 		$scope.changeStatusAfterResponse = async (): Promise<void> => {
 			if ($scope.userIsLocalAdmin($scope.ticket) && $scope.ticket.status == model.ticketStatusEnum.OPENED) {
-				await $scope.changeStatus("waiting");
+				await $scope.changeStatus(model.ticketStatusEnum.WAITING);
 			} else if (!$scope.userIsLocalAdmin($scope.ticket) && $scope.ticket.status == model.ticketStatusEnum.WAITING) {
-				await $scope.changeStatus("open");
+				await $scope.changeStatus(model.ticketStatusEnum.OPENED);
 			}
 		}
 
-		$scope.changeStatus = async (status: string): Promise<void> => {
+		$scope.changeStatus = async (status: number): Promise<void> => {
 			try {
 				switch (status) {
-					case 'waiting':
+					case model.ticketStatusEnum.WAITING:
 						await ticketService.update($scope.ticket.id, <ITicketPayload>{status: model.ticketStatusEnum.WAITING});
 						$scope.ticket.status = model.ticketStatusEnum.WAITING;
 						break;
-					case 'open':
+					case model.ticketStatusEnum.OPENED:
 						await ticketService.update($scope.ticket.id, <ITicketPayload>{status: model.ticketStatusEnum.OPENED});
 						$scope.ticket.status = model.ticketStatusEnum.OPENED;
 						break;
