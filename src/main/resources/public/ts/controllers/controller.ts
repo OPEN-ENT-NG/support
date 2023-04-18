@@ -293,33 +293,35 @@ export const SupportController: Controller = ng.controller('SupportController',
 
 		$scope.changeStatusAfterOpenTicket = async (): Promise<void> => {
 			if ($scope.userIsLocalAdmin($scope.ticket) && $scope.ticket.status == model.ticketStatusEnum.NEW) {
-				try {
-					await ticketService.update($scope.ticket.id, <ITicketPayload>{status: model.ticketStatusEnum.OPENED})
-					$scope.ticket.status = model.ticketStatusEnum.OPENED;
-					safeApply($scope);
-				}catch (e){
-					notify.error(lang.translate('support.ticket.status.error'))
-				}
+				await $scope.changeStatusToOpen();
 			}
 		}
 
 		$scope.changeStatusAfterResponse = async (): Promise<void> => {
 			if ($scope.userIsLocalAdmin($scope.ticket) && $scope.ticket.status == model.ticketStatusEnum.OPENED) {
-				try {
-					await ticketService.update($scope.ticket.id, <ITicketPayload>{status: model.ticketStatusEnum.WAITING})
-					$scope.ticket.status = model.ticketStatusEnum.WAITING;
-					safeApply($scope);
-				} catch (e) {
-					notify.error(lang.translate('support.ticket.status.error'))
-				}
+				await $scope.changeStatusToWaiting();
 			} else if (!$scope.userIsLocalAdmin($scope.ticket) && $scope.ticket.status == model.ticketStatusEnum.WAITING) {
-				try {
-					await ticketService.update($scope.ticket.id, <ITicketPayload>{status: model.ticketStatusEnum.OPENED})
-					$scope.ticket.status = model.ticketStatusEnum.OPENED;
-					safeApply($scope);
-				} catch (e) {
-					notify.error(lang.translate('support.ticket.status.error'))
-				}
+				await $scope.changeStatusToOpen();
+			}
+		}
+
+		$scope.changeStatusToWaiting = async (): Promise<void> => {
+			try {
+				await ticketService.update($scope.ticket.id, <ITicketPayload>{status: model.ticketStatusEnum.WAITING})
+				$scope.ticket.status = model.ticketStatusEnum.WAITING;
+				safeApply($scope);
+			} catch (e) {
+				notify.error(lang.translate('support.ticket.status.error'))
+			}
+		}
+
+		$scope.changeStatusToOpen = async (): Promise<void> => {
+			try {
+				await ticketService.update($scope.ticket.id, <ITicketPayload>{status: model.ticketStatusEnum.OPENED})
+				$scope.ticket.status = model.ticketStatusEnum.OPENED;
+				safeApply($scope);
+			} catch (e) {
+				notify.error(lang.translate('support.ticket.status.error'))
 			}
 		}
 

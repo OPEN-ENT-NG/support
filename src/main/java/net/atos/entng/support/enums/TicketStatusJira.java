@@ -10,9 +10,9 @@ import java.util.stream.Collectors;
 public enum TicketStatusJira {
     NEW(Ticket.NEW, 1),
     OPEN(Ticket.OPEN, 2),
-    WAITING(Ticket.WAITING, 3),
-    RESOLVED(Ticket.RESOLVED, 4),
-    CLOSED(Ticket.CLOSED, 5);
+    RESOLVED(Ticket.RESOLVED, 3),
+    CLOSED(Ticket.CLOSED, 4),
+    WAITING(Ticket.WAITING, 5);
 
     private final Integer status;
     private final String name;
