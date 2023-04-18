@@ -7,13 +7,15 @@ declare let model: any;
 model.ticketStatusEnum = {
 	NEW: 1,
 	OPENED: 2,
-	RESOLVED: 3,
-	ClOSED: 4,
+	WAITING: 3,
+	RESOLVED: 4,
+	ClOSED: 5,
 	properties: {
 		1: {i18n: "support.ticket.status.new", value: 1},
 		2: {i18n: "support.ticket.status.opened", value: 2},
-		3: {i18n: "support.ticket.status.resolved", value: 3},
-		4: {i18n: "support.ticket.status.closed", value: 4}
+		3: {i18n: "support.ticket.status.waiting", value: 3},
+		4: {i18n: "support.ticket.status.resolved", value: 4},
+		5: {i18n: "support.ticket.status.closed", value: 5}
 	}
 };
 

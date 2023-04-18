@@ -303,6 +303,26 @@ export const SupportController: Controller = ng.controller('SupportController',
 			}
 		}
 
+		$scope.changeStatusAfterResponse = async (): Promise<void> => {
+			if ($scope.userIsLocalAdmin($scope.ticket) && $scope.ticket.status == model.ticketStatusEnum.OPENED) {
+				try {
+					await ticketService.update($scope.ticket.id, <ITicketPayload>{status: model.ticketStatusEnum.WAITING})
+					$scope.ticket.status = model.ticketStatusEnum.WAITING;
+					safeApply($scope);
+				} catch (e) {
+					notify.error(lang.translate('support.ticket.status.error'))
+				}
+			} else if (!$scope.userIsLocalAdmin($scope.ticket) && $scope.ticket.status == model.ticketStatusEnum.WAITING) {
+				try {
+					await ticketService.update($scope.ticket.id, <ITicketPayload>{status: model.ticketStatusEnum.OPENED})
+					$scope.ticket.status = model.ticketStatusEnum.OPENED;
+					safeApply($scope);
+				} catch (e) {
+					notify.error(lang.translate('support.ticket.status.error'))
+				}
+			}
+		}
+
 		// called when opening ticket and updating
 		$scope.initHisto = function(ticketId) {
 			model.getEvents(ticketId, function(result) {
@@ -534,6 +554,7 @@ export const SupportController: Controller = ng.controller('SupportController',
 
 		$scope.updateTicket = function(){
 			$scope.checkUpdateTicket($scope.editedTicket);
+			$scope.changeStatusAfterResponse();
 			if(!$scope.editedTicket.processing){
 				return;
 			}

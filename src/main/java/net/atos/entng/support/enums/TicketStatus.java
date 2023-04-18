@@ -20,7 +20,7 @@
 package net.atos.entng.support.enums;
 
 public enum TicketStatus {
-	NEW(1), OPENED(2), RESOLVED(3), CLOSED(4);
+	NEW(1), OPENED(2), WAITING(3), RESOLVED(4), CLOSED(5);
 
 	private final int status;
 

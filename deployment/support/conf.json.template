@@ -36,6 +36,7 @@
          "status_iws":{
                "STATUS_NEW":"Ouvert",
                "STATUS_OPENED":"En cours",
+               "STATUS_WAITING":"En attente de réponse utilisateur",
                "STATUS_RESOLVED":"Résolu",
                "STATUS_CLOSED":"Fermé"
           },
