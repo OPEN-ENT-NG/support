@@ -19,12 +19,14 @@ import service = workspace.v2.service;
 import {AxiosError, AxiosResponse} from "axios";
 import {attachment} from "entcore/types/src/ts/editor/options";
 import {DEMANDS} from "../core/enum/demands.enum";
+import {ITicketService} from "../services";
+import {ITicketPayload} from "../models/ticket.model";
 
 declare let model: any;
 
 export const SupportController: Controller = ng.controller('SupportController',
-	['$scope', 'route', 'orderByFilter', '$timeout', 'AttachmentService',
-		function ($scope, route, orderByFilter, $timeout, attachmentService: IAttachmentService) {
+	['$scope', 'route', 'orderByFilter', '$timeout', 'AttachmentService', 'TicketService',
+		function ($scope, route, orderByFilter, $timeout, attachmentService: IAttachmentService, ticketService: ITicketService) {
 		route({
 			displayTicket: function (params) {
 				$scope.searchTicketNumber(params.ticketId);
@@ -258,27 +260,28 @@ export const SupportController: Controller = ng.controller('SupportController',
 			}
 		};
 
-		$scope.openTicket = function(id) {
-			if(!$scope.ticket || ($scope.ticket && $scope.ticket.id !== id))
-				$scope.ticket = _.find(model.tickets.all, function(ticket){
+		$scope.openTicket = async (id: string): Promise<void> => {
+			if (!$scope.ticket || ($scope.ticket && $scope.ticket.id !== id))
+				$scope.ticket = _.find(model.tickets.all, function (ticket) {
 					return ticket.id === id;
 				});
-			if(!$scope.ticket) {
-				if($scope.searchInput){
+			if (!$scope.ticket) {
+				if ($scope.searchInput) {
 					$scope.notFoundSearchInput = true;
 					$scope.searchInput = false;
-				}else{
+				} else {
 					$scope.notFound = true;
 				}
 				$scope.$apply();
 				return;
 			}
+			await $scope.changeStatusAfterOpenTicket();
 			template.open('main', 'view-ticket');
 			$scope.ticket.getAttachments();
-			$scope.ticket.getComments(function() {
+			$scope.ticket.getComments(function () {
 				$scope.initHisto(id.toString());
 			});
-			model.getProfile($scope.ticket.owner, function(result) {
+			model.getProfile($scope.ticket.owner, function (result) {
 				$scope.ticket.profile = result.profile;
 			});
 			$scope.ticket.getBugTrackerIssue();
@@ -287,6 +290,18 @@ export const SupportController: Controller = ng.controller('SupportController',
 		$scope.viewTicket = function(ticketId) {
 			window.location.hash = '/ticket/' + ticketId;
 		};
+
+		$scope.changeStatusAfterOpenTicket = async (): Promise<void> => {
+			if ($scope.userIsLocalAdmin($scope.ticket) && $scope.ticket.status == model.ticketStatusEnum.NEW) {
+				try {
+					await ticketService.update($scope.ticket.id, <ITicketPayload>{status: model.ticketStatusEnum.OPENED})
+					$scope.ticket.status = model.ticketStatusEnum.OPENED;
+					safeApply($scope);
+				}catch (e){
+					notify.error(lang.translate('support.ticket.status.error'))
+				}
+			}
+		}
 
 		// called when opening ticket and updating
 		$scope.initHisto = function(ticketId) {

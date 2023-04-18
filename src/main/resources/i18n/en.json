@@ -63,6 +63,7 @@
     "support.ticket.status.new": "Nouveau",
     "support.ticket.status.opened": "Ouvert",
     "support.ticket.status.resolved": "Résolu",
+    "support.ticket.status.error": "Le statut n'a pas pu être changé",
     "support.ticket.filter.allschool":"Tous les établissements",
     "support.ticket.filter.allcategories": "Sélectionnez la catégorie concernée",
     "support.ticket.subject": "Sujet",
