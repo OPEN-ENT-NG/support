@@ -293,35 +293,35 @@ export const SupportController: Controller = ng.controller('SupportController',
 
 		$scope.changeStatusAfterOpenTicket = async (): Promise<void> => {
 			if ($scope.userIsLocalAdmin($scope.ticket) && $scope.ticket.status == model.ticketStatusEnum.NEW) {
-				await $scope.changeStatusToOpen();
+				await $scope.changeStatus("open");
 			}
 		}
 
 		$scope.changeStatusAfterResponse = async (): Promise<void> => {
 			if ($scope.userIsLocalAdmin($scope.ticket) && $scope.ticket.status == model.ticketStatusEnum.OPENED) {
-				await $scope.changeStatusToWaiting();
+				await $scope.changeStatus("waiting");
 			} else if (!$scope.userIsLocalAdmin($scope.ticket) && $scope.ticket.status == model.ticketStatusEnum.WAITING) {
-				await $scope.changeStatusToOpen();
+				await $scope.changeStatus("open");
 			}
 		}
 
-		$scope.changeStatusToWaiting = async (): Promise<void> => {
+		$scope.changeStatus = async (status: string): Promise<void> => {
 			try {
-				await ticketService.update($scope.ticket.id, <ITicketPayload>{status: model.ticketStatusEnum.WAITING})
-				$scope.ticket.status = model.ticketStatusEnum.WAITING;
+				switch (status) {
+					case 'waiting':
+						await ticketService.update($scope.ticket.id, <ITicketPayload>{status: model.ticketStatusEnum.WAITING});
+						$scope.ticket.status = model.ticketStatusEnum.WAITING;
+						break;
+					case 'open':
+						await ticketService.update($scope.ticket.id, <ITicketPayload>{status: model.ticketStatusEnum.OPENED});
+						$scope.ticket.status = model.ticketStatusEnum.OPENED;
+						break;
+					default:
+						return;
+				}
 				safeApply($scope);
 			} catch (e) {
-				notify.error(lang.translate('support.ticket.status.error'))
-			}
-		}
-
-		$scope.changeStatusToOpen = async (): Promise<void> => {
-			try {
-				await ticketService.update($scope.ticket.id, <ITicketPayload>{status: model.ticketStatusEnum.OPENED})
-				$scope.ticket.status = model.ticketStatusEnum.OPENED;
-				safeApply($scope);
-			} catch (e) {
-				notify.error(lang.translate('support.ticket.status.error'))
+				notify.error(lang.translate('support.ticket.status.error'));
 			}
 		}
 

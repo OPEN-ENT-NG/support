@@ -13,9 +13,9 @@ model.ticketStatusEnum = {
 	properties: {
 		1: {i18n: "support.ticket.status.new", value: 1},
 		2: {i18n: "support.ticket.status.opened", value: 2},
-		3: {i18n: "support.ticket.status.resolved", value: 4},
-		4: {i18n: "support.ticket.status.closed", value: 5},
-		5: {i18n: "support.ticket.status.waiting", value: 3}
+		3: {i18n: "support.ticket.status.resolved", value: 3},
+		4: {i18n: "support.ticket.status.closed", value: 4},
+		5: {i18n: "support.ticket.status.waiting", value: 5}
 	}
 };
 
