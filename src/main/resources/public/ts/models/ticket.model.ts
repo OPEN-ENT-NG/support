@@ -13,6 +13,9 @@ export interface ITicketResponse {
 
 export interface ITicketPayload {
     status: number;
+    school: string;
+    sortBy: string;
+    order: string;
 }
 
 export class Ticket {

@@ -22,6 +22,9 @@ package net.atos.entng.support.controllers;
 import static net.atos.entng.support.Support.SUPPORT_NAME;
 import static net.atos.entng.support.Support.bugTrackerCommDirect;
 import static net.atos.entng.support.enums.TicketStatus.*;
+
+import net.atos.entng.support.services.TicketService;
+
 import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
 
 import java.util.*;
@@ -29,12 +32,16 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import fr.wseduc.bus.BusAddress;
+import fr.wseduc.webutils.http.Renders;
+import io.vertx.core.Promise;
 import net.atos.entng.support.Support;
 import net.atos.entng.support.constants.Ticket;
 import net.atos.entng.support.enums.BugTrackerSyncType;
 import net.atos.entng.support.enums.EscalationStatus;
+import net.atos.entng.support.export.TicketsCSVExport;
 import net.atos.entng.support.filters.Admin;
 import net.atos.entng.support.filters.OwnerOrLocalAdmin;
+import net.atos.entng.support.helpers.PromiseHelper;
 import net.atos.entng.support.services.EscalationService;
 import net.atos.entng.support.services.TicketServiceSql;
 import net.atos.entng.support.services.UserService;
@@ -44,6 +51,7 @@ import org.entcore.common.controller.ControllerHelper;
 import org.entcore.common.events.EventHelper;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
+import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.user.DefaultFunctions;
@@ -78,13 +86,15 @@ public class TicketController extends ControllerHelper {
     private static final int SUBJECT_LENGTH_IN_NOTIFICATION = 50;
 
     private final TicketServiceSql ticketServiceSql;
+    private final TicketService ticketService;
     private final UserService userService;
     private final EscalationService escalationService;
     private final Storage storage;
     private final EventHelper eventHelper;
 
-    public TicketController(TicketServiceSql ts, EscalationService es, UserService us, Storage storage) {
+    public TicketController(TicketServiceSql ts, TicketService ticketService, EscalationService es, UserService us, Storage storage) {
         ticketServiceSql = ts;
+        this.ticketService = ticketService;
         userService = us;
         escalationService = es;
         this.storage = storage;
@@ -444,45 +454,11 @@ public class TicketController extends ControllerHelper {
             if (user != null) {
                 Map<String, UserInfos.Function> functions = user.getFunctions();
                 if (functions.containsKey(DefaultFunctions.ADMIN_LOCAL) || functions.containsKey(DefaultFunctions.SUPER_ADMIN)) {
-                    ticketServiceSql.getTicket(user, id, event -> {
+                    Promise<JsonArray> ticketsPromise = Promise.promise();
+                    ticketServiceSql.getTicket(user, id, PromiseHelper.handler(ticketsPromise)
                         // getting the profile for users
-                        if( event.isRight()){
-                            final JsonArray jsonListTickets = event.right().getValue();
-                            final JsonArray listUserIds = new JsonArray();
-                            // get list of unique user ids
-                            for (Object ticket : jsonListTickets) {
-                                if (!(ticket instanceof JsonObject)) continue;
-                                String userId = ((JsonObject) ticket).getString("owner");
-                                if( !listUserIds.contains(userId)){
-                                    listUserIds.add(userId);
-                                }
-                            }
-                            // get profiles from neo4j
-                            TicketServiceNeo4jImpl ticketServiceNeo4j = new TicketServiceNeo4jImpl();
-                            ticketServiceNeo4j.getUsersFromList(listUserIds, event1 -> {
-                                if( event1.isRight()){
-                                    JsonArray listUsers = event1.right().getValue();
-                                    // list of users got from neo4j
-                                    for( Object user1 : listUsers ) {
-                                        if (!(user1 instanceof JsonObject)) continue;
-                                        JsonObject jUser = (JsonObject) user1;
-                                        // traduction profil
-                                        String profil = jUser.getJsonArray("n.profiles").getString(0);
-                                        profil = I18n.getInstance().translate(profil, getHost(request), I18n.acceptLanguage(request));
-                                        // iterator on tickets, to see if the ids match
-                                        for( Object ticket : jsonListTickets) {
-                                            if (!(ticket instanceof JsonObject)) continue;
-                                            JsonObject jTicket = (JsonObject)ticket;
-                                            if( jTicket.getString("owner").equals(jUser.getString("n.id"))) {
-                                                jTicket.put("profile", profil);
-                                            }
-                                        }
-                                    }
-                                    renderJson(request, jsonListTickets);
-                                }
-                            });
-                        }
-                    });
+                        //ticketService.getProfileFromTickets(ticketsPromise, request);
+                    );
                 } else {
                     ticketServiceSql.getMyTicket(user,id, arrayResponseHandler(request));
                 }
@@ -503,7 +479,7 @@ public class TicketController extends ControllerHelper {
         Integer page = Integer.valueOf(params.get("page"));
         List<String> statuses = params.getAll("status");
         List<String> applicants = params.getAll("applicant");
-        String school_id = params.get("school");
+        String schoolId = params.get("school");
         String sortBy = params.get("sortBy");
         String order = params.get("order");
         Integer nbTicketsPerPage = config.getInteger("nbTicketsPerPage", 25);
@@ -512,47 +488,20 @@ public class TicketController extends ControllerHelper {
             if (user != null) {
                 Map<String, UserInfos.Function> functions = user.getFunctions();
                 if (functions.containsKey(DefaultFunctions.ADMIN_LOCAL) || functions.containsKey(DefaultFunctions.SUPER_ADMIN)) {
-                    ticketServiceSql.listTickets(user, page, statuses, applicants, school_id, sortBy, order, nbTicketsPerPage, event -> {
+                    Promise<JsonArray> ticketsPromise = Promise.promise();
+                    ticketServiceSql.listTickets(user, page, statuses, applicants, schoolId, sortBy, order, nbTicketsPerPage, PromiseHelper.handler(ticketsPromise));
                         // getting the profile for users
-                        if( event.isRight()){
-                            final JsonArray jsonListTickets = event.right().getValue();
-                            final JsonArray listUserIds = new JsonArray();
-                            // get list of unique user ids
-                            for (Object ticket : jsonListTickets) {
-                                if (!(ticket instanceof JsonObject)) continue;
-                                String userId = ((JsonObject) ticket).getString("owner");
-                                if( !listUserIds.contains(userId)){
-                                    listUserIds.add(userId);
-                                }
-                            }
-                            // get profiles from neo4j
-                            TicketServiceNeo4jImpl ticketServiceNeo4j = new TicketServiceNeo4jImpl();
-                            ticketServiceNeo4j.getUsersFromList(listUserIds, event1 -> {
-                                if( event1.isRight()){
-                                    JsonArray listUsers = event1.right().getValue();
-                                    // list of users got from neo4j
-                                    for( Object user1 : listUsers ) {
-                                        if (!(user1 instanceof JsonObject)) continue;
-                                        JsonObject jUser = (JsonObject) user1;
-                                        // traduction profil
-                                        String profil = jUser.getJsonArray("n.profiles").getString(0);
-                                        profil = I18n.getInstance().translate(profil, getHost(request), I18n.acceptLanguage(request));
-                                        // iterator on tickets, to see if the ids match
-                                        for( Object ticket : jsonListTickets) {
-                                            if (!(ticket instanceof JsonObject)) continue;
-                                            JsonObject jTicket = (JsonObject)ticket;
-                                            if( jTicket.getString("owner").equals(jUser.getString("n.id"))) {
-                                                jTicket.put("profile", profil);
-                                            }
-                                        }
-                                    }
-                                    renderJson(request, jsonListTickets);
-                                }
-                            });
-                        }
-                    });
+                    ticketsPromise.future()
+                        .onSuccess(tickets ->
+                                ticketService.getProfileFromTickets(tickets, request)
+                                        .onSuccess(result ->{
+                                                    renderJson(request, result);
+                                                }
+                                                ));
+                        //Promise<JsonArray> ticketsPromise = Promise.promise();
+                        //ticketService.getProfileFromTickets(PromiseHelper.handler(ticketsPromise), request);
                 } else {
-                    ticketServiceSql.listMyTickets(user, page, statuses, school_id, sortBy, order, nbTicketsPerPage, arrayResponseHandler(request));
+                    ticketServiceSql.listMyTickets(user, page, statuses, schoolId, sortBy, order, nbTicketsPerPage, arrayResponseHandler(request));
                 }
             } else {
                 log.debug("User not found in session.");
@@ -947,4 +896,46 @@ public class TicketController extends ControllerHelper {
             }
         });
     }
+
+    @Get("/tickets/export")
+    @SecuredAction(value = "", type = ActionType.RESOURCE)
+    @ResourceFilter(AdminFilter.class)
+    @ApiDoc("Export tickets")
+    public void exportTickets(HttpServerRequest request) {
+        UserUtils.getUserInfos(eb, request, user -> {
+
+            String domain = Renders.getHost(request);
+            String locale = I18n.acceptLanguage(request);
+
+            List<String> statuses = request.params().getAll("status");
+            List<String> applicants = request.params().getAll("applicant");
+            String schoolId = request.params().get("school");
+            String sortBy = request.params().get("sortBy");
+            String order = request.params().get("order");
+
+            Promise<JsonArray> ticketsPromise = Promise.promise();
+            ticketServiceSql.listTickets(user, 1, statuses, applicants, schoolId, sortBy, order, 100, PromiseHelper.handler(ticketsPromise));
+            // getting the profile for users
+            ticketsPromise.future()
+                    .onSuccess(tickets ->
+                            ticketService.getProfileFromTickets(tickets, request)
+                                    .onSuccess(result ->{
+                                        List<String> csvHeaders = new ArrayList<>(Arrays.asList(
+                                                "support.ticket.table.id",
+                                                "support.ticket.table.school",
+                                                "support.ticket.status",
+                                                "support.ticket.table.subject",
+                                                "support.ticket.table.category",
+                                                "support.label.profil",
+                                                "support.ticket.creation.date",
+                                                "support.ticket.modification.date"
+                                        ));
+                                        TicketsCSVExport pce = new TicketsCSVExport(result, domain, locale);
+                                        pce.setRequest(request);
+                                        pce.setHeader(csvHeaders);
+                                        pce.export();
+                                            }
+                                    ));
+        });
+    };
 }

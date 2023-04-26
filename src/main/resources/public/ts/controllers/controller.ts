@@ -914,5 +914,9 @@ export const SupportController: Controller = ng.controller('SupportController',
 			return $scope.ticket && (!$scope.ticket.category || !$scope.ticket.subject || !$scope.ticket.description)
 		}
 
+		$scope.exportCSV = ():void => {
+			ticketService.exportTicketsCSV(<ITicketPayload>{school:"*",sortBy:"modified",order:"DESC"})
+		}
+
 		this.initialize();
 	}]);

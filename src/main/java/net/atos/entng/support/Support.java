@@ -24,8 +24,11 @@ import net.atos.entng.support.controllers.*;
 import net.atos.entng.support.enums.BugTracker;
 import net.atos.entng.support.events.SupportSearchingEvents;
 import net.atos.entng.support.services.EscalationService;
+import net.atos.entng.support.services.TicketService;
 import net.atos.entng.support.services.TicketServiceSql;
 import net.atos.entng.support.services.UserService;
+import net.atos.entng.support.services.impl.TicketServiceImpl;
+import net.atos.entng.support.services.impl.TicketServiceNeo4jImpl;
 import net.atos.entng.support.services.impl.TicketServiceSqlImpl;
 import net.atos.entng.support.services.impl.UserServiceDirectoryImpl;
 
@@ -59,6 +62,7 @@ public class Support extends BaseServer {
 		addController(new DisplayController());
 
 		BugTracker bugTrackerType;
+		TicketServiceNeo4jImpl ticketServiceNeo4jImpl = new TicketServiceNeo4jImpl();
 
 		// Default value to REDMINE for compatibility purpose
 		bugTrackerType = BugTracker.valueOf(config.getString("bug-tracker-name", BugTracker.REDMINE.toString()).toUpperCase());
@@ -79,6 +83,7 @@ public class Support extends BaseServer {
 
 		TicketServiceSql ticketServiceSql = new TicketServiceSqlImpl(bugTrackerType);
 		UserService userService = new UserServiceDirectoryImpl(eb);
+		TicketService ticketService = new TicketServiceImpl(ticketServiceNeo4jImpl);
 
         // Indicates if the user can have direct communication with redmine, or if the admin has to transfer the informations.
         bugTrackerCommDirect = config.getBoolean("bug-tracker-comm-direct", true);
@@ -100,7 +105,7 @@ public class Support extends BaseServer {
 						ticketServiceSql, userService, storage)
 				: null;
 
-        TicketController ticketController = new TicketController(ticketServiceSql, escalationService, userService, storage);
+        TicketController ticketController = new TicketController(ticketServiceSql, ticketService, escalationService, userService, storage);
 		addController(ticketController);
 
 		SqlConf commentSqlConf = SqlConfs.createConf(CommentController.class.getName());
