@@ -309,8 +309,8 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 			}
 		}
 		else {
-			query.append(" WHERE t.school_id IN (?)");
-			values.add(user.getStructures().get(0)); // SUPER_ADMIN, has only 1 structure.
+			query.append(" WHERE t.school_id IN ").append(Sql.listPrepared(user.getStructures())).append(" ");
+			values.addAll(new JsonArray(user.getStructures()));
 		}
 
 		query.append(" AND t.id = ?");

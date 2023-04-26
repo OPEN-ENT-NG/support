@@ -31,4 +31,6 @@ public class Ticket {
     public static final String PROFILE = "profile";
     public static final String CREATION_DATE = "created";
     public static final String MODIFICATION_DATE = "modified";
+
+    public static final String MESSAGE = "message";
 }

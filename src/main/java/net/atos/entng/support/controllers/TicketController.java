@@ -455,10 +455,10 @@ public class TicketController extends ControllerHelper {
                 Map<String, UserInfos.Function> functions = user.getFunctions();
                 if (functions.containsKey(DefaultFunctions.ADMIN_LOCAL) || functions.containsKey(DefaultFunctions.SUPER_ADMIN)) {
                     Promise<JsonArray> ticketsPromise = Promise.promise();
-                    ticketServiceSql.getTicket(user, id, PromiseHelper.handler(ticketsPromise)
-                        // getting the profile for users
-                        //ticketService.getProfileFromTickets(ticketsPromise, request);
-                    );
+                    ticketServiceSql.getTicket(user, id, PromiseHelper.handler(ticketsPromise));
+                            ticketsPromise.future()
+                                    .onSuccess(result -> renderJson(request, result))
+                                    .onFailure(err -> renderError(request, new JsonObject().put(Ticket.MESSAGE, err.getMessage())));
                 } else {
                     ticketServiceSql.getMyTicket(user,id, arrayResponseHandler(request));
                 }
@@ -492,14 +492,9 @@ public class TicketController extends ControllerHelper {
                     ticketServiceSql.listTickets(user, page, statuses, applicants, schoolId, sortBy, order, nbTicketsPerPage, PromiseHelper.handler(ticketsPromise));
                         // getting the profile for users
                     ticketsPromise.future()
-                        .onSuccess(tickets ->
-                                ticketService.getProfileFromTickets(tickets, request)
-                                        .onSuccess(result ->{
-                                                    renderJson(request, result);
-                                                }
-                                                ));
-                        //Promise<JsonArray> ticketsPromise = Promise.promise();
-                        //ticketService.getProfileFromTickets(PromiseHelper.handler(ticketsPromise), request);
+                            .compose(tickets -> ticketService.getProfileFromTickets(tickets, request))
+                            .onSuccess(result -> renderJson(request, result))
+                            .onFailure(err -> renderError(request, new JsonObject().put(Ticket.MESSAGE, err.getMessage())));
                 } else {
                     ticketServiceSql.listMyTickets(user, page, statuses, schoolId, sortBy, order, nbTicketsPerPage, arrayResponseHandler(request));
                 }
@@ -917,6 +912,25 @@ public class TicketController extends ControllerHelper {
             ticketServiceSql.listTickets(user, 1, statuses, applicants, schoolId, sortBy, order, 100, PromiseHelper.handler(ticketsPromise));
             // getting the profile for users
             ticketsPromise.future()
+                    .compose(tickets -> ticketService.getProfileFromTickets(tickets, request))
+                    .onSuccess(result -> {
+                        List<String> csvHeaders = new ArrayList<>(Arrays.asList(
+                                "support.ticket.table.id",
+                                "support.ticket.table.school",
+                                "support.ticket.status",
+                                "support.ticket.table.subject",
+                                "support.ticket.table.category",
+                                "support.label.profil",
+                                "support.ticket.creation.date",
+                                "support.ticket.modification.date"
+                        ));
+                        TicketsCSVExport pce = new TicketsCSVExport(result, domain, locale);
+                        pce.setRequest(request);
+                        pce.setHeader(csvHeaders);
+                        pce.export();
+                    })
+                    .onFailure(err -> renderError(request, new JsonObject().put(Ticket.MESSAGE, err.getMessage())));
+            /*ticketsPromise.future()
                     .onSuccess(tickets ->
                             ticketService.getProfileFromTickets(tickets, request)
                                     .onSuccess(result ->{
@@ -935,7 +949,7 @@ public class TicketController extends ControllerHelper {
                                         pce.setHeader(csvHeaders);
                                         pce.export();
                                             }
-                                    ));
+                                    ));*/
         });
     };
 }
