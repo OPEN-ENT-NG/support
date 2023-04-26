@@ -60,7 +60,7 @@
 		<div class="row">
 			<div ng-if="!ticket.processing">
 				<button class="right-magnet" ng-if="isEscalationActivated && canEscalate(ticket)" reset-guard="createAndEscalateTicket()" translate content="support.ticket.save.and.escalate"></button>
-				<button class="right-magnet" reset-guard="createTicket()" ng-disabled="ticket.category == null" guard-ignore-template translate content="support.ticket.save"></button>
+				<button class="right-magnet" reset-guard="createTicket()" ng-disabled="disableCreateTicket()" guard-ignore-template translate content="support.ticket.save"></button>
 				<button class="right-magnet cancel" navigation-trigger="cancelCreateTicket()" translate content="support.ticket.cancel"></button>
 			</div>
 			<button ng-if="ticket.processing === true" class="right-magnet disabled"><i18n>support.ticket.processing</i18n>&nbsp;<i class="loading"></i></button>
