@@ -911,10 +911,8 @@ export const SupportController: Controller = ng.controller('SupportController',
 			}
 		};
 
-		$scope.disableCreateTicket = () => {
-			if ($scope.ticket.category == null || !$scope.ticket.subject || !$scope.ticket.description){
-				return true
-			}
+		$scope.disableCreateTicket = (): boolean => {
+			return $scope.ticket && !$scope.ticket.category || !$scope.ticket.subject || !$scope.ticket.description
 		}
 
 		this.initialize();
