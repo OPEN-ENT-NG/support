@@ -930,26 +930,6 @@ public class TicketController extends ControllerHelper {
                         pce.export();
                     })
                     .onFailure(err -> renderError(request, new JsonObject().put(Ticket.MESSAGE, err.getMessage())));
-            /*ticketsPromise.future()
-                    .onSuccess(tickets ->
-                            ticketService.getProfileFromTickets(tickets, request)
-                                    .onSuccess(result ->{
-                                        List<String> csvHeaders = new ArrayList<>(Arrays.asList(
-                                                "support.ticket.table.id",
-                                                "support.ticket.table.school",
-                                                "support.ticket.status",
-                                                "support.ticket.table.subject",
-                                                "support.ticket.table.category",
-                                                "support.label.profil",
-                                                "support.ticket.creation.date",
-                                                "support.ticket.modification.date"
-                                        ));
-                                        TicketsCSVExport pce = new TicketsCSVExport(result, domain, locale);
-                                        pce.setRequest(request);
-                                        pce.setHeader(csvHeaders);
-                                        pce.export();
-                                            }
-                                    ));*/
         });
     };
 }
