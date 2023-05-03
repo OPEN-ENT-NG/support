@@ -297,11 +297,11 @@ export const SupportController: Controller = ng.controller('SupportController',
 			}
 		}
 
-		$scope.changeStatusAfterResponse = async (): Promise<void> => {
+		$scope.changeUpdatingTicketStatus = async (): Promise<void> => {
 			if ($scope.userIsLocalAdmin($scope.ticket) && $scope.ticket.status == model.ticketStatusEnum.OPENED) {
-				await $scope.changeStatus(model.ticketStatusEnum.WAITING);
+				$scope.ticket.status = model.ticketStatusEnum.WAITING
 			} else if (!$scope.userIsLocalAdmin($scope.ticket) && $scope.ticket.status == model.ticketStatusEnum.WAITING) {
-				await $scope.changeStatus(model.ticketStatusEnum.OPENED);
+				$scope.ticket.status = model.ticketStatusEnum.OPENED
 			}
 		}
 
@@ -546,7 +546,6 @@ export const SupportController: Controller = ng.controller('SupportController',
 
 		$scope.updateTicket = function(){
 			$scope.checkUpdateTicket($scope.editedTicket);
-			$scope.changeStatusAfterResponse();
 			if(!$scope.editedTicket.processing){
 				return;
 			}
@@ -582,7 +581,7 @@ export const SupportController: Controller = ng.controller('SupportController',
 
 			$scope.createProtectedCopies($scope.editedTicket, false, function() {
 				$scope.ticket = $scope.editedTicket;
-
+				$scope.changeUpdatingTicketStatus();
 				$scope.ticket.updateTicket($scope.ticket, function() {
 					if($scope.ticket.newAttachments && $scope.ticket.newAttachments.length > 0) {
 						$scope.ticket.getAttachments();
