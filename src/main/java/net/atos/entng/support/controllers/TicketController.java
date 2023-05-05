@@ -36,6 +36,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import fr.wseduc.bus.BusAddress;
+import fr.wseduc.webutils.http.Renders;
 import net.atos.entng.support.Support;
 import net.atos.entng.support.constants.Ticket;
 import net.atos.entng.support.enums.BugTrackerSyncType;
@@ -44,11 +45,14 @@ import net.atos.entng.support.export.TicketsCSVExport;
 import net.atos.entng.support.filters.Admin;
 import net.atos.entng.support.filters.OwnerOrLocalAdmin;
 import net.atos.entng.support.helpers.PromiseHelper;
+import net.atos.entng.support.helpers.TicketEventHelper;
+import net.atos.entng.support.helpers.impl.TicketEventHelperImpl;
 import net.atos.entng.support.services.EscalationService;
 import net.atos.entng.support.services.TicketServiceSql;
 import net.atos.entng.support.services.UserService;
 
 import net.atos.entng.support.services.impl.TicketServiceNeo4jImpl;
+import net.atos.entng.support.services.impl.UserServiceDirectoryImpl;
 import org.entcore.common.controller.ControllerHelper;
 import org.entcore.common.events.EventHelper;
 import org.entcore.common.events.EventStore;
@@ -89,6 +93,7 @@ public class TicketController extends ControllerHelper {
     private final EscalationService escalationService;
     private final Storage storage;
     private final EventHelper eventHelper;
+    private final TicketEventHelper ticketEventHelper;
 
     public TicketController(TicketServiceSql ts, TicketService ticketService, EscalationService es, UserService us, Storage storage) {
         ticketServiceSql = ts;
@@ -98,6 +103,7 @@ public class TicketController extends ControllerHelper {
         this.storage = storage;
         final EventStore eventStore = EventStoreFactory.getFactory().getEventStore(Support.class.getSimpleName());
         this.eventHelper = new EventHelper(eventStore);
+        this.ticketEventHelper = new TicketEventHelperImpl();
     }
 
     @Override
@@ -834,19 +840,34 @@ public class TicketController extends ControllerHelper {
         }
     }
 
+
     @Get("/events/:id")
     @ApiDoc("Get historization of a ticket")
     public void getHistorization(final HttpServerRequest request) {
         final String ticketId = request.params().get("id");
         UserUtils.getUserInfos(eb, request, user -> {
-            if (user != null) {
-                ticketServiceSql.listEvents(ticketId, arrayResponseHandler(request));
-            } else {
-                log.debug("User not found in session.");
+            if (user == null) {
+                log.debug("User not found in session");
                 unauthorized(request);
+                return;
             }
-        });
 
+            Map<String, UserInfos.Function> functions = user.getFunctions();
+            ticketServiceSql.listEvents(ticketId, event -> {
+                if (event.isLeft()) {
+                    JsonObject error = (new JsonObject()).put(Ticket.ERROR, event.left().getValue());
+                    Renders.renderJson(request, error, 400);
+                    return;
+                }
+                JsonArray eventResult = event.right().getValue();
+                if (ticketEventHelper.shouldRenderEvent(user, functions, eventResult)) {
+                    Renders.renderJson(request, event.right().getValue());
+                } else {
+                    log.debug("User can't access this event");
+                    unauthorized(request);
+                }
+            });
+        });
     }
 
 

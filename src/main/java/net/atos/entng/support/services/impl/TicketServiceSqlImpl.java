@@ -770,8 +770,9 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
      * @param ticketId : ticket id from which we want to list the history
      */
     public void listEvents(String ticketId, Handler<Either<String, JsonArray>> handler) {
-        String query = "SELECT username, event, status, event_date, user_id, event_type FROM support.tickets_histo th " +
+        String query = "SELECT username, event, th.status, event_date, user_id, event_type, t.school_id FROM support.tickets_histo th " +
                     " left outer join support.users u on u.id = th.user_id " +
+					" left outer join support.tickets t on th.ticket_id = t.id" +
                     " WHERE ticket_id = ? ";
         JsonArray values = new JsonArray().add(parseId(ticketId));
         sql.prepared(query, values, validResultHandler(handler));

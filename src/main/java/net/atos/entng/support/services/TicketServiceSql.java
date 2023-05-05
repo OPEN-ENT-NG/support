@@ -25,11 +25,15 @@ import java.util.concurrent.ConcurrentMap;
 import io.vertx.core.Future;
 import org.entcore.common.service.CrudService;
 import org.entcore.common.user.UserInfos;
+import fr.wseduc.webutils.Either;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.entcore.common.service.CrudService;
+import org.entcore.common.user.UserInfos;
 
-import fr.wseduc.webutils.Either;
+import java.util.List;
+import java.util.concurrent.ConcurrentMap;
 
 public interface TicketServiceSql extends CrudService {
 
