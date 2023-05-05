@@ -23,6 +23,8 @@ import static net.atos.entng.support.Support.SUPPORT_NAME;
 import static net.atos.entng.support.Support.bugTrackerCommDirect;
 import static net.atos.entng.support.enums.TicketStatus.*;
 
+import io.vertx.core.*;
+import net.atos.entng.support.helpers.CSVHelper;
 import net.atos.entng.support.services.TicketService;
 
 import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
@@ -33,7 +35,6 @@ import java.util.concurrent.ConcurrentMap;
 
 import fr.wseduc.bus.BusAddress;
 import fr.wseduc.webutils.http.Renders;
-import io.vertx.core.Promise;
 import net.atos.entng.support.Support;
 import net.atos.entng.support.constants.Ticket;
 import net.atos.entng.support.enums.BugTrackerSyncType;
@@ -51,20 +52,17 @@ import org.entcore.common.controller.ControllerHelper;
 import org.entcore.common.events.EventHelper;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
-import org.entcore.common.http.filter.AdminFilter;
+import org.entcore.common.http.filter.AdmlOfStructures;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.user.DefaultFunctions;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.eventbus.Message;
 import org.vertx.java.core.http.RouteMatcher;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.MultiMap;
 
 
 import fr.wseduc.rs.ApiDoc;
@@ -449,18 +447,18 @@ public class TicketController extends ControllerHelper {
     @ApiDoc("If current user is local admin, get all tickets. Otherwise, get my tickets")
     @SecuredAction(value = "", type = ActionType.AUTHENTICATED)
     public void getTicket(final HttpServerRequest request) {
-        final Integer id = Integer.valueOf(request.params().get("id"));
+        final Integer id = Integer.valueOf(request.params().get(Ticket.ID));
         UserUtils.getUserInfos(eb, request, user -> {
             if (user != null) {
                 Map<String, UserInfos.Function> functions = user.getFunctions();
                 if (functions.containsKey(DefaultFunctions.ADMIN_LOCAL) || functions.containsKey(DefaultFunctions.SUPER_ADMIN)) {
                     Promise<JsonArray> ticketsPromise = Promise.promise();
                     ticketServiceSql.getTicket(user, id, PromiseHelper.handler(ticketsPromise));
-                            ticketsPromise.future()
-                                    .onSuccess(result -> renderJson(request, result))
-                                    .onFailure(err -> renderError(request, new JsonObject().put(Ticket.MESSAGE, err.getMessage())));
+                    ticketsPromise.future()
+                            .onSuccess(result -> renderJson(request, result))
+                            .onFailure(err -> renderError(request, new JsonObject()));
                 } else {
-                    ticketServiceSql.getMyTicket(user,id, arrayResponseHandler(request));
+                    ticketServiceSql.getMyTicket(user, id, arrayResponseHandler(request));
                 }
             } else {
                 log.debug("User not found in session.");
@@ -476,12 +474,12 @@ public class TicketController extends ControllerHelper {
     @SecuredAction("support.ticket.list")
     public void listTickets(final HttpServerRequest request) {
         MultiMap params = request.params();
-        Integer page = Integer.valueOf(params.get("page"));
-        List<String> statuses = params.getAll("status");
-        List<String> applicants = params.getAll("applicant");
-        String schoolId = params.get("school");
-        String sortBy = params.get("sortBy");
-        String order = params.get("order");
+        Integer page = Integer.valueOf(params.get(Ticket.PAGE));
+        List<String> statuses = params.getAll(Ticket.STATUS);
+        List<String> applicants = params.getAll(Ticket.APPLICANT);
+        String schoolId = params.get(Ticket.SCHOOL);
+        String sortBy = params.get(Ticket.SORT_BY);
+        String order = params.get(Ticket.ORDER);
         Integer nbTicketsPerPage = config.getInteger("nbTicketsPerPage", 25);
 
         UserUtils.getUserInfos(eb, request, user -> {
@@ -494,7 +492,7 @@ public class TicketController extends ControllerHelper {
                     ticketsPromise.future()
                             .compose(tickets -> ticketService.getProfileFromTickets(tickets, request))
                             .onSuccess(result -> renderJson(request, result))
-                            .onFailure(err -> renderError(request, new JsonObject().put(Ticket.MESSAGE, err.getMessage())));
+                            .onFailure(err -> renderError(request, new JsonObject()));
                 } else {
                     ticketServiceSql.listMyTickets(user, page, statuses, schoolId, sortBy, order, nbTicketsPerPage, arrayResponseHandler(request));
                 }
@@ -892,9 +890,9 @@ public class TicketController extends ControllerHelper {
         });
     }
 
-    @Get("/tickets/export")
+    @Post("/tickets/export")
     @SecuredAction(value = "", type = ActionType.RESOURCE)
-    @ResourceFilter(AdminFilter.class)
+    @ResourceFilter(AdmlOfStructures.class)
     @ApiDoc("Export tickets")
     public void exportTickets(HttpServerRequest request) {
         UserUtils.getUserInfos(eb, request, user -> {
@@ -902,34 +900,23 @@ public class TicketController extends ControllerHelper {
             String domain = Renders.getHost(request);
             String locale = I18n.acceptLanguage(request);
 
-            List<String> statuses = request.params().getAll("status");
-            List<String> applicants = request.params().getAll("applicant");
-            String schoolId = request.params().get("school");
-            String sortBy = request.params().get("sortBy");
-            String order = request.params().get("order");
-
-            Promise<JsonArray> ticketsPromise = Promise.promise();
-            ticketServiceSql.listTickets(user, 1, statuses, applicants, schoolId, sortBy, order, 100, PromiseHelper.handler(ticketsPromise));
-            // getting the profile for users
-            ticketsPromise.future()
-                    .compose(tickets -> ticketService.getProfileFromTickets(tickets, request))
-                    .onSuccess(result -> {
-                        List<String> csvHeaders = new ArrayList<>(Arrays.asList(
-                                "support.ticket.table.id",
-                                "support.ticket.table.school",
-                                "support.ticket.status",
-                                "support.ticket.table.subject",
-                                "support.ticket.table.category",
-                                "support.label.profil",
-                                "support.ticket.creation.date",
-                                "support.ticket.modification.date"
-                        ));
-                        TicketsCSVExport pce = new TicketsCSVExport(result, domain, locale);
-                        pce.setRequest(request);
-                        pce.setHeader(csvHeaders);
-                        pce.export();
-                    })
-                    .onFailure(err -> renderError(request, new JsonObject().put(Ticket.MESSAGE, err.getMessage())));
+            if (user != null) {
+                RequestUtils.bodyToJson(request, pathPrefix + "exportTickets", body -> {
+                    final List ids = body.getJsonArray(Ticket.IDS).getList();
+                    Promise<JsonArray> ticketsPromise = Promise.promise();
+                    ticketServiceSql.getTicketsFromListId(ids, PromiseHelper.handler(ticketsPromise));
+                    ticketsPromise.future()
+                            .compose(tickets -> ticketService.getProfileFromTickets(tickets, request))
+                            .onSuccess(result -> {
+                                TicketsCSVExport pce = new TicketsCSVExport(result, domain, locale);
+                                CSVHelper.sendCSV(request, pce.filename(), pce.generate());
+                            })
+                            .onFailure(err -> renderError(request, new JsonObject()));
+                });
+            } else {
+                log.debug("User not found in session.");
+                unauthorized(request);
+            }
         });
-    };
+    }
 }

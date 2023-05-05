@@ -844,4 +844,15 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
         sql.prepared(query, values, validUniqueResultHandler(handler));
     }
 
+	/**
+	 * @param idList : list of ticket ids I want to retrieve
+	 * @param handler
+	 **/
+	@Override
+	public void getTicketsFromListId(List<String> idList, Handler<Either<String, JsonArray>> handler) {
+		String query = "SELECT * FROM support.tickets" +
+				" WHERE id IN " + Sql.listPrepared(idList);
+		JsonArray values = new JsonArray(idList);
+		sql.prepared(query, values, validResultHandler(handler));
+	}
 }

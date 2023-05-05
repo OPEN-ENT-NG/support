@@ -13,6 +13,9 @@ export interface ITicketResponse {
 
 export interface ITicketPayload {
     status: number;
+}
+
+export interface ITicketPayloadExportCSV {
     school: string;
     sortBy: string;
     order: string;
