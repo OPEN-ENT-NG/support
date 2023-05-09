@@ -30,7 +30,7 @@ public abstract class CSVExport {
     }
 
 
-    public String generate(){
+    public String generate() {
         this.setHeader(header());
         return this.fillCSV();
     }

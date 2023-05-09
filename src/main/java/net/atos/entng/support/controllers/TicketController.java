@@ -24,6 +24,7 @@ import static net.atos.entng.support.Support.bugTrackerCommDirect;
 import static net.atos.entng.support.enums.TicketStatus.*;
 
 import io.vertx.core.*;
+import net.atos.entng.support.filters.AccessIfMyStructureAdmin;
 import net.atos.entng.support.helpers.CSVHelper;
 import net.atos.entng.support.services.TicketService;
 
@@ -52,7 +53,6 @@ import org.entcore.common.controller.ControllerHelper;
 import org.entcore.common.events.EventHelper;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
-import org.entcore.common.http.filter.AdmlOfStructures;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.user.DefaultFunctions;
@@ -892,7 +892,7 @@ public class TicketController extends ControllerHelper {
 
     @Post("/tickets/export")
     @SecuredAction(value = "", type = ActionType.RESOURCE)
-    @ResourceFilter(AdmlOfStructures.class)
+    @ResourceFilter(AccessIfMyStructureAdmin.class)
     @ApiDoc("Export tickets")
     public void exportTickets(HttpServerRequest request) {
         UserUtils.getUserInfos(eb, request, user -> {

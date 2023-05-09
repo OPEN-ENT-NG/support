@@ -20,7 +20,7 @@ import {AxiosError, AxiosResponse} from "axios";
 import {attachment} from "entcore/types/src/ts/editor/options";
 import {DEMANDS} from "../core/enum/demands.enum";
 import {ITicketService} from "../services";
-import {ITicketPayload, ITicketPayloadExportCSV} from "../models/ticket.model";
+import {ITicketPayload} from "../models/ticket.model";
 
 declare let model: any;
 

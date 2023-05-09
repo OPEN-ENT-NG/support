@@ -1,10 +1,10 @@
 import {ng} from 'entcore'
 import http, {AxiosResponse} from "axios";
 import {ITicketPayload, ITicketPayloadExportCSV, Ticket} from "../models/ticket.model";
+import {downloadBlobHelper} from "../helpers/download-blob.helper";
 
 export interface ITicketService {
     update(ticketId: number, body: ITicketPayload): Promise<AxiosResponse>;
-    exportTicketsCSV(body: ITicketPayloadExportCSV): void;
     exportSelectionCSV(body: number[]): Promise<void>;
 }
 
@@ -21,37 +21,15 @@ export const ticketService: ITicketService = {
     },
 
     /**
-     * export ticket list as CSV format
+     * export selected tickets as CSV format
      *
+     * @param body {number[]} list of ticket ids
+     * @returns {Promise<void>}
      **/
-    exportTicketsCSV: (body: ITicketPayloadExportCSV): void => {
-        let filterParams: string = '';
-        if (body.school) {
-            filterParams += `?school=${body.school}`
-        }
-
-        if (body.sortBy) {
-            filterParams += `&sortBy=${body.sortBy}`
-        }
-
-        if (body.order) {
-            filterParams += `&order=${body.order}`
-        }
-
-        let url: string = `/support/tickets/export` + filterParams;
-        window.open(url);
-    },
-
     exportSelectionCSV: async (body: number[]): Promise<void> => {
         // Generate CSV and store it in a blob
         let doc = await http.post(`/support/tickets/export`, {'ids': body});
-        let blob = new Blob(["\ufeff" + doc.data], {type: 'text/csv; charset=utf-8'});
-
-        // Download the blob
-        let link = document.createElement('a');
-        link.href = window.URL.createObjectURL(blob);
-        link.download =  doc.headers['content-disposition'].split('filename=')[1];
-        link.click();
+        return downloadBlobHelper.downloadBlob(doc);
     }
 };
 export const TicketService = ng.service('TicketService', (): ITicketService => ticketService);

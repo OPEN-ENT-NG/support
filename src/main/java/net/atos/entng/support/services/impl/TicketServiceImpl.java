@@ -23,46 +23,6 @@ public class TicketServiceImpl implements TicketService {
         this.ticketServiceNeo4j = ticketServiceNeo4j;
     }
 
-    /*public Future<JsonArray> getProfileFromTickets(JsonArray ticketsList, HttpServerRequest request) {
-        Promise promise = Promise.promise();
-        final JsonArray jsonListTickets = ticketsList;
-        final JsonArray listUserIds = new JsonArray();
-        for (Object ticket : jsonListTickets) {
-            if (!(ticket instanceof JsonObject)) continue;
-            String userId = ((JsonObject) ticket).getString(Ticket.OWNER);
-            if (!listUserIds.contains(userId)) {
-                listUserIds.add(userId);
-            }
-        }
-        // get profiles from neo4j
-        ticketServiceNeo4j.getUsersFromList(listUserIds, event1 -> {
-            if (event1.isRight()) {
-                JsonArray listUsers = event1.right().getValue();
-                // list of users got from neo4j
-                for (Object user1 : listUsers) {
-                    if (!(user1 instanceof JsonObject)) continue;
-                    JsonObject jUser = (JsonObject) user1;
-                    // traduction profil
-                    String profil = jUser.getJsonArray("n.profiles").getString(0);
-                    profil = I18n.getInstance().translate(profil, getHost(request), I18n.acceptLanguage(request));
-                    // iterator on tickets, to see if the ids match
-                    for (Object ticket : jsonListTickets) {
-                        if (!(ticket instanceof JsonObject)) continue;
-                        JsonObject jTicket = (JsonObject) ticket;
-                        if (jTicket.getString(Ticket.OWNER).equals(jUser.getString("n.id"))) {
-                            jTicket.put(Ticket.PROFILE, profil);
-                        }
-                    }
-                }
-
-            }
-            promise.complete(ticketsList);
-        }
-        );
-
-        return promise.future();
-    }*/
-
     public Future<JsonArray> getProfileFromTickets(JsonArray ticketsList, HttpServerRequest request) {
         Promise<JsonArray> promise = Promise.promise();
         final JsonArray jsonListTickets = ticketsList;
