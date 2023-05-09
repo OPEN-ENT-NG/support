@@ -36,7 +36,23 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import fr.wseduc.bus.BusAddress;
+import fr.wseduc.rs.ApiDoc;
+import fr.wseduc.rs.Get;
+import fr.wseduc.rs.Post;
+import fr.wseduc.rs.Put;
+import fr.wseduc.security.ActionType;
+import fr.wseduc.security.SecuredAction;
+import fr.wseduc.webutils.Either;
+import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.http.Renders;
+import fr.wseduc.webutils.request.RequestUtils;
+import io.vertx.core.Handler;
+import io.vertx.core.MultiMap;
+import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import net.atos.entng.support.Support;
 import net.atos.entng.support.constants.Ticket;
 import net.atos.entng.support.enums.BugTrackerSyncType;
@@ -50,9 +66,7 @@ import net.atos.entng.support.helpers.impl.TicketEventHelperImpl;
 import net.atos.entng.support.services.EscalationService;
 import net.atos.entng.support.services.TicketServiceSql;
 import net.atos.entng.support.services.UserService;
-
 import net.atos.entng.support.services.impl.TicketServiceNeo4jImpl;
-import net.atos.entng.support.services.impl.UserServiceDirectoryImpl;
 import org.entcore.common.controller.ControllerHelper;
 import org.entcore.common.events.EventHelper;
 import org.entcore.common.events.EventStore;
@@ -68,16 +82,14 @@ import org.vertx.java.core.http.RouteMatcher;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
-import fr.wseduc.rs.ApiDoc;
-import fr.wseduc.rs.Get;
-import fr.wseduc.rs.Post;
-import fr.wseduc.rs.Put;
-import fr.wseduc.security.ActionType;
-import fr.wseduc.security.SecuredAction;
-import fr.wseduc.webutils.Either;
-import fr.wseduc.webutils.I18n;
-import fr.wseduc.webutils.request.RequestUtils;
+import static net.atos.entng.support.Support.SUPPORT_NAME;
+import static net.atos.entng.support.Support.bugTrackerCommDirect;
+import static net.atos.entng.support.enums.TicketStatus.NEW;
+import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
 
 
 public class TicketController extends ControllerHelper {
@@ -853,20 +865,19 @@ public class TicketController extends ControllerHelper {
             }
 
             Map<String, UserInfos.Function> functions = user.getFunctions();
-            ticketServiceSql.listEvents(ticketId, event -> {
-                if (event.isLeft()) {
-                    JsonObject error = (new JsonObject()).put(Ticket.ERROR, event.left().getValue());
-                    Renders.renderJson(request, error, 400);
-                    return;
-                }
-                JsonArray eventResult = event.right().getValue();
-                if (ticketEventHelper.shouldRenderEvent(user, functions, eventResult)) {
-                    Renders.renderJson(request, event.right().getValue());
-                } else {
-                    log.debug("User can't access this event");
-                    unauthorized(request);
-                }
-            });
+            ticketServiceSql.getlistEvents(ticketId)
+                    .onSuccess(result -> {
+                        if(ticketEventHelper.shouldRenderEvent(user, functions, result)){
+                            Renders.renderJson(request, result);
+                        } else {
+                            log.debug("User can't access this event");
+                            unauthorized(request);
+                        }
+                    })
+                    .onFailure(err -> {
+                        log.error(String.format("[Support@%s::getListEvent] Failed to display events of ticket",
+                                this.getClass().getSimpleName()));
+                    });
         });
     }
 

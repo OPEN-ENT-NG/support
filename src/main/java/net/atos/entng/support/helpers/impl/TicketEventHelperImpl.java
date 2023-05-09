@@ -8,6 +8,8 @@ import org.entcore.common.user.UserInfos;
 import java.util.Map;
 
 public class TicketEventHelperImpl implements TicketEventHelper {
+
+
     /**
      * @param user        : user
      * @param functions   : aim to check if user is an admin
@@ -23,3 +25,5 @@ public class TicketEventHelperImpl implements TicketEventHelper {
                         || (functions.containsKey(DefaultFunctions.ADMIN_LOCAL) && user.getStructures().contains(schoolId)));
     }
 }
+
+

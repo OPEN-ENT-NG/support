@@ -26,6 +26,7 @@ import io.vertx.core.Future;
 import org.entcore.common.service.CrudService;
 import org.entcore.common.user.UserInfos;
 import fr.wseduc.webutils.Either;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -111,4 +112,5 @@ public interface TicketServiceSql extends CrudService {
     public void listEvents(String ticketId, Handler<Either<String, JsonArray>> handler);
 
 	Future<JsonArray> getTicketsFromListId(List<String> idList);
+	public Future<JsonArray> getlistEvents(String ticketId);
 }
