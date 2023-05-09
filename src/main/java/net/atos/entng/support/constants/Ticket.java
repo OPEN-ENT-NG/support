@@ -29,6 +29,7 @@ public class Ticket {
     public static final String PROFILE = "profile";
     public static final String CREATION_DATE = "created";
     public static final String MODIFICATION_DATE = "modified";
+    public static final String USER_ID = "user_id";
 
     public static final String SCHOOL = "school";
     public static final String SORT_BY = "sortBy";

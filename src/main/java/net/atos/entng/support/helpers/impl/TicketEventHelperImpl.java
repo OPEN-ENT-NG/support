@@ -1,6 +1,7 @@
 package net.atos.entng.support.helpers.impl;
 
 import io.vertx.core.json.JsonArray;
+import net.atos.entng.support.constants.Ticket;
 import net.atos.entng.support.helpers.TicketEventHelper;
 import org.entcore.common.user.DefaultFunctions;
 import org.entcore.common.user.UserInfos;
@@ -17,8 +18,9 @@ public class TicketEventHelperImpl implements TicketEventHelper {
      */
     @Override
     public boolean shouldRenderEvent(UserInfos user, Map<String, UserInfos.Function> functions, JsonArray eventResult) {
-        String owner = eventResult.getJsonObject(0).getString("user_id");
-        String schoolId = eventResult.getJsonObject(0).containsKey("school_id") ? eventResult.getJsonObject(0).getString("school_id") : null;
+        if(eventResult == null || eventResult.isEmpty()) return false;
+        String owner = eventResult.getJsonObject(0).getString(Ticket.USER_ID);
+        String schoolId = eventResult.getJsonObject(0).containsKey(Ticket.SCHOOL_ID) ? eventResult.getJsonObject(0).getString(Ticket.SCHOOL_ID) : null;
         return schoolId != null &&
                 (owner.equals(user.getUserId())
                         || functions.containsKey(DefaultFunctions.SUPER_ADMIN)
