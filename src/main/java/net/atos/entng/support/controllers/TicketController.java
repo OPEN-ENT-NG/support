@@ -855,6 +855,7 @@ public class TicketController extends ControllerHelper {
 
     @Get("/events/:id")
     @ApiDoc("Get historization of a ticket")
+    @SecuredAction(value = "", type = ActionType.AUTHENTICATED)
     public void getHistorization(final HttpServerRequest request) {
         final String ticketId = request.params().get("id");
         UserUtils.getUserInfos(eb, request, user -> {
