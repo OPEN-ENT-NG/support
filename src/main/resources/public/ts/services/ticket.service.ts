@@ -5,7 +5,7 @@ import {downloadBlobHelper} from "../helpers/download-blob.helper";
 
 export interface ITicketService {
     update(ticketId: number, body: ITicketPayload): Promise<AxiosResponse>;
-    exportSelectionCSV(body: number[]): Promise<void>;
+    exportSelectionCSV(body: { ids: number[] }): Promise<void>;
 }
 
 export const ticketService: ITicketService = {
@@ -26,7 +26,7 @@ export const ticketService: ITicketService = {
      * @param body {number[]} list of ticket ids
      * @returns {Promise<void>}
      **/
-    exportSelectionCSV: async (body: number[]): Promise<void> => {
+    exportSelectionCSV: async (body: { ids: number[] }): Promise<void> => {
         // Generate CSV and store it in a blob
         let doc = await http.post(`/support/tickets/export`, {'ids': body});
         return downloadBlobHelper.downloadBlob(doc);

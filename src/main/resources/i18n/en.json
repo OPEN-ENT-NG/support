@@ -87,5 +87,6 @@
     "support.ticket.validation.error.subject.is.empty": "Le champ 'Sujet' doit être renseigné",
     "support.ticket.validation.error.subject.too.long": "Le champ 'Sujet' ne doit pas dépasser 255 caractères",
     "support.title": "Support",
-    "file.too.large.limit" : "Le fichier joint est trop lourd, la limite est de "
+    "file.too.large.limit" : "Le fichier joint est trop lourd, la limite est de ",
+    "diary": "Cahier de texte"
 }

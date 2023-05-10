@@ -1,5 +1,6 @@
 package net.atos.entng.support.export;
 
+import fr.wseduc.webutils.I18n;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import net.atos.entng.support.constants.Ticket;
@@ -12,13 +13,14 @@ import java.util.Date;
 
 public class TicketsCSVExport extends CSVExport {
     private final JsonArray tickets;
-
+    private String acceptLanguage;
     public TicketsCSVExport(JsonArray tickets, String host, String acceptLanguage) {
         super(host, acceptLanguage);
 
         this.tickets = tickets;
         String date = DateHelper.getDateString(new Date(), DateHelper.MONGO_FORMAT);
         this.filename = this.translate(String.format("%s - %s.csv", this.translate("support.ticket.export.filename"), date));
+        this.acceptLanguage = acceptLanguage;
     }
 
     @Override
@@ -55,7 +57,7 @@ public class TicketsCSVExport extends CSVExport {
         line += ticket.getString(Ticket.SCHOOL_ID) + SEPARATOR;
         line += ticket.getInteger(Ticket.STATUS) + SEPARATOR;
         line += ticket.getString(Ticket.SUBJECT) + SEPARATOR;
-        line += ticket.getString(Ticket.CATEGORY) + SEPARATOR;
+        line += translateCategory(ticket.getString(Ticket.CATEGORY),acceptLanguage) + SEPARATOR;
         line += ticket.getString(Ticket.PROFILE) + SEPARATOR;
         line += ticket.getString(Ticket.CREATION_DATE) + SEPARATOR;
         line += ticket.getString(Ticket.MODIFICATION_DATE) + SEPARATOR;
