@@ -88,5 +88,12 @@
     "support.ticket.validation.error.subject.too.long": "Le champ 'Sujet' ne doit pas dépasser 255 caractères",
     "support.title": "Support",
     "file.too.large.limit" : "Le fichier joint est trop lourd, la limite est de ",
-    "diary": "Cahier de texte"
+    "diary": "Cahier de texte",
+    "scrapbook": "Cahier multimédia",
+    "rack": "Casier",
+    "edt": "Emploi du temps",
+    "competences": "Evaluations",
+    "exercizer": "Exercices",
+    "archive": "Mes données",
+    "apizimbra": "Messagerie"
 }

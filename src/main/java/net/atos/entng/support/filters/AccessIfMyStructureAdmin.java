@@ -65,17 +65,14 @@ public class AccessIfMyStructureAdmin implements ResourcesProvider {
 
 
             final UserInfos.Function finalAdmin = admin;
-            Sql.getInstance().prepared(query.toString(), values, new Handler<Message<JsonObject>>() {
-                @Override
-                public void handle(Message<JsonObject> message) {
-                    request.resume();
-                    Long count = SqlResult.countResult(message);
+            Sql.getInstance().prepared(query.toString(), values, message -> {
+                request.resume();
+                Long count = SqlResult.countResult(message);
 
-                    if (finalAdmin != null) {
-                        handler.handle(true);
-                    } else {
-                        handler.handle(count != null && count > 0);
-                    }
+                if (finalAdmin != null) {
+                    handler.handle(true);
+                } else {
+                    handler.handle(count != null && count > 0);
                 }
             });
         });

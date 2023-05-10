@@ -10,6 +10,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.Objects;
 
 public class TicketsCSVExport extends CSVExport {
     private final JsonArray tickets;
@@ -48,6 +49,7 @@ public class TicketsCSVExport extends CSVExport {
                         return null;
                     }
                 })
+                .filter(Objects::nonNull)
                 .forEach(line -> this.value.append(line));
         return value.toString();
     }
