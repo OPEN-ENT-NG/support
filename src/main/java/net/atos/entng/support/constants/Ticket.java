@@ -21,9 +21,6 @@ public class Ticket {
     public static final String ID_JIRA_FIELD = "id_jira";
     public static final String STATUS_JIRA_FIELD = "statut_jira";
     public static final int COMMENT_LENGTH = 4;
-    // i18n
-    public static final String LOCALE = "locale";
-    public static final String DOMAIN = "domain";
     // Export CSV
     public static final String SCHOOL_ID = "school_id";
     public static final String SUBJECT = "subject";
@@ -38,5 +35,5 @@ public class Ticket {
     public static final String PAGE = "page";
     public static final String APPLICANT = "applicant";
     public static final String OWNER = "owner";
-    public static final String IDS = "ids";
+    public static final String OTHER = "other";
 }

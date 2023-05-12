@@ -1,11 +1,11 @@
 import {ng} from 'entcore'
 import http, {AxiosResponse} from "axios";
-import {ITicketPayload, ITicketPayloadExportCSV, Ticket} from "../models/ticket.model";
-import {downloadBlobHelper} from "../helpers/download-blob.helper";
+import {ITicketPayload} from "../models/ticket.model";
 
 export interface ITicketService {
     update(ticketId: number, body: ITicketPayload): Promise<AxiosResponse>;
-    exportSelectionCSV(body: { ids: number[] }): Promise<void>;
+
+    exportSelectionCSV(ids: Array<number>): void;
 }
 
 export const ticketService: ITicketService = {
@@ -23,13 +23,13 @@ export const ticketService: ITicketService = {
     /**
      * export selected tickets as CSV format
      *
-     * @param body {number[]} list of ticket ids
-     * @returns {Promise<void>}
+     * @param ids {Array<number>} list of ticket ids
+     * @returns {void}
      **/
-    exportSelectionCSV: async (body: { ids: number[] }): Promise<void> => {
-        // Generate CSV and store it in a blob
-        let doc = await http.post(`/support/tickets/export`, {'ids': body});
-        return downloadBlobHelper.downloadBlob(doc);
+    exportSelectionCSV: (ids: Array<number>): void => {
+        let urlParams: URLSearchParams = new URLSearchParams();
+        ids.forEach((id: number) => urlParams.append('id', String(id)));
+        window.open(`/support/tickets/export?${urlParams}`);
     }
 };
 export const TicketService = ng.service('TicketService', (): ITicketService => ticketService);

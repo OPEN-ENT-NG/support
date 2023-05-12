@@ -22,6 +22,7 @@ package net.atos.entng.support.services;
 import java.util.List;
 import java.util.concurrent.ConcurrentMap;
 
+import io.vertx.core.Future;
 import org.entcore.common.service.CrudService;
 import org.entcore.common.user.UserInfos;
 import io.vertx.core.Handler;
@@ -105,5 +106,5 @@ public interface TicketServiceSql extends CrudService {
 
     public void listEvents(String ticketId, Handler<Either<String, JsonArray>> handler);
 
-	public void getTicketsFromListId(List<String> idList, Handler<Either<String, JsonArray>> handler);
+	Future<JsonArray> getTicketsFromListId(List<String> idList);
 }

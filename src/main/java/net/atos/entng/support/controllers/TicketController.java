@@ -26,6 +26,7 @@ import static net.atos.entng.support.enums.TicketStatus.*;
 import io.vertx.core.*;
 import net.atos.entng.support.filters.AccessIfMyStructureAdmin;
 import net.atos.entng.support.helpers.CSVHelper;
+import net.atos.entng.support.model.I18nConfig;
 import net.atos.entng.support.services.TicketService;
 
 import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
@@ -35,7 +36,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import fr.wseduc.bus.BusAddress;
-import fr.wseduc.webutils.http.Renders;
 import net.atos.entng.support.Support;
 import net.atos.entng.support.constants.Ticket;
 import net.atos.entng.support.enums.BugTrackerSyncType;
@@ -116,7 +116,7 @@ public class TicketController extends ControllerHelper {
                     ticket.put("event_count", 1);
                     JsonArray attachments = ticket.getJsonArray("attachments", null);
                     ticket.remove("attachments");
-                    final Handler<Either<String,JsonObject>> handler = getCreateOrUpdateTicketHandler(request, user, ticket, null);
+                    final Handler<Either<String, JsonObject>> handler = getCreateOrUpdateTicketHandler(request, user, ticket, null);
                     ticketServiceSql.createTicket(ticket, attachments, user, I18n.acceptLanguage(request), eventHelper.onCreateResource(request, RESOURCE_NAME, handler));
                 });
             } else {
@@ -156,9 +156,9 @@ public class TicketController extends ControllerHelper {
                         JsonArray attachments = ticket.getJsonArray("attachments");
                         boolean commentSentToBugtracker = false;
                         // we only historize if no comment has been added. If there is a comment, it will appear in the history
-                        if( ticket.getString("newComment") == null || "".equals(ticket.getString("newComment")) ) {
+                        if (ticket.getString("newComment") == null || "".equals(ticket.getString("newComment"))) {
                             ticketServiceSql.createTicketHisto(ticketId, I18n.getInstance().translate("support.ticket.histo.modification",
-                                    getHost(request), I18n.acceptLanguage(request)),
+                                            getHost(request), I18n.acceptLanguage(request)),
                                     ticket.getInteger("status"), user.getUserId(), 2, res -> {
                                         if (res.isLeft()) {
                                             log.error("Error creation historization : " + res.left().getValue());
@@ -168,21 +168,21 @@ public class TicketController extends ControllerHelper {
                                     });
                         } else {
                             // if option activated, we can send the comment directly to the bug-tracker
-                            if( bugTrackerCommDirect && (attachments == null || attachments.isEmpty())) {
+                            if (bugTrackerCommDirect && (attachments == null || attachments.isEmpty())) {
                                 sendTicketUpdateToIssue(request, ticketId, ticket, user);
                                 commentSentToBugtracker = true;
                             }
                         }
                         notifyTicketUpdated(request, ticketId, user, response);
                         if (escalationService != null && attachments != null && attachments.size() > 0) {
-                            if(escalationService.getBugTrackerType().getBugTrackerSyncType()
+                            if (escalationService.getBugTrackerType().getBugTrackerSyncType()
                                     == BugTrackerSyncType.ASYNC && !commentSentToBugtracker) {
                                 sendTicketUpdateToIssue(request, ticketId, ticket, user);
                                 renderJson(request, response, 200);
                             } else {
                                 final boolean commentSent = commentSentToBugtracker;
                                 escalationService.syncAttachments(ticketId, attachments, res -> {
-                                    if(!commentSent) {
+                                    if (!commentSent) {
                                         sendTicketUpdateToIssue(request, ticketId, ticket, user);
                                     }
                                     if (res.isRight()) {
@@ -213,10 +213,11 @@ public class TicketController extends ControllerHelper {
 
     /**
      * Send ticket updates to bugtracker
-     * @param request Original request
+     *
+     * @param request  Original request
      * @param ticketId Id of the ticket updated
-     * @param ticket Content of ticket updated
-     * @param user User updating ticket
+     * @param ticket   Content of ticket updated
+     * @param user     User updating ticket
      */
     private void sendTicketUpdateToIssue(final HttpServerRequest request, final String ticketId, final JsonObject ticket,
                                          final UserInfos user) {
@@ -225,10 +226,10 @@ public class TicketController extends ControllerHelper {
                 JsonObject issue = res.right().getValue().getJsonObject(0);
                 Long id = issue.getLong("id");
                 JsonObject comment = new JsonObject();
-                if(ticket != null && ticket.containsKey("newComment")) {
+                if (ticket != null && ticket.containsKey("newComment")) {
                     comment.put("content", ticket.getString("newComment"));
                 }
-                if(escalationService.getBugTrackerType().getBugTrackerSyncType()
+                if (escalationService.getBugTrackerType().getBugTrackerSyncType()
                         == BugTrackerSyncType.SYNC) {
                     sendIssueComment(user, comment, id.toString(), request);
                 } else {
@@ -356,7 +357,7 @@ public class TicketController extends ControllerHelper {
                             createTicketHistoMultiple(ids, I18n.getInstance().translate("support.ticket.histo.mass.modification",
                                     getHost(request), I18n.acceptLanguage(request)), newStatus, user.getUserId());
                             request.response().setStatusCode(200).end();
-                            if(escalationService.getBugTrackerType().getBugTrackerSyncType()
+                            if (escalationService.getBugTrackerType().getBugTrackerSyncType()
                                     == BugTrackerSyncType.ASYNC) {
                                 updateIssuesStatus(request, ids);
                             }
@@ -426,8 +427,8 @@ public class TicketController extends ControllerHelper {
                                 .put("body", I18n.getInstance()
                                         .translate(
                                                 "push-notif." + notificationName + ".body",
-                                                request!= null ? getHost(request) : I18n.DEFAULT_DOMAIN,
-                                                request!= null ? I18n.acceptLanguage(request) : "fr",
+                                                request != null ? getHost(request) : I18n.DEFAULT_DOMAIN,
+                                                request != null ? I18n.acceptLanguage(request) : "fr",
                                                 user.getUsername(),
                                                 ticketId
                                         ));
@@ -482,15 +483,17 @@ public class TicketController extends ControllerHelper {
         String order = params.get(Ticket.ORDER);
         Integer nbTicketsPerPage = config.getInteger("nbTicketsPerPage", 25);
 
+        I18nConfig i18nConfig = new I18nConfig(request);
+
         UserUtils.getUserInfos(eb, request, user -> {
             if (user != null) {
                 Map<String, UserInfos.Function> functions = user.getFunctions();
                 if (functions.containsKey(DefaultFunctions.ADMIN_LOCAL) || functions.containsKey(DefaultFunctions.SUPER_ADMIN)) {
                     Promise<JsonArray> ticketsPromise = Promise.promise();
                     ticketServiceSql.listTickets(user, page, statuses, applicants, schoolId, sortBy, order, nbTicketsPerPage, PromiseHelper.handler(ticketsPromise));
-                        // getting the profile for users
+                    // getting the profile for users
                     ticketsPromise.future()
-                            .compose(tickets -> ticketService.getProfileFromTickets(tickets, request))
+                            .compose(tickets -> ticketService.getProfileFromTickets(tickets, i18nConfig))
                             .onSuccess(result -> renderJson(request, result))
                             .onFailure(err -> renderError(request, new JsonObject()));
                 } else {
@@ -524,12 +527,12 @@ public class TicketController extends ControllerHelper {
     @ApiDoc("Update ticket with information from bugtracker")
     public void updateTicketFromBugTracker(final Message<JsonObject> message) {
         escalationService.updateTicketFromBugTracker(message, event -> {
-            if(event.isLeft()) {
+            if (event.isLeft()) {
                 log.error("Support : error when updating ticket from bugtracker " + event.left().getValue());
-                message.reply(new JsonObject().put("status", "KO").put("message",event.left().getValue()));
+                message.reply(new JsonObject().put("status", "KO").put("message", event.left().getValue()));
             } else {
                 JsonObject response = event.right().getValue();
-                if(response.containsKey("user") && response.containsKey("ticket")) {
+                if (response.containsKey("user") && response.containsKey("ticket")) {
                     JsonObject userJson = response.getJsonObject("user");
                     UserInfos user = new UserInfos();
                     user.setUserId(userJson.getString("userid"));
@@ -558,7 +561,7 @@ public class TicketController extends ControllerHelper {
         JsonArray jsonUserId = new JsonArray();
         jsonUserId.add(userId);
         ticketServiceNeo4j.getUsersFromList(jsonUserId, event -> {
-            if( event.isRight() && event.right().getValue().size() > 0){
+            if (event.isRight() && event.right().getValue().size() > 0) {
                 JsonObject jUser = event.right().getValue().getJsonObject(0);
                 // traduction profil
                 String profil = jUser.getJsonArray("n.profiles").getString(0);
@@ -590,7 +593,7 @@ public class TicketController extends ControllerHelper {
 
         UserUtils.getUserInfos(eb, request, user -> {
             if (user != null) {
-                if(updateEscalation) {
+                if (updateEscalation) {
                     ticketServiceSql.getTicketForEscalationService(ticketId,
                             getTicketForEscalationHandler(request, ticketId, user, false));
                 } else {
@@ -599,7 +602,7 @@ public class TicketController extends ControllerHelper {
                 }
             } else {
                 log.debug("User not found in session.");
-                if(!updateEscalation) {
+                if (!updateEscalation) {
                     unauthorized(request);
                 }
             }
@@ -615,13 +618,13 @@ public class TicketController extends ControllerHelper {
                 if (ticket == null || ticket.size() == 0) {
                     log.error("Ticket " + ticketId + " cannot be escalated : its status should be new or opened"
                             + ", and its escalation status should be not_done or in_progress");
-                    if(doResponse) {
+                    if (doResponse) {
                         badRequest(request, "support.error.escalation.conflict");
                     }
                     return;
                 }
 
-                if(doResponse) {
+                if (doResponse) {
                     ticketServiceSql.createTicketHisto(
                             ticket.getInteger("id").toString(),
                             I18n.getInstance().translate(
@@ -641,14 +644,14 @@ public class TicketController extends ControllerHelper {
 
                 ticketServiceSql.getIssue(ticketId, getIssueResponse -> {
                     JsonObject issue = null;
-                    if(getIssueResponse.isRight()) {
+                    if (getIssueResponse.isRight()) {
                         JsonArray issues = getIssueResponse.right().getValue();
-                        if(issues != null && issues.size() > 0) {
-                            if(issues.size() > 1 ) {
+                        if (issues != null && issues.size() > 0) {
+                            if (issues.size() > 1) {
                                 log.error("Support : more than one issue for ticket " + ticketId);
                             }
                             Object o = issues.getValue(0);
-                            if(o instanceof JsonObject) {
+                            if (o instanceof JsonObject) {
                                 issue = (JsonObject) o;
                             }
                         }
@@ -660,7 +663,7 @@ public class TicketController extends ControllerHelper {
 
             } else {
                 log.error("Error when calling service getTicketWithEscalation. " + getTicketResponse.left().getValue());
-                if(doResponse) {
+                if (doResponse) {
                     renderError(request, new JsonObject().put("error",
                             "support.escalation.error.data.cannot.be.retrieved.from.database"));
                 }
@@ -690,7 +693,7 @@ public class TicketController extends ControllerHelper {
                         log.error("Error when updating escalation status to failed");
                     }
                 });
-                if(doResponse) {
+                if (doResponse) {
                     renderError(request, new JsonObject().put("error", escalationResponse.left().getValue()));
                 }
             }
@@ -719,7 +722,7 @@ public class TicketController extends ControllerHelper {
                         });
             } else {
                 // Can't get issue from bug tracker in asynchronous mode
-                if(escalationService.getBugTrackerType().getBugTrackerSyncType()
+                if (escalationService.getBugTrackerType().getBugTrackerSyncType()
                         == BugTrackerSyncType.SYNC) {
                     log.error("Error when trying to get bug tracker issue");
                     // Update escalation status to successful
@@ -730,7 +733,7 @@ public class TicketController extends ControllerHelper {
                                     log.error("Error when trying to update escalation status to successful");
                                 }
                             });
-                    if(doResponse) {
+                    if (doResponse) {
                         renderError(request, new JsonObject().put("error", getWholeIssueResponse.left().getValue()));
                     }
                 } else {
@@ -746,7 +749,7 @@ public class TicketController extends ControllerHelper {
 
                             "support.ticket.escalation.successful",
                             getHost(request), I18n.acceptLanguage(request));
-                    if(doResponse) {
+                    if (doResponse) {
                         renderJson(request, new JsonObject().put("issue",
                                 new JsonObject().put(Ticket.ID, issue.getString(Ticket.ID_JIRA_FIELD))
                                         .put(Ticket.STATUS, new JsonObject().put(Ticket.NAME, EscalationStatus.SUCCESSFUL))));
@@ -847,7 +850,7 @@ public class TicketController extends ControllerHelper {
     }
 
 
-    public void sendIssueComment(final UserInfos user, JsonObject comment, final String id, final HttpServerRequest request/*, Handler<Either<String, JsonObject>> handler*/){
+    public void sendIssueComment(final UserInfos user, JsonObject comment, final String id, final HttpServerRequest request/*, Handler<Either<String, JsonObject>> handler*/) {
         // add author name to comment
         StringBuilder content = new StringBuilder();
         final Integer issueId = Integer.parseInt(id);
@@ -890,29 +893,22 @@ public class TicketController extends ControllerHelper {
         });
     }
 
-    @Post("/tickets/export")
+    @Get("/tickets/export")
     @SecuredAction(value = "", type = ActionType.RESOURCE)
     @ResourceFilter(AccessIfMyStructureAdmin.class)
     @ApiDoc("Export tickets")
     public void exportTickets(HttpServerRequest request) {
+        List<String> ids = request.params().getAll(Ticket.ID);
         UserUtils.getUserInfos(eb, request, user -> {
-
-            String domain = Renders.getHost(request);
-            String locale = I18n.acceptLanguage(request);
-
             if (user != null) {
-                RequestUtils.bodyToJson(request, pathPrefix + "exportTickets", body -> {
-                    final List ids = body.getJsonArray(Ticket.IDS).getList();
-                    Promise<JsonArray> ticketsPromise = Promise.promise();
-                    ticketServiceSql.getTicketsFromListId(ids, PromiseHelper.handler(ticketsPromise));
-                    ticketsPromise.future()
-                            .compose(tickets -> ticketService.getProfileFromTickets(tickets, request))
-                            .onSuccess(result -> {
-                                TicketsCSVExport pce = new TicketsCSVExport(result, domain, locale);
-                                CSVHelper.sendCSV(request, pce.filename(), pce.generate());
-                            })
-                            .onFailure(err -> renderError(request, new JsonObject()));
-                });
+                I18nConfig i18nConfig = new I18nConfig(request);
+                ticketServiceSql.getTicketsFromListId(ids)
+                        .compose(tickets -> ticketService.getProfileFromTickets(tickets,i18nConfig))
+                        .onSuccess(result -> {
+                            TicketsCSVExport pce = new TicketsCSVExport(result,i18nConfig);
+                            CSVHelper.sendCSV(request, pce.filename(), pce.generate());
+                        })
+                        .onFailure(err -> renderError(request, new JsonObject()));
             } else {
                 log.debug("User not found in session.");
                 unauthorized(request);

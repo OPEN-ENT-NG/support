@@ -1,7 +1,6 @@
 import axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
 import {ticketService} from "../ticket.service";
-import {attachmentService} from "../attachment.service";
 import {ITicketPayload} from "../../models/ticket.model";
 
 jest.mock('entcore', () => ({
@@ -11,7 +10,7 @@ jest.mock('entcore', () => ({
 describe('TicketService', () => {
 
     const ticketId: number = 78;
-    const newStatus: ITicketPayload = {"status":2};
+    const newStatus: ITicketPayload = {"status": 2};
 
     it('should return data when API put TicketStatus request is correctly called', done => {
         let mock = new MockAdapter(axios);

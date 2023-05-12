@@ -32,11 +32,14 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Pattern;
 
 import fr.wseduc.webutils.http.Renders;
+import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import net.atos.entng.support.constants.Ticket;
 import net.atos.entng.support.enums.BugTracker;
 import net.atos.entng.support.enums.EscalationStatus;
 import net.atos.entng.support.enums.TicketStatus;
 import net.atos.entng.support.helpers.DateHelper;
+import net.atos.entng.support.helpers.PromiseHelper;
 import net.atos.entng.support.services.TicketServiceSql;
 
 import org.entcore.common.service.impl.SqlCrudService;
@@ -846,13 +849,15 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 
 	/**
 	 * @param idList : list of ticket ids I want to retrieve
-	 * @param handler
+	 * @return {@link Future} of {@link JsonArray}
 	 **/
 	@Override
-	public void getTicketsFromListId(List<String> idList, Handler<Either<String, JsonArray>> handler) {
+	public Future<JsonArray> getTicketsFromListId(List<String> idList) {
+		Promise<JsonArray> promise = Promise.promise();
 		String query = "SELECT * FROM support.tickets" +
 				" WHERE id IN " + Sql.listPrepared(idList);
 		JsonArray values = new JsonArray(idList);
-		sql.prepared(query, values, validResultHandler(handler));
+		sql.prepared(query, values, validResultHandler(PromiseHelper.handler(promise)));
+		return promise.future();
 	}
 }
