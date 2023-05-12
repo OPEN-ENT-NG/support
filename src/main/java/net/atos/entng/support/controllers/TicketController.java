@@ -24,7 +24,7 @@ import static net.atos.entng.support.Support.bugTrackerCommDirect;
 import static net.atos.entng.support.enums.TicketStatus.*;
 
 import io.vertx.core.*;
-import net.atos.entng.support.filters.AccessIfMyStructureAdmin;
+import net.atos.entng.support.filters.AdminOfTicketsStructure;
 import net.atos.entng.support.helpers.CSVHelper;
 import net.atos.entng.support.model.I18nConfig;
 import net.atos.entng.support.services.TicketService;
@@ -895,7 +895,7 @@ public class TicketController extends ControllerHelper {
 
     @Get("/tickets/export")
     @SecuredAction(value = "", type = ActionType.RESOURCE)
-    @ResourceFilter(AccessIfMyStructureAdmin.class)
+    @ResourceFilter(AdminOfTicketsStructure.class)
     @ApiDoc("Export tickets")
     public void exportTickets(HttpServerRequest request) {
         List<String> ids = request.params().getAll(Ticket.ID);

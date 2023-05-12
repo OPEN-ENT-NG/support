@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Map;
 
 
-public class AccessIfMyStructureAdmin implements ResourcesProvider {
+public class AdminOfTicketsStructure implements ResourcesProvider {
     /**
      * Authorize if user is the ticket's owner, or a local admin for the ticket's school_id
      */
