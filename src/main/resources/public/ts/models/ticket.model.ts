@@ -15,6 +15,12 @@ export interface ITicketPayload {
     status: number;
 }
 
+export interface ITicketPayloadExportCSV {
+    school: string;
+    sortBy: string;
+    order: string;
+}
+
 export class Ticket {
     private _id: number;
     private _subject: string;

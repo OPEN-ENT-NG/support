@@ -32,11 +32,14 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Pattern;
 
 import fr.wseduc.webutils.http.Renders;
+import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import net.atos.entng.support.constants.Ticket;
 import net.atos.entng.support.enums.BugTracker;
 import net.atos.entng.support.enums.EscalationStatus;
 import net.atos.entng.support.enums.TicketStatus;
 import net.atos.entng.support.helpers.DateHelper;
+import net.atos.entng.support.helpers.PromiseHelper;
 import net.atos.entng.support.services.TicketServiceSql;
 
 import org.entcore.common.service.impl.SqlCrudService;
@@ -309,8 +312,8 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 			}
 		}
 		else {
-			query.append(" WHERE t.school_id IN (?)");
-			values.add(user.getStructures().get(0)); // SUPER_ADMIN, has only 1 structure.
+			query.append(" WHERE t.school_id IN ").append(Sql.listPrepared(user.getStructures())).append(" ");
+			values.addAll(new JsonArray(user.getStructures()));
 		}
 
 		query.append(" AND t.id = ?");
@@ -844,4 +847,17 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
         sql.prepared(query, values, validUniqueResultHandler(handler));
     }
 
+	/**
+	 * @param idList : list of ticket ids I want to retrieve
+	 * @return {@link Future} of {@link JsonArray}
+	 **/
+	@Override
+	public Future<JsonArray> getTicketsFromListId(List<String> idList) {
+		Promise<JsonArray> promise = Promise.promise();
+		String query = "SELECT * FROM support.tickets" +
+				" WHERE id IN " + Sql.listPrepared(idList);
+		JsonArray values = new JsonArray(idList);
+		sql.prepared(query, values, validResultHandler(PromiseHelper.handler(promise)));
+		return promise.future();
+	}
 }
