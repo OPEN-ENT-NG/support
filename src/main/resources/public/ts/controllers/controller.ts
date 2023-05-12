@@ -20,7 +20,7 @@ import {AxiosError, AxiosResponse} from "axios";
 import {attachment} from "entcore/types/src/ts/editor/options";
 import {DEMANDS} from "../core/enum/demands.enum";
 import {ITicketService} from "../services";
-import {ITicketPayload} from "../models/ticket.model";
+import {ITicketPayload, Ticket} from "../models/ticket.model";
 
 declare let model: any;
 
@@ -916,6 +916,10 @@ export const SupportController: Controller = ng.controller('SupportController',
 
 		$scope.exportSelectionCSV = (): void => {
 			ticketService.exportSelectionCSV(model.getItemsIds($scope.tickets.selection()));
+		}
+
+		$scope.selectAll = () : void => {
+			$scope.tickets.all.forEach((ticket) => ticket.selected = !ticket.selected)
 		}
 
 		this.initialize();
