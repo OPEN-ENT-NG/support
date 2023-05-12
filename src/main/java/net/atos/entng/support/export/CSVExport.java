@@ -67,4 +67,22 @@ public abstract class CSVExport {
         final String categoryRes = i18n.translate(category.replace("/", ""), I18n.DEFAULT_DOMAIN, locale);
         return (categoryRes != null && !categoryRes.isEmpty()) ? categoryRes : i18n.translate(Ticket.OTHER, I18n.DEFAULT_DOMAIN, locale);
     }
+
+    public String formatStatus(int status, String locale) {
+        final String key;
+        switch (status) {
+            case 1 : key="support.ticket.status.new";
+                break;
+            case 2 : key="support.ticket.status.opened";
+                break;
+            case 3 : key="support.ticket.status.resolved";
+                break;
+            case 5 : key="support.ticket.status.waiting";
+                break;
+            default: key="support.ticket.status.closed";
+                break;
+        }
+
+        return i18n.translate(key, I18n.DEFAULT_DOMAIN, locale);
+    }
 }
