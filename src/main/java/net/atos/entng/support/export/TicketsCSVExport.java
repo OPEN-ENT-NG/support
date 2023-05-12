@@ -49,7 +49,7 @@ public class TicketsCSVExport extends CSVExport {
     private String getLine(JsonObject ticket) {
         String line = ticket.getInteger(Ticket.ID) + separator;
         line += ticket.getString(Ticket.SCHOOL_ID) + separator;
-        line += ticket.getInteger(Ticket.STATUS) + separator;
+        line += formatStatus(ticket.getInteger(Ticket.STATUS),acceptLanguage) + separator;
         line += ticket.getString(Ticket.SUBJECT) + separator;
         line += translateCategory(ticket.getString(Ticket.CATEGORY),acceptLanguage) + separator;
         line += ticket.getString(Ticket.PROFILE) + separator;
