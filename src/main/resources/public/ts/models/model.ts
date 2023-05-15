@@ -139,7 +139,8 @@ models.Ticket.prototype.toJSON = function() {
 		school_id: this.school_id,
 		status: undefined,
 		newComment: undefined,
-		attachments: undefined
+		attachments: undefined,
+		selected: undefined
 	};
 	if(this.status !== undefined) {
 		json.status = this.status;

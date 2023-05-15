@@ -1,6 +1,7 @@
 import {Attachment} from "./Attachment";
 
 export interface ITicketResponse {
+    selected: boolean;
     id: number;
     subject: string;
     description: string;
@@ -30,6 +31,7 @@ export class Ticket {
     private _status: number;
     private _newComment: string;
     private _attachments: Attachment[];
+    private _selected: boolean;
 
 
     constructor() {
@@ -41,6 +43,7 @@ export class Ticket {
         this._status = null;
         this._newComment = null;
         this._attachments = null;
+        this._selected = null;
     }
 
     build(data: ITicketResponse): Ticket {
@@ -52,6 +55,7 @@ export class Ticket {
         this._status = data.status;
         this._newComment = data.newComment;
         this._attachments = data.attachments;
+        this._selected = data.selected;
 
         return this;
     }
@@ -119,6 +123,14 @@ export class Ticket {
 
     set attachments(value: Attachment[]) {
         this._attachments = value;
+    }
+
+    get selected() {
+        return this._selected;
+    }
+
+    set selected(value: boolean) {
+        this._selected = value;
     }
 }
 
