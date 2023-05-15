@@ -921,7 +921,7 @@ export const SupportController: Controller = ng.controller('SupportController',
 		$scope.allToggled = true;
 
 		$scope.toggleAll = () : void => {
-			$scope.tickets.all.forEach((ticket) => ticket.selected = $scope.allToggled);
+			$scope.tickets.all.forEach((ticket : Ticket) => ticket.selected = $scope.allToggled);
 			$scope.allToggled = !$scope.allToggled;
 		}
 
