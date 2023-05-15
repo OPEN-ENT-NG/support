@@ -13,7 +13,7 @@ import {
 } from "entcore";
 import { models } from "../models/model";
 import {safeApply} from "../utils/safeApply";
-import {IAttachmentService} from "../services/attachment.service";
+import {IAttachmentService} from "../services";
 import {Attachment} from "../models/Attachment";
 import service = workspace.v2.service;
 import {AxiosError, AxiosResponse} from "axios";
@@ -918,8 +918,11 @@ export const SupportController: Controller = ng.controller('SupportController',
 			ticketService.exportSelectionCSV(model.getItemsIds($scope.tickets.selection()));
 		}
 
-		$scope.selectAll = () : void => {
-			$scope.tickets.all.forEach((ticket) => ticket.selected = !ticket.selected)
+		$scope.allToggled = true;
+
+		$scope.toggleAll = () : void => {
+			$scope.tickets.all.forEach((ticket) => ticket.selected = $scope.allToggled);
+			$scope.allToggled = !$scope.allToggled;
 		}
 
 		this.initialize();

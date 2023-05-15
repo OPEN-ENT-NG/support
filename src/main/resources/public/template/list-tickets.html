@@ -1,109 +1,115 @@
 <div class="twelve cell">
-	<div>
-		<container template="filters"></container>
-	</div>
+    <div>
+        <container template="filters"></container>
+    </div>
 
-	<p ng-if="tickets.isEmpty()">
-		<i18n>support.ticket.empty</i18n>
-	<p>
+    <p ng-if="tickets.isEmpty()">
+        <i18n>support.ticket.empty</i18n>
+    <p>
 
-	<div class="list-ctn" ng-if="!tickets.isEmpty()">
+    <div class="list-ctn" ng-if="!tickets.isEmpty()">
 
-		<table class="list-view twelve" id="listTickets">
-			<thead>
-				<tr>
-                    <th>
-						<input type="checkbox" ng-change="selectAll()" ng-model="tickets.selected">
-                    </th>
-					<th class="one centered" ng-click="switchSortBy('id')"
-					ng-class="{'order-by-reversed': (sort.expression === 'id' && sort.reverse === false),
+        <table class="list-view twelve" id="listTickets">
+            <thead>
+            <tr>
+                <th>
+                    <input type="checkbox" ng-change="toggleAll()" ng-model="tickets.selected">
+                </th>
+                <th class="one centered" ng-click="switchSortBy('id')"
+                    ng-class="{'order-by-reversed': (sort.expression === 'id' && sort.reverse === false),
 								'order-by': (sort.expression === 'id' && sort.reverse === true)}">
-						<i18n>support.ticket.table.id</i18n>
-					</th>
-					<th ng-click="switchSortBy('status')"
-					ng-class="{'order-by-reversed': (sort.expression === 'status' && sort.reverse === false),
+                    <i18n>support.ticket.table.id</i18n>
+                </th>
+                <th ng-click="switchSortBy('status')"
+                    ng-class="{'order-by-reversed': (sort.expression === 'status' && sort.reverse === false),
 								'order-by': (sort.expression === 'status' && sort.reverse === true)}">
-						<i18n>support.ticket.table.status</i18n>
-					</th>
-					<th ng-click="switchSortBy('subject')"
-					ng-class="{'order-by-reversed': (sort.expression === 'subject' && sort.reverse === false),
+                    <i18n>support.ticket.table.status</i18n>
+                </th>
+                <th ng-click="switchSortBy('subject')"
+                    ng-class="{'order-by-reversed': (sort.expression === 'subject' && sort.reverse === false),
 								'order-by': (sort.expression === 'subject' && sort.reverse === true),
 								'four': canEscalate() && atLeastOneTicketEscalated(),
 								'five': !canEscalate() || !atLeastOneTicketEscalated()}">
-						<i18n>support.ticket.table.subject</i18n>
-					</th>
-					<th class="one" ng-click="switchSortBy('category')"
-					ng-class="{'order-by-reversed': (sort.expression === sortCategoryFunction && sort.reverse === false),
+                    <i18n>support.ticket.table.subject</i18n>
+                </th>
+                <th class="one" ng-click="switchSortBy('category')"
+                    ng-class="{'order-by-reversed': (sort.expression === sortCategoryFunction && sort.reverse === false),
 								'order-by': (sort.expression === sortCategoryFunction && sort.reverse === true)}">
-						<i18n>support.ticket.table.category</i18n>
-					</th>
-					<th class="one"><i18n>support.ticket.table.school</i18n></th>
-					<th class="one" ng-click="switchSortBy('owner')"
-					ng-class="{'order-by-reversed': (sort.expression === 'owner' && sort.reverse === false),
+                    <i18n>support.ticket.table.category</i18n>
+                </th>
+                <th class="one">
+                    <i18n>support.ticket.table.school</i18n>
+                </th>
+                <th class="one" ng-click="switchSortBy('owner')"
+                    ng-class="{'order-by-reversed': (sort.expression === 'owner' && sort.reverse === false),
 								'order-by': (sort.expression === 'owner' && sort.reverse === true)}">
-						<i18n>support.ticket.table.author</i18n>
-					</th>
-                    <th class="one" ><i18n>support.label.profil</i18n></th>
-					<th class="one" ng-click="switchSortBy('modified')"
-					ng-class="{'order-by-reversed': (sort.expression === 'modified' && sort.reverse === false),
+                    <i18n>support.ticket.table.author</i18n>
+                </th>
+                <th class="one">
+                    <i18n>support.label.profil</i18n>
+                </th>
+                <th class="one" ng-click="switchSortBy('modified')"
+                    ng-class="{'order-by-reversed': (sort.expression === 'modified' && sort.reverse === false),
 								'order-by': (sort.expression === 'modified' && sort.reverse === true)}">
-						<i18n>support.ticket.table.last.modified</i18n>
-					</th>
-                    <th class="centered" ng-click="switchSortBy('event_count')"
-                        ng-class="{'order-by-reversed': (sort.expression === 'event_count' && sort.reverse === false),
+                    <i18n>support.ticket.table.last.modified</i18n>
+                </th>
+                <th class="centered" ng-click="switchSortBy('event_count')"
+                    ng-class="{'order-by-reversed': (sort.expression === 'event_count' && sort.reverse === false),
 								'order-by': (sort.expression === 'event_count' && sort.reverse === true)}">
-                        <i18n>support.ticket.table.event.count</i18n>
-                    </th>
-					<th ng-if="canEscalate() && atLeastOneTicketEscalated()" class="one" ng-click="switchSortBy('issue_update_date')"
-					ng-class="{'order-by-reversed': (sort.expression === 'issue_update_date' && sort.reverse === false),
+                    <i18n>support.ticket.table.event.count</i18n>
+                </th>
+                <th ng-if="canEscalate() && atLeastOneTicketEscalated()" class="one"
+                    ng-click="switchSortBy('issue_update_date')"
+                    ng-class="{'order-by-reversed': (sort.expression === 'issue_update_date' && sort.reverse === false),
 								'order-by': (sort.expression === 'issue_update_date' && sort.reverse === true)}">
-						<i18n>support.ticket.table.last.update.of.escalated.ticket</i18n>
-					</th>
-				</tr>
-				</thead>
-			<tbody>
-				<tr ng-repeat="ticket in tickets.all">
-                    <td ><input type="checkbox" ng-model="ticket.selected"></td>
-                    <td class="one centered" ng-click="viewTicket(ticket.id)">[[ticket.id]]</td>
-					<td class="one" ng-click="viewTicket(ticket.id)">[[getStatusLabel(ticket.status)]]</td>
-					<td style="overflow: hidden;" ng-class="canEscalate() && atLeastOneTicketEscalated() ? three : four"
-						ng-click="viewTicket(ticket.id)">
-						<div class="list-view-subject">
-							<b class="ellipsis">[[ticket.subject]]</b>&nbsp;
-							<span class="ellipsis" ng-if="!isRichEditorActivated">[[ticket.short_desc]]
+                    <i18n>support.ticket.table.last.update.of.escalated.ticket</i18n>
+                </th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr ng-repeat="ticket in tickets.all">
+                <td><input type="checkbox" ng-model="ticket.selected"></td>
+                <td class="one centered" ng-click="viewTicket(ticket.id)">[[ticket.id]]</td>
+                <td class="one" ng-click="viewTicket(ticket.id)">[[getStatusLabel(ticket.status)]]</td>
+                <td style="overflow: hidden;" ng-class="canEscalate() && atLeastOneTicketEscalated() ? three : four"
+                    ng-click="viewTicket(ticket.id)">
+                    <div class="list-view-subject">
+                        <b class="ellipsis">[[ticket.subject]]</b>&nbsp;
+                        <span class="ellipsis" ng-if="!isRichEditorActivated">[[ticket.short_desc]]
 								<span ng-show="ticket.short_desc.length >= 99">...</span>
 							</span>
-							<span class="ellipsis" ng-if="isRichEditorActivated" ng-bind-html="ticket.short_desc">
+                        <span class="ellipsis" ng-if="isRichEditorActivated" ng-bind-html="ticket.short_desc">
 								<span ng-show="ticket.short_desc.length >= 99">...</span>
 							</span>
-						</div>
-					</td>
-					<td class="one" ng-click="viewTicket(ticket.id)">[[getCategoryLabel(ticket.category)]]</td>
-					<td class="one" ng-click="viewTicket(ticket.id)">[[getSchoolName(ticket.school_id)]]</td>
-					<td class="one" ng-click="viewTicket(ticket.id)"><a href="/userbook/annuaire#[[ticket.owner]]">[[ticket.owner_name]]</a></td>
-                    <td class="one" >[[ticket.profile]]</td>
-					<td class="one smallFontSize" ng-click="viewTicket(ticket.id)">[[formatDate(ticket.modified)]]</td>
-                    <td class="smallFontSize centered" ng-click="viewTicket(ticket.id)">[[ticket.event_count]]</td>
-					<td class="one smallFontSize" ng-if="canEscalate() && atLeastOneTicketEscalated()">
-						<span ng-if="ticket.last_issue_update" ng-model="ticket.last_issue_update">[[formatDate(ticket.last_issue_update)]]</span>
-					</td>
-				</tr>
-			</tbody>
-		</table>
+                    </div>
+                </td>
+                <td class="one" ng-click="viewTicket(ticket.id)">[[getCategoryLabel(ticket.category)]]</td>
+                <td class="one" ng-click="viewTicket(ticket.id)">[[getSchoolName(ticket.school_id)]]</td>
+                <td class="one" ng-click="viewTicket(ticket.id)"><a href="/userbook/annuaire#[[ticket.owner]]">[[ticket.owner_name]]</a>
+                </td>
+                <td class="one">[[ticket.profile]]</td>
+                <td class="one smallFontSize" ng-click="viewTicket(ticket.id)">[[formatDate(ticket.modified)]]</td>
+                <td class="smallFontSize centered" ng-click="viewTicket(ticket.id)">[[ticket.event_count]]</td>
+                <td class="one smallFontSize" ng-if="canEscalate() && atLeastOneTicketEscalated()">
+                    <span ng-if="ticket.last_issue_update" ng-model="ticket.last_issue_update">[[formatDate(ticket.last_issue_update)]]</span>
+                </td>
+            </tr>
+            </tbody>
+        </table>
 
-		<div class="center">
-			<ul class="pagination">
-				<li class="page" ng-click="goPage(1)">&laquo;</li>
-				<li class="page" ng-click="goPage(currentPage - 1)">&lsaquo;</li>
-				<li ng-repeat="page in pages track by $index"
-					ng-class="{page:true, active:page==currentPage}"
-					ng-click="goPage(page)">[[page]]
-				</li>
-				<li class="page" ng-click="goPage(currentPage + 1)">&rsaquo;</li>
-				<li class="page" ng-click="goPage(nbPages)">&raquo;</li>
-			</ul>
-		</div>
-	</div>
+        <div class="center">
+            <ul class="pagination">
+                <li class="page" ng-click="goPage(1)">&laquo;</li>
+                <li class="page" ng-click="goPage(currentPage - 1)">&lsaquo;</li>
+                <li ng-repeat="page in pages track by $index"
+                    ng-class="{page:true, active:page==currentPage}"
+                    ng-click="goPage(page)">[[page]]
+                </li>
+                <li class="page" ng-click="goPage(currentPage + 1)">&rsaquo;</li>
+                <li class="page" ng-click="goPage(nbPages)">&raquo;</li>
+            </ul>
+        </div>
+    </div>
     <section class="toggle-buttons" ng-class="{ hide: tickets.selection().length === 0 }">
         <div class="toggle">
             <div class="contextual-buttons twelve cell">
@@ -112,7 +118,8 @@
                         <i18n>support.toggle.change.to</i18n><i18n>[[status.i18nValue]]</i18n>
                     </button>
                 </span>
-                <button ng-if="isEscalationActivated && allTicketsUnescalatedAndCanEscalate()" ng-click="escalateSelected()">
+                <button ng-if="isEscalationActivated && allTicketsUnescalatedAndCanEscalate()"
+                        ng-click="escalateSelected()">
                     <i18n>support.ticket.escalate</i18n>
                 </button>
             </div>
