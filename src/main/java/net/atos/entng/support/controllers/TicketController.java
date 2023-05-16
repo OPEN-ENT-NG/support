@@ -904,6 +904,7 @@ public class TicketController extends ControllerHelper {
                 I18nConfig i18nConfig = new I18nConfig(request);
                 ticketServiceSql.getTicketsFromListId(ids)
                         .compose(tickets -> ticketService.getProfileFromTickets(tickets,i18nConfig))
+                        .compose(ticketService::getSchoolFromTickets)
                         .onSuccess(result -> {
                             TicketsCSVExport pce = new TicketsCSVExport(result,i18nConfig);
                             CSVHelper.sendCSV(request, pce.filename(), pce.generate());

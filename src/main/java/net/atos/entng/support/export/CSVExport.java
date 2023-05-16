@@ -64,8 +64,13 @@ public abstract class CSVExport {
     public abstract List<String> header();
 
     public String translateCategory(String category, String locale) {
-        final String categoryRes = i18n.translate(category.replace("/", ""), I18n.DEFAULT_DOMAIN, locale);
-        return (categoryRes != null && !categoryRes.isEmpty()) ? categoryRes : i18n.translate(Ticket.OTHER, I18n.DEFAULT_DOMAIN, locale);
+        if (category.startsWith("/")){
+            final String categoryRes = i18n.translate(category.replace("/", ""), I18n.DEFAULT_DOMAIN, locale);
+            return (categoryRes != null && !categoryRes.isEmpty()) ? categoryRes : i18n.translate(Ticket.OTHER, I18n.DEFAULT_DOMAIN, locale);
+        }else {
+            return Ticket.BLANK;
+        }
+
     }
 
     public String formatStatus(int status, String locale) {

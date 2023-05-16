@@ -13,4 +13,12 @@ public interface TicketService {
      * @returns {Future<JsonArray>} result
      **/
     Future<JsonArray> getProfileFromTickets(JsonArray ticketsList, I18nConfig i18nConfig);
+
+    /**
+     * Get school from tickets
+     *
+     * @param ticketsList {JsonArray} list of tickets
+     * @returns {Future<JsonArray>} result
+     **/
+    Future<JsonArray> getSchoolFromTickets(JsonArray ticketsList);
 }
