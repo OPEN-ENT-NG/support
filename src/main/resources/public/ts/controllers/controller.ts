@@ -55,6 +55,8 @@ export const SupportController: Controller = ng.controller('SupportController',
 			$scope.tickets = model.tickets;
 			$scope.events = model.events;
 
+			$scope.allToggled = false;
+
 			// but-tracker management : direct communication between user and bt ?
 			model.isBugTrackerCommDirect(function(result){
 				if(result && typeof result.isBugTrackerCommDirect === 'boolean') {
@@ -918,11 +920,9 @@ export const SupportController: Controller = ng.controller('SupportController',
 			ticketService.exportSelectionCSV(model.getItemsIds($scope.tickets.selection()));
 		}
 
-		$scope.allToggled = true;
-
 		$scope.toggleAll = () : void => {
-			$scope.tickets.all.forEach((ticket : Ticket) => ticket.selected = $scope.allToggled);
 			$scope.allToggled = !$scope.allToggled;
+			$scope.tickets.all.forEach((ticket : Ticket) => ticket.selected = $scope.allToggled);
 		}
 
 		this.initialize();
