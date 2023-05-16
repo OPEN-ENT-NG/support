@@ -49,12 +49,12 @@ public class TicketsCSVExport extends CSVExport {
     private String getLine(JsonObject ticket) {
         String line = ticket.getInteger(Ticket.ID) + separator;
         line += ticket.getString(Ticket.SCHOOL) + separator;
-        line += formatStatus(ticket.getInteger(Ticket.STATUS),acceptLanguage) + separator;
+        line += formatStatus(ticket.getInteger(Ticket.STATUS), acceptLanguage) + separator;
         line += ticket.getString(Ticket.SUBJECT) + separator;
-        line += translateCategory(ticket.getString(Ticket.CATEGORY),acceptLanguage) + separator;
+        line += translateCategory(ticket.getString(Ticket.CATEGORY), acceptLanguage) + separator;
         line += ticket.getString(Ticket.PROFILE) + separator;
-        line += DateHelper.getDateString(ticket.getString(Ticket.CREATION_DATE),DateHelper.DAY_MONTH_YEAR_HOUR_MINUTES) + separator;
-        line += DateHelper.getDateString(ticket.getString(Ticket.MODIFICATION_DATE),DateHelper.DAY_MONTH_YEAR_HOUR_MINUTES) + separator;
+        line += DateHelper.getDateString(ticket.getString(Ticket.CREATION_DATE), DateHelper.DAY_MONTH_YEAR_HOUR_MINUTES) + separator;
+        line += DateHelper.getDateString(ticket.getString(Ticket.MODIFICATION_DATE), DateHelper.DAY_MONTH_YEAR_HOUR_MINUTES) + separator;
 
         return line + eol;
     }
