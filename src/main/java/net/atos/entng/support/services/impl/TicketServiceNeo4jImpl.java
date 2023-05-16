@@ -39,4 +39,12 @@ public class TicketServiceNeo4jImpl {
 
         neo4j.execute(query.toString(), params, validResultHandler(handler));
     }
+
+    public static void getSchoolFromList(JsonArray listSchoolIds, Handler<Either<String, JsonArray>> handler) {
+        Neo4j neo4j = Neo4j.getInstance();
+        String query ="MATCH (s:Structure) WHERE s.id IN {ids} RETURN s.id, s.name;";
+        JsonObject params = new JsonObject().put("ids", listSchoolIds);
+        neo4j.execute(query, params, validResultHandler(handler));
+    }
+
 }

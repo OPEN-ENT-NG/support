@@ -55,4 +55,36 @@ public class TicketServiceImpl implements TicketService {
 
         return promise.future();
     }
+
+    public Future<JsonArray> getSchoolFromTickets(JsonArray ticketsList) {
+        Promise<JsonArray> promise = Promise.promise();
+        final JsonArray jsonListTickets = ticketsList;
+        final Set<String> listSchoolIds = jsonListTickets.stream()
+                .filter(JsonObject.class::isInstance)
+                .map(ticket -> ((JsonObject) ticket).getString(Ticket.SCHOOL_ID))
+                .collect(Collectors.toSet());
+
+        // get profiles from neo4j
+        ticketServiceNeo4j.getSchoolFromList(new JsonArray(new ArrayList<>(listSchoolIds)), event1 -> {
+            if (event1.isRight()) {
+                JsonArray listSchools = event1.right().getValue();
+                // list of users got from neo4j
+                listSchools.stream()
+                        .filter(JsonObject.class::isInstance)
+                        .map(JsonObject.class::cast)
+                        .forEach(jSchool -> {
+                            String schoolName = jSchool.getString("s.name");
+                            // iterator on tickets, to see if the ids match
+                            jsonListTickets.stream()
+                                    .filter(JsonObject.class::isInstance)
+                                    .map(JsonObject.class::cast)
+                                    .filter(jTicket -> jTicket.getString(Ticket.SCHOOL_ID).equals(jSchool.getString("s.id")))
+                                    .forEach(jTicket -> jTicket.put(Ticket.SCHOOL, schoolName));
+                        });
+            }
+            promise.complete(jsonListTickets);
+        });
+
+        return promise.future();
+    }
 }
