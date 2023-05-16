@@ -910,6 +910,9 @@ export const SupportController: Controller = ng.controller('SupportController',
 					$scope.$apply();
 				});
 			}
+			let scope = angular.element(document.getElementById("listTickets")).scope();
+			scope.allToggled = false;
+			safeApply($scope);
 		};
 
 		$scope.disableCreateTicket = (): boolean => {
@@ -920,9 +923,8 @@ export const SupportController: Controller = ng.controller('SupportController',
 			ticketService.exportSelectionCSV(model.getItemsIds($scope.tickets.selection()));
 		}
 
-		$scope.toggleAll = () : void => {
-			$scope.allToggled = !$scope.allToggled;
-			$scope.tickets.all.forEach((ticket : Ticket) => ticket.selected = $scope.allToggled);
+		$scope.toggleAll = (isToggled: boolean) : void => {
+			$scope.tickets.all.forEach((ticket : Ticket) => ticket.selected = isToggled);
 		}
 
 		this.initialize();

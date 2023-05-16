@@ -13,7 +13,7 @@
             <thead>
             <tr>
                 <th>
-                    <input type="checkbox" ng-change="toggleAll()" ng-model="allToggled">
+                    <input type="checkbox" ng-change="toggleAll(allToggled)" ng-model="allToggled">
                 </th>
                 <th class="one centered" ng-click="switchSortBy('id')"
                     ng-class="{'order-by-reversed': (sort.expression === 'id' && sort.reverse === false),
