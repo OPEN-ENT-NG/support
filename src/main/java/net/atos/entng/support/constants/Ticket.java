@@ -37,4 +37,5 @@ public class Ticket {
     public static final String OWNER = "owner";
     public static final String OTHER = "other";
     public static final String BLANK = "";
+    public static final String PARIS_TIMEZONE = "Europe/Paris";
 }

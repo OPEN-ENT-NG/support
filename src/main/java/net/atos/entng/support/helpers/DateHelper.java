@@ -6,7 +6,9 @@ import io.vertx.core.logging.LoggerFactory;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.TimeZone;
 
 public class DateHelper {
     public static final String DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS";
@@ -63,5 +65,33 @@ public class DateHelper {
             LOGGER.error("[Common@DateHelper::getDateString] Failed to parse date " + date, err);
             return date;
         }
+    }
+
+    /**
+     * Utility function to convert java Date to TimeZone format
+     *
+     * @param date
+     * @param format
+     * @param timeZone
+     * @return
+     */
+    public static String formatDateToString(String date, String format, String timeZone) {
+        // create SimpleDateFormat object with input format
+        SimpleDateFormat sdf = new SimpleDateFormat(format);
+        // default system timezone if passed null or empty
+        if (timeZone == null || "".equalsIgnoreCase(timeZone.trim())) {
+            timeZone = Calendar.getInstance().getTimeZone().getID();
+        }
+        // set timezone to SimpleDateFormat
+        sdf.setTimeZone(TimeZone.getTimeZone(timeZone));
+        try {
+            Date parsedDate = parse(date);
+            return sdf.format(parsedDate);
+        } catch (ParseException err) {
+            LOGGER.error("[Common@DateHelper::getDateString] Failed to parse date " + date, err);
+            return date;
+        }
+
+
     }
 }

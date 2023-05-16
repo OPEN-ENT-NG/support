@@ -53,8 +53,8 @@ public class TicketsCSVExport extends CSVExport {
         line += ticket.getString(Ticket.SUBJECT) + separator;
         line += translateCategory(ticket.getString(Ticket.CATEGORY), acceptLanguage) + separator;
         line += ticket.getString(Ticket.PROFILE) + separator;
-        line += DateHelper.getDateString(ticket.getString(Ticket.CREATION_DATE), DateHelper.DAY_MONTH_YEAR_HOUR_MINUTES) + separator;
-        line += DateHelper.getDateString(ticket.getString(Ticket.MODIFICATION_DATE), DateHelper.DAY_MONTH_YEAR_HOUR_MINUTES) + separator;
+        line += DateHelper.formatDateToString(ticket.getString(Ticket.CREATION_DATE), DateHelper.DAY_MONTH_YEAR_HOUR_MINUTES,Ticket.PARIS_TIMEZONE) + separator;
+        line += DateHelper.formatDateToString(ticket.getString(Ticket.MODIFICATION_DATE), DateHelper.DAY_MONTH_YEAR_HOUR_MINUTES,Ticket.PARIS_TIMEZONE) + separator;
 
         return line + eol;
     }

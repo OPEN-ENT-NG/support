@@ -10,6 +10,7 @@ import net.atos.entng.support.model.I18nConfig;
 import net.atos.entng.support.services.TicketService;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -59,10 +60,10 @@ public class TicketServiceImpl implements TicketService {
     public Future<JsonArray> getSchoolFromTickets(JsonArray ticketsList) {
         Promise<JsonArray> promise = Promise.promise();
         final JsonArray jsonListTickets = ticketsList;
-        final Set<String> listSchoolIds = jsonListTickets.stream()
+        final List<String> listSchoolIds = jsonListTickets.stream()
                 .filter(JsonObject.class::isInstance)
                 .map(ticket -> ((JsonObject) ticket).getString(Ticket.SCHOOL_ID))
-                .collect(Collectors.toSet());
+                .collect(Collectors.toList());
 
         // get school name from neo4j
         ticketServiceNeo4j.getSchoolFromList(new JsonArray(new ArrayList<>(listSchoolIds)))
