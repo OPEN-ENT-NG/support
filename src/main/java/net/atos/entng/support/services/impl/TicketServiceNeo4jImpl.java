@@ -2,6 +2,9 @@ package net.atos.entng.support.services.impl;
 
 import static org.entcore.common.neo4j.Neo4jResult.validResultHandler;
 
+import io.vertx.core.Future;
+import io.vertx.core.Promise;
+import net.atos.entng.support.helpers.PromiseHelper;
 import org.entcore.common.neo4j.Neo4j;
 import fr.wseduc.webutils.Either;
 import io.vertx.core.Handler;
@@ -39,4 +42,14 @@ public class TicketServiceNeo4jImpl {
 
         neo4j.execute(query.toString(), params, validResultHandler(handler));
     }
+
+    public static Future<JsonArray> getSchoolFromList(JsonArray listSchoolIds) {
+        Promise<JsonArray> promise = Promise.promise();
+        Neo4j neo4j = Neo4j.getInstance();
+        String query = "MATCH (s:Structure) WHERE s.id IN {ids} RETURN s.id, s.name;";
+        JsonObject params = new JsonObject().put("ids", listSchoolIds);
+        neo4j.execute(query, params, validResultHandler(PromiseHelper.handler(promise)));
+        return promise.future();
+    }
+
 }

@@ -36,4 +36,5 @@ public class Ticket {
     public static final String APPLICANT = "applicant";
     public static final String OWNER = "owner";
     public static final String OTHER = "other";
+    public static final String BLANK = "";
 }
