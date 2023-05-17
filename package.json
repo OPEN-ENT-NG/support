@@ -1,6 +1,6 @@
 {
   "name": "support",
-  "version": "1.15.2",
+  "version": "1.16.0",
   "description": "Allow users to reporting ENT issues via Support application",
   "main": "gulpfile.js",
   "scripts": {
