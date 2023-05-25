@@ -21,11 +21,11 @@ package net.atos.entng.support.controllers;
 
 import static net.atos.entng.support.Support.SUPPORT_NAME;
 import static net.atos.entng.support.Support.bugTrackerCommDirect;
-import static net.atos.entng.support.enums.TicketStatus.*;
 
 import io.vertx.core.*;
 import net.atos.entng.support.filters.AdminOfTicketsStructure;
 import net.atos.entng.support.helpers.CSVHelper;
+import net.atos.entng.support.helpers.RequestHelper;
 import net.atos.entng.support.model.I18nConfig;
 import net.atos.entng.support.services.TicketService;
 
@@ -44,7 +44,6 @@ import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
-import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.RequestUtils;
 import io.vertx.core.Handler;
 import io.vertx.core.MultiMap;
@@ -61,8 +60,6 @@ import net.atos.entng.support.export.TicketsCSVExport;
 import net.atos.entng.support.filters.Admin;
 import net.atos.entng.support.filters.OwnerOrLocalAdmin;
 import net.atos.entng.support.helpers.PromiseHelper;
-import net.atos.entng.support.helpers.TicketEventHelper;
-import net.atos.entng.support.helpers.impl.TicketEventHelperImpl;
 import net.atos.entng.support.services.EscalationService;
 import net.atos.entng.support.services.TicketServiceSql;
 import net.atos.entng.support.services.UserService;
@@ -76,20 +73,9 @@ import org.entcore.common.storage.Storage;
 import org.entcore.common.user.DefaultFunctions;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
-import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.eventbus.Message;
 import org.vertx.java.core.http.RouteMatcher;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
 
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-
-import static net.atos.entng.support.Support.SUPPORT_NAME;
-import static net.atos.entng.support.Support.bugTrackerCommDirect;
 import static net.atos.entng.support.enums.TicketStatus.NEW;
-import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
 
 
 public class TicketController extends ControllerHelper {
@@ -105,7 +91,6 @@ public class TicketController extends ControllerHelper {
     private final EscalationService escalationService;
     private final Storage storage;
     private final EventHelper eventHelper;
-    private final TicketEventHelper ticketEventHelper;
 
     public TicketController(TicketServiceSql ts, TicketService ticketService, EscalationService es, UserService us, Storage storage) {
         ticketServiceSql = ts;
@@ -115,7 +100,6 @@ public class TicketController extends ControllerHelper {
         this.storage = storage;
         final EventStore eventStore = EventStoreFactory.getFactory().getEventStore(Support.class.getSimpleName());
         this.eventHelper = new EventHelper(eventStore);
-        this.ticketEventHelper = new TicketEventHelperImpl();
     }
 
     @Override
@@ -855,33 +839,22 @@ public class TicketController extends ControllerHelper {
 
     @Get("/events/:id")
     @ApiDoc("Get historization of a ticket")
-    @SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+    @SecuredAction(value = "", type = ActionType.RESOURCE)
+    @ResourceFilter(OwnerOrLocalAdmin.class)
     public void getHistorization(final HttpServerRequest request) {
         final String ticketId = request.params().get("id");
         UserUtils.getUserInfos(eb, request, user -> {
-            if (user == null) {
+            if (user != null) {
+                ticketServiceSql.getlistEvents(ticketId)
+                        .onSuccess(result -> renderJson(request, RequestHelper.addAllValue(new JsonObject(), result).getJsonArray(Ticket.ALL)))
+                        .onFailure(err -> log.error(String.format("[Support@%s::getListEvent] Failed to display events of ticket",
+                                this.getClass().getSimpleName())));
+            } else {
                 log.debug("User not found in session");
                 unauthorized(request);
-                return;
             }
-
-            Map<String, UserInfos.Function> functions = user.getFunctions();
-            ticketServiceSql.getlistEvents(ticketId)
-                    .onSuccess(result -> {
-                        if(ticketEventHelper.shouldRenderEvent(user, functions, result)){
-                            Renders.renderJson(request, result);
-                        } else {
-                            log.debug("User can't access this event");
-                            unauthorized(request);
-                        }
-                    })
-                    .onFailure(err -> {
-                        log.error(String.format("[Support@%s::getListEvent] Failed to display events of ticket",
-                                this.getClass().getSimpleName()));
-                    });
         });
     }
-
 
     public void sendIssueComment(final UserInfos user, JsonObject comment, final String id, final HttpServerRequest request/*, Handler<Either<String, JsonObject>> handler*/) {
         // add author name to comment
