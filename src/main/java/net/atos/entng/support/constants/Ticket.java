@@ -3,6 +3,7 @@ package net.atos.entng.support.constants;
 public class Ticket {
     public static final String ID = "id";
     public static final String ISSUE = "issue";
+    public static final String ERROR = "error";
     public static final String ID_JIRA = "id_jira";
     public static final String STATUS = "status";
     public static final String NAME = "name";
@@ -28,6 +29,7 @@ public class Ticket {
     public static final String PROFILE = "profile";
     public static final String CREATION_DATE = "created";
     public static final String MODIFICATION_DATE = "modified";
+    public static final String USER_ID = "user_id";
 
     public static final String SCHOOL = "school";
     public static final String SORT_BY = "sortBy";
@@ -47,6 +49,6 @@ public class Ticket {
     public static final String MESSAGE = "message";
     public static final String WORKFLOW = "workflow";
     public static final String STRUCTURE_ID = "structureId";
-    public static final String USER_ID = "userId";
+    public static final String USERID = "userId";
     public static final String AUTO_OPEN_TICKET = "support.ticket.auto.open";
 }

@@ -39,11 +39,14 @@ import net.atos.entng.support.enums.BugTracker;
 import net.atos.entng.support.enums.EscalationStatus;
 import net.atos.entng.support.enums.TicketStatus;
 import net.atos.entng.support.helpers.DateHelper;
+import net.atos.entng.support.helpers.IModelHelper;
 import net.atos.entng.support.helpers.PromiseHelper;
+import net.atos.entng.support.model.Event;
 import net.atos.entng.support.services.TicketServiceSql;
 
 import org.entcore.common.service.impl.SqlCrudService;
 import org.entcore.common.sql.Sql;
+import org.entcore.common.sql.SqlResult;
 import org.entcore.common.sql.SqlStatementsBuilder;
 import org.entcore.common.user.DefaultFunctions;
 import org.entcore.common.user.UserInfos;
@@ -765,19 +768,26 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
         sql.prepared(query.toString(), values, validUniqueResultHandler(handler));
     }
 
-    /**
-     *
-     * @param ticketId : ticket id from which we want to list the history
-     */
-    public void listEvents(String ticketId, Handler<Either<String, JsonArray>> handler) {
-        String query = "SELECT username, event, status, event_date, user_id, event_type FROM support.tickets_histo th " +
-                    " left outer join support.users u on u.id = th.user_id " +
-                    " WHERE ticket_id = ? ";
-        JsonArray values = new JsonArray().add(parseId(ticketId));
-        sql.prepared(query, values, validResultHandler(handler));
-    }
 
-    /**
+
+	/**
+	 * Aim to convert listEvents in Future behaviour
+	 * @param ticketId : ticket id from which we want to list the history
+	 */
+	@Override
+	public Future<List<Event>> getlistEvents(String ticketId) {
+		Promise<List<Event>> promise = Promise.promise();
+		String query = "SELECT username, event, th.status, event_date, user_id, event_type, t.school_id FROM support.tickets_histo th " +
+				" left outer join support.users u on u.id = th.user_id " +
+				" left outer join support.tickets t on th.ticket_id = t.id" +
+				" WHERE ticket_id = ? ";
+		JsonArray values = new JsonArray().add(parseId(ticketId));
+		String errorMessage = String.format("[Support@%s::listEvent] Fail to list event", this.getClass().getSimpleName());
+		sql.prepared(query, values, SqlResult.validResultHandler(IModelHelper.sqlResultToIModel(promise, Event.class, errorMessage)));
+		return promise.future();
+	}
+
+	/**
      *
      * @param issueId : bug tracker number from which we want the linked ticket
      * @param handler
