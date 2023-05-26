@@ -847,8 +847,7 @@ public class TicketController extends ControllerHelper {
             if (user != null) {
                 ticketServiceSql.getlistEvents(ticketId)
                         .onSuccess(result -> renderJson(request, RequestHelper.addAllValue(new JsonObject(), result).getJsonArray(Ticket.ALL)))
-                        .onFailure(err -> log.error(String.format("[Support@%s::getListEvent] Failed to display events of ticket",
-                                this.getClass().getSimpleName())));
+                        .onFailure(err -> renderError(request, new JsonObject().put(Ticket.MESSAGE, err.getMessage())));
             } else {
                 log.debug("User not found in session");
                 unauthorized(request);

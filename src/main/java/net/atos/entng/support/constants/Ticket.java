@@ -46,4 +46,5 @@ public class Ticket {
     public static final String EVENT_DATE = "event_date";
     public static final String EVENT_TYPE = "event_type";
     public static final String ALL = "all";
+    public static final String MESSAGE = "message";
 }
