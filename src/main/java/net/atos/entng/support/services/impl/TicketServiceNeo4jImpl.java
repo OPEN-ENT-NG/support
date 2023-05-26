@@ -60,7 +60,7 @@ public class TicketServiceNeo4jImpl {
         String query = "MATCH (u:User {id: {userId}})" +
                 "OPTIONAL MATCH (u)-->(g:Group)-->(r:Role)-[:AUTHORIZE]->(w:WorkflowAction {displayName: {workflow}}), (g)-[:DEPENDS]->(s:Structure {id: {structureId}})" +
                 " RETURN  DISTINCT w IS NOT NULL as canAccess";
-        JsonObject params = new JsonObject().put(Ticket.USER_ID, userId)
+        JsonObject params = new JsonObject().put(Ticket.USERID, userId)
                 .put(Ticket.WORKFLOW, workflowWanted)
                 .put(Ticket.STRUCTURE_ID, structureId);
         neo4j.execute(query, params, validUniqueResultHandler(PromiseHelper.handler(promise)));

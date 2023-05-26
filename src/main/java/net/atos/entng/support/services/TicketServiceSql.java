@@ -23,13 +23,13 @@ import java.util.List;
 import java.util.concurrent.ConcurrentMap;
 
 import io.vertx.core.Future;
+import net.atos.entng.support.model.Event;
 import org.entcore.common.service.CrudService;
 import org.entcore.common.user.UserInfos;
+import fr.wseduc.webutils.Either;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-
-import fr.wseduc.webutils.Either;
 
 public interface TicketServiceSql extends CrudService {
 
@@ -104,7 +104,6 @@ public interface TicketServiceSql extends CrudService {
 
     public void updateTicketIssueUpdateDateAndStatus(Long ticketId, String updateDate, Long status, Handler<Either<String, JsonObject>> handler);
 
-    public void listEvents(String ticketId, Handler<Either<String, JsonArray>> handler);
-
 	Future<JsonArray> getTicketsFromListId(List<String> idList);
+	Future<List<Event>> getlistEvents(String ticketId);
 }

@@ -21,11 +21,11 @@ package net.atos.entng.support.controllers;
 
 import static net.atos.entng.support.Support.SUPPORT_NAME;
 import static net.atos.entng.support.Support.bugTrackerCommDirect;
-import static net.atos.entng.support.enums.TicketStatus.*;
 
 import io.vertx.core.*;
 import net.atos.entng.support.filters.AdminOfTicketsStructure;
 import net.atos.entng.support.helpers.CSVHelper;
+import net.atos.entng.support.helpers.RequestHelper;
 import net.atos.entng.support.model.I18nConfig;
 import net.atos.entng.support.services.TicketService;
 
@@ -36,6 +36,22 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import fr.wseduc.bus.BusAddress;
+import fr.wseduc.rs.ApiDoc;
+import fr.wseduc.rs.Get;
+import fr.wseduc.rs.Post;
+import fr.wseduc.rs.Put;
+import fr.wseduc.security.ActionType;
+import fr.wseduc.security.SecuredAction;
+import fr.wseduc.webutils.Either;
+import fr.wseduc.webutils.I18n;
+import fr.wseduc.webutils.request.RequestUtils;
+import io.vertx.core.Handler;
+import io.vertx.core.MultiMap;
+import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import net.atos.entng.support.Support;
 import net.atos.entng.support.constants.Ticket;
 import net.atos.entng.support.enums.BugTrackerSyncType;
@@ -47,7 +63,6 @@ import net.atos.entng.support.helpers.PromiseHelper;
 import net.atos.entng.support.services.EscalationService;
 import net.atos.entng.support.services.TicketServiceSql;
 import net.atos.entng.support.services.UserService;
-
 import net.atos.entng.support.services.impl.TicketServiceNeo4jImpl;
 import org.entcore.common.controller.ControllerHelper;
 import org.entcore.common.events.EventHelper;
@@ -58,22 +73,9 @@ import org.entcore.common.storage.Storage;
 import org.entcore.common.user.DefaultFunctions;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
-import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.eventbus.Message;
 import org.vertx.java.core.http.RouteMatcher;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
 
-
-import fr.wseduc.rs.ApiDoc;
-import fr.wseduc.rs.Get;
-import fr.wseduc.rs.Post;
-import fr.wseduc.rs.Put;
-import fr.wseduc.security.ActionType;
-import fr.wseduc.security.SecuredAction;
-import fr.wseduc.webutils.Either;
-import fr.wseduc.webutils.I18n;
-import fr.wseduc.webutils.request.RequestUtils;
+import static net.atos.entng.support.enums.TicketStatus.NEW;
 
 
 public class TicketController extends ControllerHelper {
@@ -836,6 +838,7 @@ public class TicketController extends ControllerHelper {
         }
     }
 
+
     @Get("/events/:id")
     @ApiDoc("Get historization of a ticket")
     @SecuredAction(value = "", type = ActionType.RESOURCE)
@@ -844,15 +847,15 @@ public class TicketController extends ControllerHelper {
         final String ticketId = request.params().get("id");
         UserUtils.getUserInfos(eb, request, user -> {
             if (user != null) {
-                ticketServiceSql.listEvents(ticketId, arrayResponseHandler(request));
+                ticketServiceSql.getlistEvents(ticketId)
+                        .onSuccess(result -> renderJson(request, RequestHelper.addAllValue(new JsonObject(), result).getJsonArray(Ticket.ALL)))
+                        .onFailure(err -> renderError(request, new JsonObject().put(Ticket.MESSAGE, err.getMessage())));
             } else {
-                log.debug("User not found in session.");
+                log.debug("User not found in session");
                 unauthorized(request);
             }
         });
-
     }
-
 
     public void sendIssueComment(final UserInfos user, JsonObject comment, final String id, final HttpServerRequest request/*, Handler<Either<String, JsonObject>> handler*/) {
         // add author name to comment
