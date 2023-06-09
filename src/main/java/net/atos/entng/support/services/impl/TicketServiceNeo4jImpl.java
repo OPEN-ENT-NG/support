@@ -1,6 +1,7 @@
 package net.atos.entng.support.services.impl;
 
 import static org.entcore.common.neo4j.Neo4jResult.validResultHandler;
+import static org.entcore.common.neo4j.Neo4jResult.validUniqueResultHandler;
 
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
@@ -49,6 +50,19 @@ public class TicketServiceNeo4jImpl {
         String query = "MATCH (s:Structure) WHERE s.id IN {ids} RETURN s.id, s.name;";
         JsonObject params = new JsonObject().put("ids", listSchoolIds);
         neo4j.execute(query, params, validResultHandler(PromiseHelper.handler(promise)));
+        return promise.future();
+    }
+
+    public static Future<JsonObject> getSchoolWorkflowRights(String userId, String workflowWanted, String structureId) {
+        Promise<JsonObject> promise = Promise.promise();
+        Neo4j neo4j = Neo4j.getInstance();
+        String query = "MATCH (u:User {id: {userId}})" +
+                "OPTIONAL MATCH (u)-->(g:Group)-->(r:Role)-[:AUTHORIZE]->(w:WorkflowAction {displayName: {workflowWanted}}), (g)-[:DEPENDS]->(s:Structure {id: {structureId}})" +
+                " RETURN  DISTINCT w IS NOT NULL as canAccess";
+        JsonObject params = new JsonObject().put("userId", userId)
+                .put("workflowWanted", workflowWanted)
+                .put("structureId", structureId);
+        neo4j.execute(query, params, validUniqueResultHandler(PromiseHelper.handler(promise)));
         return promise.future();
     }
 

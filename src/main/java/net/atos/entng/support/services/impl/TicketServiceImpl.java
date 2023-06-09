@@ -86,4 +86,12 @@ public class TicketServiceImpl implements TicketService {
 
         return promise.future();
     }
+
+    public Future<JsonObject> getSchoolWorkflowRightFromUserId(String userId, String workflowWanted, String structureId) {
+        Promise<JsonObject> promise = Promise.promise();
+        ticketServiceNeo4j.getSchoolWorkflowRights(userId, workflowWanted, structureId)
+                .onSuccess(promise::complete)
+                .onFailure(promise::fail);
+        return promise.future();
+    }
 }
