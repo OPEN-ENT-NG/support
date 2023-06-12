@@ -299,11 +299,17 @@ export const SupportController: Controller = ng.controller('SupportController',
 			}
 		}
 
-		$scope.changeUpdatingTicketStatus = async (): Promise<void> => {
-			if ($scope.userIsLocalAdmin($scope.ticket) && $scope.ticket.status == model.ticketStatusEnum.OPENED) {
-				$scope.ticket.status = model.ticketStatusEnum.WAITING
+		$scope.preSelectNewTicketStatus = async (): Promise<void> => {
+			if ($scope.userIsLocalAdmin($scope.ticket) && $scope.ticket.status == model.ticketStatusEnum.NEW) {
+				$scope.editedTicket.status = model.ticketStatusEnum.OPENED
 			} else if (!$scope.userIsLocalAdmin($scope.ticket) && $scope.ticket.status == model.ticketStatusEnum.WAITING) {
-				$scope.ticket.status = model.ticketStatusEnum.OPENED
+				$scope.editedTicket.status = model.ticketStatusEnum.OPENED
+			}
+		}
+
+		$scope.changeStatusWhenAddingComment = async (): Promise<void> => {
+			if ($scope.userIsLocalAdmin($scope.ticket) && $scope.ticket.status == model.ticketStatusEnum.OPENED && $scope.editedTicket.newComment.length > 0){
+				$scope.editedTicket.status = model.ticketStatusEnum.WAITING
 			}
 		}
 
@@ -522,6 +528,7 @@ export const SupportController: Controller = ng.controller('SupportController',
 		// Update ticket
 		$scope.editTicket = function() {
 			$scope.editedTicket = $scope.ticket;
+			$scope.preSelectNewTicketStatus();
 			template.open('main', 'edit-ticket');
 		};
 
@@ -583,7 +590,6 @@ export const SupportController: Controller = ng.controller('SupportController',
 
 			$scope.createProtectedCopies($scope.editedTicket, false, function() {
 				$scope.ticket = $scope.editedTicket;
-				$scope.changeUpdatingTicketStatus();
 				$scope.ticket.updateTicket($scope.ticket, function() {
 					if($scope.ticket.newAttachments && $scope.ticket.newAttachments.length > 0) {
 						$scope.ticket.getAttachments();
