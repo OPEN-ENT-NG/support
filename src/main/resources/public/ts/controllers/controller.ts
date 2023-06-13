@@ -21,6 +21,7 @@ import {attachment} from "entcore/types/src/ts/editor/options";
 import {DEMANDS} from "../core/enum/demands.enum";
 import {ITicketService} from "../services";
 import {ITicketPayload, Ticket} from "../models/ticket.model";
+import {WORKFLOW} from "../core/enum/workflow.enum";
 
 declare let model: any;
 
@@ -56,7 +57,6 @@ export const SupportController: Controller = ng.controller('SupportController',
 			$scope.events = model.events;
 
 			$scope.allToggled = false;
-
 			// but-tracker management : direct communication between user and bt ?
 			model.isBugTrackerCommDirect(function(result){
 				if(result && typeof result.isBugTrackerCommDirect === 'boolean') {
@@ -262,6 +262,22 @@ export const SupportController: Controller = ng.controller('SupportController',
 			}
 		};
 
+		$scope.schoolHasSpecificWorkflow = async (workflowWanted: string): Promise<boolean> => {
+			try {
+				return await ticketService.schoolWorkflow(model.me.userId, workflowWanted, $scope.ticket.school_id)
+			} catch (e) {
+				notify.error(lang.translate('support.ticket.status.error'))
+				return false;
+			}
+		}
+
+		$scope.changeStatusAfterOpenTicket = async (): Promise<void> => {
+			if ($scope.userIsLocalAdmin($scope.ticket) && $scope.ticket.status == model.ticketStatusEnum.NEW
+				&& await $scope.schoolHasSpecificWorkflow(WORKFLOW.AUTO_OPEN)) {
+				await $scope.changeStatus(model.ticketStatusEnum.OPENED);
+			}
+		}
+
 		$scope.openTicket = async (id: string): Promise<void> => {
 			if (!$scope.ticket || ($scope.ticket && $scope.ticket.id !== id))
 				$scope.ticket = _.find(model.tickets.all, function (ticket) {
@@ -292,12 +308,6 @@ export const SupportController: Controller = ng.controller('SupportController',
 		$scope.viewTicket = function(ticketId) {
 			window.location.hash = '/ticket/' + ticketId;
 		};
-
-		$scope.changeStatusAfterOpenTicket = async (): Promise<void> => {
-			if ($scope.userIsLocalAdmin($scope.ticket) && $scope.ticket.status == model.ticketStatusEnum.NEW) {
-				await $scope.changeStatus(model.ticketStatusEnum.OPENED);
-			}
-		}
 
 		$scope.preSelectNewTicketStatus = async (): Promise<void> => {
 			if ($scope.userIsLocalAdmin($scope.ticket) && $scope.ticket.status == model.ticketStatusEnum.NEW) {

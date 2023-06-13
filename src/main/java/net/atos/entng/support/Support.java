@@ -111,6 +111,7 @@ public class Support extends BaseServer {
 		CommentController commentController = new CommentController();
 		addController(commentController);
 		addController(new ConfigController());
+		addController(new FakeRight());
 
 		AttachmentController attachmentController = new AttachmentController(folderManager);
 		addController(attachmentController);

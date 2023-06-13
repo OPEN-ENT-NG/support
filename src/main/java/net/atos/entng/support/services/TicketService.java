@@ -2,6 +2,7 @@ package net.atos.entng.support.services;
 
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import net.atos.entng.support.model.I18nConfig;
 
 public interface TicketService {
@@ -21,4 +22,6 @@ public interface TicketService {
      * @returns {Future<JsonArray>} result
      **/
     Future<JsonArray> getSchoolFromTickets(JsonArray ticketsList);
+
+    Future<JsonObject> getSchoolWorkflowRightFromUserId(String userId, String workflowWanted, String structureId);
 }
