@@ -934,7 +934,7 @@ public class TicketController extends ControllerHelper {
                         .onSuccess(result -> renderJson(request, result))
                         .onFailure(err -> renderError(request, new JsonObject().put(Ticket.MESSAGE, err.getMessage())));
             } else {
-                log.debug("User not found in session.");
+                log.debug("[Support@%s::getWorkflow] User not found in session.");
                 unauthorized(request);
             }
         });
