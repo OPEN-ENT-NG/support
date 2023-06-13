@@ -920,4 +920,23 @@ public class TicketController extends ControllerHelper {
             }
         });
     }
+
+    @Get("/check/user/:id/workflow/:workflow/structure/:structureId/auto/open")
+    @ApiDoc("Returns if the user and the structure have a certain workflow")
+    @SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+    public void getWorkflow(HttpServerRequest request) {
+        final String userId = request.params().get(Ticket.ID);
+        final String workflowWanted = request.params().get(Ticket.WORKFLOW);
+        final String structureId = request.params().get(Ticket.STRUCTURE_ID);
+        UserUtils.getUserInfos(eb, request, user -> {
+            if (user != null) {
+                ticketService.getSchoolWorkflowRightFromUserId(userId, workflowWanted, structureId)
+                        .onSuccess(result -> renderJson(request, result))
+                        .onFailure(err -> renderError(request, new JsonObject().put(Ticket.MESSAGE, err.getMessage())));
+            } else {
+                log.debug("[Support@%s::getWorkflow] User not found in session.");
+                unauthorized(request);
+            }
+        });
+    }
 }
