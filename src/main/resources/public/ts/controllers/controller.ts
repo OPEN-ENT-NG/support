@@ -309,12 +309,6 @@ export const SupportController: Controller = ng.controller('SupportController',
 			window.location.hash = '/ticket/' + ticketId;
 		};
 
-		$scope.changeStatusAfterOpenTicket = async (): Promise<void> => {
-			if ($scope.userIsLocalAdmin($scope.ticket) && $scope.ticket.status == model.ticketStatusEnum.NEW) {
-				await $scope.changeStatus(model.ticketStatusEnum.OPENED);
-			}
-		}
-
 		$scope.preSelectNewTicketStatus = async (): Promise<void> => {
 			if ($scope.userIsLocalAdmin($scope.ticket) && $scope.ticket.status == model.ticketStatusEnum.NEW) {
 				$scope.editedTicket.status = model.ticketStatusEnum.OPENED
