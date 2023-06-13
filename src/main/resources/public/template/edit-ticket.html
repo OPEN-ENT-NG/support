@@ -56,8 +56,8 @@
 		<div class="row">
 			<label class="two cell"><i18n>support.ticket.new.comment</i18n></label>
 			<div class="ten cell">
-				<textarea ng-model="editedTicket.newComment" ng-if="!isRichEditorActivated" ng-change="changeStatusWhenAddingComment()" input-guard></textarea>
-				<editor ng-model="editedTicket.newComment" ng-if="isRichEditorActivated" ng-change="changeStatusWhenAddingComment()" input-guard></editor>
+				<textarea ng-model="editedTicket.newComment" ng-if="!isRichEditorActivated" input-guard></textarea>
+				<editor ng-model="editedTicket.newComment" ng-if="isRichEditorActivated" input-guard></editor>
 			</div>
 			<div class="ten cell right-magnet" ng-if="ticket.attachments !== undefined && !ticket.attachments.isEmpty()">
 				<br>
