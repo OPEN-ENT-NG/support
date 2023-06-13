@@ -1,12 +1,13 @@
 import {ng} from 'entcore'
 import http, {AxiosResponse} from "axios";
 import {ITicketPayload} from "../models/ticket.model";
+import {ICanAccessResponse} from "../models/schoolWorkflow.model";
 
 export interface ITicketService {
     update(ticketId: number, body: ITicketPayload): Promise<AxiosResponse>;
 
     exportSelectionCSV(ids: Array<number>): void;
-    schoolWorkflow(userId: string, workflow: string, structureId: string): Promise<AxiosResponse>;
+    schoolWorkflow(userId: string, workflow: string, structureId: string): Promise<boolean>;
 }
 
 export const ticketService: ITicketService = {
@@ -41,8 +42,8 @@ export const ticketService: ITicketService = {
      * @param structureId {string} id of the structure
      * @returns {Promise<AxiosResponse>} result Axios
      **/
-    schoolWorkflow: (userId: string, workflow: string, structureId: string): Promise<AxiosResponse> => {
-        return http.get(`/support/check/user/${userId}/workflow/${workflow}/structure/${structureId}/auto/open`);
-    }
+    schoolWorkflow: (userId: string, workflow: string, structureId: string): Promise<boolean> =>
+        http.get(`/support/check/user/${userId}/workflow/${workflow}/structure/${structureId}/auto/open`)
+            .then((res: AxiosResponse) => (<ICanAccessResponse>res.data).canAccess)
 };
 export const TicketService = ng.service('TicketService', (): ITicketService => ticketService);

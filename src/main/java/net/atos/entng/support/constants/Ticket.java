@@ -47,5 +47,6 @@ public class Ticket {
     public static final String MESSAGE = "message";
     public static final String WORKFLOW = "workflow";
     public static final String STRUCTURE_ID = "structureId";
+    public static final String USER_ID = "userId";
     public static final String AUTO_OPEN_TICKET = "support.ticket.auto.open";
 }

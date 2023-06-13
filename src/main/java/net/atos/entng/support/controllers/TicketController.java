@@ -932,7 +932,7 @@ public class TicketController extends ControllerHelper {
             if (user != null) {
                 ticketService.getSchoolWorkflowRightFromUserId(userId, workflowWanted, structureId)
                         .onSuccess(result -> renderJson(request, result))
-                        .onFailure(err -> renderError(request, new JsonObject()));
+                        .onFailure(err -> renderError(request, new JsonObject().put(Ticket.MESSAGE, err.getMessage())));
             } else {
                 log.debug("User not found in session.");
                 unauthorized(request);

@@ -262,8 +262,13 @@ export const SupportController: Controller = ng.controller('SupportController',
 			}
 		};
 
-		$scope.schoolHasSpecificWorkflow = async (workflowWanted: string): Promise<AxiosResponse> => {
-			return (await ticketService.schoolWorkflow(model.me.userId, workflowWanted, $scope.ticket.school_id)).data.canAccess
+		$scope.schoolHasSpecificWorkflow = async (workflowWanted: string): Promise<boolean> => {
+			try {
+				return await ticketService.schoolWorkflow(model.me.userId, workflowWanted, $scope.ticket.school_id)
+			} catch (e) {
+				notify.error(lang.translate('support.ticket.status.error'))
+				return false;
+			}
 		}
 
 		$scope.changeStatusAfterOpenTicket = async (): Promise<void> => {

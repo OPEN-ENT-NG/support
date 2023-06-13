@@ -5,6 +5,7 @@ import static org.entcore.common.neo4j.Neo4jResult.validUniqueResultHandler;
 
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
+import net.atos.entng.support.constants.Ticket;
 import net.atos.entng.support.helpers.PromiseHelper;
 import org.entcore.common.neo4j.Neo4j;
 import fr.wseduc.webutils.Either;
@@ -57,11 +58,11 @@ public class TicketServiceNeo4jImpl {
         Promise<JsonObject> promise = Promise.promise();
         Neo4j neo4j = Neo4j.getInstance();
         String query = "MATCH (u:User {id: {userId}})" +
-                "OPTIONAL MATCH (u)-->(g:Group)-->(r:Role)-[:AUTHORIZE]->(w:WorkflowAction {displayName: {workflowWanted}}), (g)-[:DEPENDS]->(s:Structure {id: {structureId}})" +
+                "OPTIONAL MATCH (u)-->(g:Group)-->(r:Role)-[:AUTHORIZE]->(w:WorkflowAction {displayName: {workflow}}), (g)-[:DEPENDS]->(s:Structure {id: {structureId}})" +
                 " RETURN  DISTINCT w IS NOT NULL as canAccess";
-        JsonObject params = new JsonObject().put("userId", userId)
-                .put("workflowWanted", workflowWanted)
-                .put("structureId", structureId);
+        JsonObject params = new JsonObject().put(Ticket.USER_ID, userId)
+                .put(Ticket.WORKFLOW, workflowWanted)
+                .put(Ticket.STRUCTURE_ID, structureId);
         neo4j.execute(query, params, validUniqueResultHandler(PromiseHelper.handler(promise)));
         return promise.future();
     }
