@@ -53,6 +53,24 @@ public enum BugTracker {
 		public BugTrackerSyncType getBugTrackerSyncType() {
 			return BugTrackerSyncType.ASYNC;
 		}
+	},
+    ZENDESK
+    {
+        @Override
+        public String getLastIssueUpdateFromPostgresqlJson()
+		{
+            return "->>'updated_at'";
+		}
+		@Override
+        public String getStatusIdFromPostgresqlJson()
+		{
+            return "#>>'{status}'";
+		}
+		@Override
+        public BugTrackerSyncType getBugTrackerSyncType()
+        {
+			return BugTrackerSyncType.SYNC;
+		}		
 	};
 
 	/**
