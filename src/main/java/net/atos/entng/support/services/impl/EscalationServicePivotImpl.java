@@ -527,7 +527,7 @@ public class EscalationServicePivotImpl implements EscalationService
                     log.error("Invalid id_ent, saving issue with id 0");
                 }
                 JsonObject dataIssue = new JsonObject().put("issue", issue);
-                Issue issueObj = new Issue(issueId.intValue(), dataIssue);
+                Issue issueObj = new Issue(issueId.longValue(), dataIssue);
                 JsonArray jsonAttachments = issue.getJsonArray("attachments", new JsonArray());
                 for(Object o : jsonAttachments)
                 {
@@ -546,8 +546,8 @@ public class EscalationServicePivotImpl implements EscalationService
      * Attachments can't be synced in asynchronous mode, ignore the step
      */
     @Override
-    public void syncAttachments(String ticketId, List<Attachment> attachments, Handler<Either<String, Id<Issue, Integer>>> handler) {
-        handler.handle(new Either.Right<>(new Id<Issue, Integer>(null)));
+    public void syncAttachments(String ticketId, List<Attachment> attachments, Handler<Either<String, Id<Issue, Long>>> handler) {
+        handler.handle(new Either.Right<>(new Id<Issue, Long>(null)));
     }
 
     /**
@@ -690,7 +690,7 @@ public class EscalationServicePivotImpl implements EscalationService
                 JsonObject innerIssue = issue.getJsonObject(JiraTicket.ISSUE, new JsonObject());
                 String issueIdString = innerIssue.getString(JiraTicket.ID_ENT, "");
                 try {
-                    Integer issueId = Integer.parseInt(issueIdString);
+                    Long issueId = Long.parseLong(issueIdString);
                     handler.handle(new Either.Right<>(new Issue(issueId, event.body())));
                 } catch (NumberFormatException e) {
                     e.printStackTrace();

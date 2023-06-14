@@ -517,7 +517,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 					for(int i = 0; i < comments.size(); ++i)
 					{
 						JsonObject c = comments.getJsonObject(i);
-						ticket.comments.add(new Comment(c.getInteger("id"), c.getString("content"), c.getString("owner_name"), c.getString("created")));
+						ticket.comments.add(new Comment(c.getLong("id"), c.getString("content"), c.getString("owner_name"), c.getString("created")));
 					}
 
 					handler.handle(new Either.Right<String, Ticket>(ticket));
@@ -644,7 +644,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 		} catch (NumberFormatException e) {
 			log.error("Invalid id_ent, saving issue with id 0");
 		}
-		this.updateTicketAfterEscalation(ticketId, EscalationStatus.SUCCESSFUL, new Issue(issueId.intValue(), issue), issueId, user, handler);
+		this.updateTicketAfterEscalation(ticketId, EscalationStatus.SUCCESSFUL, new Issue(issueId.longValue(), issue), issueId, user, handler);
 	}
 
     @Override
@@ -665,7 +665,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 					this.getClass().getSimpleName(), e.getMessage());
 			log.error(message);
 		}
-		this.updateTicketAfterEscalation(ticketId, EscalationStatus.SUCCESSFUL, new Issue(issueId.intValue(), issue), issueId, user, handler);
+		this.updateTicketAfterEscalation(ticketId, EscalationStatus.SUCCESSFUL, new Issue(issueId.longValue(), issue), issueId, user, handler);
     }
 
 	@Override
@@ -781,13 +781,13 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 				{
 					JsonObject sqlIssue = result.right().getValue();
 					String content = sqlIssue.getString("content");
-					Issue issue = new Issue(sqlIssue.getInteger("id"), content == null ? null : new JsonObject(content));
+					Issue issue = new Issue(sqlIssue.getLong("id"), content == null ? null : new JsonObject(content));
 
 					JsonArray attachments = new JsonArray(sqlIssue.getString("attachments", "[]"));
 					for(int i = 0; i < attachments.size(); ++i)
 					{
 						JsonObject a = attachments.getJsonObject(i);
-						issue.attachments.add(new Attachment(a.getInteger("id"), (String) null, a.getString("document_id"), a.getString("gridfs_id")));
+						issue.attachments.add(new Attachment(a.getLong("id"), (String) null, a.getString("document_id"), a.getString("gridfs_id")));
 					}
 
 					handler.handle(new Either.Right<String, Issue>(issue));

@@ -11,18 +11,18 @@ import java.util.ArrayList;
 
 public class Issue implements IdObject
 {
-    public Id<Issue, Integer> id;
+    public Id<Issue, Long> id;
     private JsonObject content;
     public List<Attachment> attachments = new ArrayList<Attachment>();
 
-    public Issue(Integer id)
+    public Issue(Long id)
     {
         this(id, null);
     }
 
-    public Issue(Integer id, JsonObject content)
+    public Issue(Long id, JsonObject content)
     {
-        this.id = new Id<Issue, Integer>(id);
+        this.id = new Id<Issue, Long>(id);
         this.setContent(content);
     }
 
@@ -33,7 +33,7 @@ public class Issue implements IdObject
     }
 
     @Override
-    public Id<Issue, Integer> getId()
+    public Id<Issue, Long> getId()
     {
         return this.id;
     }
