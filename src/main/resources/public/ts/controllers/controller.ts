@@ -22,6 +22,7 @@ import {DEMANDS} from "../core/enum/demands.enum";
 import {ITicketService} from "../services";
 import {ITicketPayload, Ticket} from "../models/ticket.model";
 import {WORKFLOW} from "../core/enum/workflow.enum";
+import {copy} from "angular";
 
 declare let model: any;
 
@@ -529,7 +530,7 @@ export const SupportController: Controller = ng.controller('SupportController',
 
 		// Update ticket
 		$scope.editTicket = function() {
-			$scope.editedTicket = $scope.ticket;
+			$scope.editedTicket = copy($scope.ticket);
 			$scope.preSelectNewTicketStatus();
 			template.open('main', 'edit-ticket');
 		};
