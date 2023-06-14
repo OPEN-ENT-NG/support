@@ -66,6 +66,7 @@ import net.atos.entng.support.Ticket;
 import net.atos.entng.support.Issue;
 import net.atos.entng.support.Comment;
 import net.atos.entng.support.enums.BugTracker;
+import net.atos.entng.support.enums.TicketHisto;
 import net.atos.entng.support.services.EscalationService;
 import net.atos.entng.support.services.TicketServiceSql;
 import net.atos.entng.support.services.UserService;
@@ -1039,10 +1040,10 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 														I18n.getInstance().translate(
 																"support.ticket.histo.bug.tracker.updated",
 																I18n.DEFAULT_DOMAIN, locale) + additionnalInfoHisto,
-														newStatusId == 5l ? 4 : newStatusId >= 4l ? 2 : newStatusId.intValue(), null, 6,
-														new Handler<Either<String, JsonObject>>() {
+														newStatusId == 5l ? 4 : newStatusId >= 4l ? 2 : newStatusId.intValue(), null, TicketHisto.REMOTE_UPDATED,
+														new Handler<Either<String, Void>>() {
 															@Override
-															public void handle(Either<String, JsonObject> res) {
+															public void handle(Either<String, Void> res) {
 																if (res.isRight()) {
 																	ticketServiceSql.updateEventCount(
 																			ticket.getInteger("id").toString(),

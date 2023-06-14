@@ -37,6 +37,7 @@ import net.atos.entng.support.Comment;
 import net.atos.entng.support.constants.JiraTicket;
 import net.atos.entng.support.enums.BugTrackerSyncType;
 import net.atos.entng.support.enums.EscalationStatus;
+import net.atos.entng.support.enums.TicketHisto;
 import net.atos.entng.support.filters.Admin;
 import net.atos.entng.support.filters.OwnerOrLocalAdmin;
 import net.atos.entng.support.services.EscalationService;
@@ -131,13 +132,13 @@ public class TicketController extends ControllerHelper {
                 final Ticket response = event.right().getValue();
                 if (response != null) {
                     if (ticketId == null) {
-                        notifyTicketCreated(request, user, response);
                         response.ownerName = user.getUsername();
                         response.ownerId = user.getUserId();
+                        notifyTicketCreated(request, user, response);
                         ticketServiceSql.createTicketHisto(response.id.toString(),
                                 I18n.getInstance().translate("support.ticket.histo.creation", getHost(request),
                                         I18n.acceptLanguage(request)),
-                                ticket.getInteger("status"), user.getUserId(), 1, res -> {
+                                ticket.getInteger("status"), user.getUserId(), TicketHisto.NEW, res -> {
                                     if (res.isLeft()) {
                                         log.error("Error creation historization : " + res.left().getValue());
                                     }
@@ -155,7 +156,7 @@ public class TicketController extends ControllerHelper {
                         if( ticket.getString("newComment") == null || "".equals(ticket.getString("newComment")) ) {
                             ticketServiceSql.createTicketHisto(ticketId, I18n.getInstance().translate("support.ticket.histo.modification",
                                     getHost(request), I18n.acceptLanguage(request)),
-                                    ticket.getInteger("status"), user.getUserId(), 2, res -> {
+                                    ticket.getInteger("status"), user.getUserId(), TicketHisto.UPDATED, res -> {
                                         if (res.isLeft()) {
                                             log.error("Error creation historization : " + res.left().getValue());
                                         } else {
@@ -359,7 +360,7 @@ public class TicketController extends ControllerHelper {
                     ticketServiceSql.updateTicketStatus(newStatus, ids, event -> {
                         if (event.isRight()) {
                             createTicketHistoMultiple(ids, I18n.getInstance().translate("support.ticket.histo.mass.modification",
-                                    getHost(request), I18n.acceptLanguage(request)), newStatus, user.getUserId());
+                                    getHost(request), I18n.acceptLanguage(request)), TicketHisto.fromEventType(newStatus).eventType(), user.getUserId());
                             request.response().setStatusCode(200).end();
                             if(escalationService != null && escalationService.getBugTrackerType().getBugTrackerSyncType()
                                     == BugTrackerSyncType.ASYNC) {
@@ -702,7 +703,7 @@ public class TicketController extends ControllerHelper {
                             I18n.getInstance().translate(
                                     "support.ticket.histo.escalate", getHost(request),
                                     I18n.acceptLanguage(request)) + user.getUsername(),
-                            ticket.status.status(), user.getUserId(), 4,
+                            ticket.status.status(), user.getUserId(), TicketHisto.ESCALATION,
                             res -> {
                                 if (res.isLeft()) {
                                     log.error("Error creation historization : " + res.left().getValue());
@@ -891,7 +892,7 @@ public class TicketController extends ControllerHelper {
 
     public void createTicketHistoMultiple(List<Integer> idList, String event, Integer newStatus, String userid) {
         for (Integer id : idList) {
-            ticketServiceSql.createTicketHisto(id.toString(), event, newStatus, userid, 2, res -> {
+            ticketServiceSql.createTicketHisto(id.toString(), event, newStatus, userid, TicketHisto.UPDATED, res -> {
                 if (res.isLeft()) {
                     log.error("Error creation historization : " + res.left().getValue());
                 }
@@ -954,9 +955,9 @@ public class TicketController extends ControllerHelper {
                         if (res.isRight()) {
                             final JsonObject ticket = res.right().getValue();
                             ticketServiceSql.createTicketHisto(ticket.getInteger("id").toString(), I18n.getInstance().translate("support.ticket.histo.add.bug.tracker.comment", I18n.acceptLanguage(request)),
-                                    ticket.getInteger("status"), user.getUserId(), 4, new Handler<Either<String, JsonObject>>() {
+                                    ticket.getInteger("status"), user.getUserId(), TicketHisto.ESCALATION, new Handler<Either<String, Void>>() {
                                         @Override
-                                        public void handle(Either<String, JsonObject> res) {
+                                        public void handle(Either<String, Void> res) {
                                             if (res.isLeft()) {
                                                 log.error("Error creation historization : " + res.left().getValue());
                                             }
