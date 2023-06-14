@@ -753,7 +753,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 		 */
 		StringBuilder query = new StringBuilder("SELECT i.id, i.content,")
 			.append(" CASE WHEN COUNT(a.id) = 0 THEN '[]'")
-			.append(" ELSE json_agg((a.id, a.document_id, a.gridfs_id)::support.bug_tracker_attachment_tuple)")
+			.append(" ELSE json_agg((a.*))")
 			.append(" END AS attachments")
 			.append(" FROM support.bug_tracker_issues AS i")
 			.append(" LEFT JOIN support.bug_tracker_attachments AS a ON i.id = a.issue_id")
@@ -783,7 +783,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 					for(int i = 0; i < attachments.size(); ++i)
 					{
 						JsonObject a = attachments.getJsonObject(i);
-						issue.attachments.add(new Attachment(a.getLong("id"), (String) null, a.getString("document_id"), a.getString("gridfs_id")));
+						issue.attachments.add(new Attachment(a.getLong("id"), a.getString("name"), null, a.getInteger("size"), a.getString("created"), a.getString("document_id"), a.getString("gridfs_id")));
 					}
 
 					handler.handle(new Either.Right<String, Issue>(issue));
