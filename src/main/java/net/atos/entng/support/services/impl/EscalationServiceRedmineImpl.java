@@ -622,13 +622,13 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 
 						// Step 2) : given a list of issue ids in Redmine, get issue ids that exist in
 						// current ENT and their attachments' ids
-						ticketServiceSql.listExistingIssues(issueIds, new Handler<Either<String, JsonArray>>() {
+						ticketServiceSql.listExistingIssues(issueIds, new Handler<Either<String, List<Issue>>>() {
 							@Override
-							public void handle(Either<String, JsonArray> event) {
+							public void handle(Either<String, List<Issue>> event) {
 								if (event.isLeft()) {
 									log.error("Error when calling service listExistingIssueIds : " + event.left());
 								} else {
-									JsonArray existingIssues = event.right().getValue();
+									List<Issue> existingIssues = event.right().getValue();
 									if (existingIssues == null || existingIssues.size() == 0) {
 										log.info("No issue ids found in database");
 										return;
@@ -637,16 +637,12 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 
 									final AtomicInteger remaining = new AtomicInteger(existingIssues.size());
 
-									for (Object o : existingIssues) {
-										if (!(o instanceof JsonObject))
-											continue;
-										JsonObject jo = (JsonObject) o;
+									for (Issue i : existingIssues) {
+										final Number issueId = i.id.get();
 
-										final Number issueId = jo.getLong("id");
-
-										String ids = jo.getString("attachment_ids", null);
-										final JsonArray existingAttachmentsIds = (ids != null) ? new JsonArray(ids)
-												: null;
+										final JsonArray existingAttachmentsIds = new JsonArray();
+										for(Attachment a : i.attachments)
+											existingAttachmentsIds.add(a.bugTrackerId);
 
 										// Step 3a)
 										EscalationServiceRedmineImpl.this.getIssue(issueId,
@@ -699,10 +695,10 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 																					// postgresql
 																					ticketServiceSql.updateIssue(
 																							issueId, issue,
-																							new Handler<Either<String, JsonObject>>() {
+																							new Handler<Either<String, String>>() {
 																								@Override
 																								public void handle(
-																										final Either<String, JsonObject> updateIssueEvent) {
+																										final Either<String, String> updateIssueEvent) {
 																									if (updateIssueEvent
 																											.isRight()) {
 																										log.debug(
@@ -736,10 +732,10 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 																																.getString(
 																																		"updated_on"),
 																														newStatus,
-																														new Handler<Either<String, JsonObject>>() {
+																														new Handler<Either<String, Void>>() {
 																															@Override
 																															public void handle(
-																																	final Either<String, JsonObject> res) {
+																																	final Either<String, Void> res) {
 																																if (res.isLeft()) {
 																																	log.error(
 																																			"Updating ticket "
@@ -884,13 +880,15 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 								 */
 								log.info("Metadata of attachment written in gridfs: "
 										+ attachmentMetaData.encodePrettily());
-								attachmentMetaData.put("id_in_bugtracker", attachmentIdInRedmine);
+								JsonObject md = attachmentMetaData.getJsonObject("metadata");
+
+								Attachment att = new GridFSAttachment(attachmentIdInRedmine, md.getString("filename"), md.getString("content-type"), md.getInteger("size"), attachmentMetaData.getString("_id"));
 
 								// store attachment's metadata in postgresql
-								ticketServiceSql.insertIssueAttachment(issueId, attachmentMetaData,
-										new Handler<Either<String, JsonArray>>() {
+								ticketServiceSql.insertIssueAttachment(new Id<Issue, Number>(issueId), att,
+										new Handler<Either<String, Void>>() {
 											@Override
-											public void handle(Either<String, JsonArray> event) {
+											public void handle(Either<String, Void> event) {
 												if (event.isRight()) {
 													log.info("download attachment " + attachmentIdInRedmine
 															+ " OK for issue n°" + issueId);
@@ -911,11 +909,10 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 	 * Notify local administrators (of the ticket's school_id) that the Redmine
 	 * issue's status has been changed to "resolved" or "closed"
 	 */
-	private void notifyIssueChanged(final Number issueId, final JsonObject updateIssueResponse,
+	private void notifyIssueChanged(final Number issueId, final String updateIssueStatus,
 			final JsonObject issue) {
 		try {
-			final String oldStatus = updateIssueResponse.getString("status_id", "-1");
-			final int oldStatusId = Integer.parseInt(oldStatus);
+			final int oldStatusId = Integer.parseInt(updateIssueStatus);
 			final Long newStatusId = issue.getJsonObject("issue").getJsonObject("status").getLong("id");
 			log.debug("Old status_id: " + oldStatusId);
 			log.debug("New status_id:" + newStatusId);
@@ -933,14 +930,14 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 			final JsonObject fLastEvent = lastEvent;
 
 			// get school_id and ticket_id
-			ticketServiceSql.getTicketIdAndSchoolId(issueId, new Handler<Either<String, JsonObject>>() {
+			ticketServiceSql.getTicketIdAndSchoolId(issueId, new Handler<Either<String, Ticket>>() {
 				@Override
-				public void handle(Either<String, JsonObject> event) {
+				public void handle(Either<String, Ticket> event) {
 					if (event.isLeft()) {
 						log.error("[Support] Error when calling service getTicketIdAndSchoolId : "
 								+ event.left().getValue() + ". Unable to send timeline notification.");
 					} else {
-						final JsonObject ticket = event.right().getValue();
+						final JsonObject ticket = event.right().getValue().toJsonObject();
 						if (ticket == null || ticket.size() == 0) {
 							log.error(
 									"[Support] Error : ticket is null or empty. Unable to send timeline notification.");
@@ -1047,10 +1044,10 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 																if (res.isRight()) {
 																	ticketServiceSql.updateEventCount(
 																			ticket.getInteger("id").toString(),
-																			new Handler<Either<String, JsonObject>>() {
+																			new Handler<Either<String, Void>>() {
 																				@Override
 																				public void handle(
-																						Either<String, JsonObject> res) {
+																						Either<String, Void> res) {
 																					if (res.isLeft()) {
 																						log.error(
 																								"Error updating ticket (event_count) : "
@@ -1103,7 +1100,7 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 							{
 								if(!(o instanceof JsonObject)) continue;
 								JsonObject att = (JsonObject) o;
-								issue.attachments.add(new GridFSAttachment(att.getLong("id"), att.getString("filename"), att.getInteger("filesize")));
+								issue.attachments.add(new GridFSAttachment(att.getLong("id"), att.getString("filename"), null, att.getInteger("filesize")));
 							}
 							handler.handle(new Either.Right<String, Issue>(issue));
 						} else {

@@ -7,9 +7,9 @@ public class GridFSAttachment extends Attachment
         super(bugTrackerId, name);
     }
 
-    public GridFSAttachment(Long bugTrackerId, String name, Integer size)
+    public GridFSAttachment(Long bugTrackerId, String name, String contentType, Integer size)
     {
-        super(bugTrackerId, name, size);
+        super(bugTrackerId, name, contentType, size);
     }
 
     public GridFSAttachment(Long bugTrackerId, String name, String fileSystemId)
@@ -17,8 +17,8 @@ public class GridFSAttachment extends Attachment
         super(bugTrackerId, name, null, fileSystemId);
     }
 
-    public GridFSAttachment(Long bugTrackerId, String name, Integer size, String fileSystemId)
+    public GridFSAttachment(Long bugTrackerId, String name, String contentType, Integer size, String fileSystemId)
     {
-        super(bugTrackerId, name, size, null, fileSystemId);
+        super(bugTrackerId, name, contentType, size, null, fileSystemId);
     }
 }
