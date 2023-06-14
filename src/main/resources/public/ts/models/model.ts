@@ -197,6 +197,7 @@ models.Ticket.prototype.getBugTrackerIssue = function(callback) {
 			var content = result.content;
 			if(content && content.issue) {
 
+				// Old redmine way
 				this.issue = content.issue;
 
 				var attachments = result.attachments;
@@ -212,6 +213,12 @@ models.Ticket.prototype.getBugTrackerIssue = function(callback) {
 					});
 				}
 			}
+			else if(content != null)
+			{
+				this.issue = content;
+				this.issue.attachments = result.attachments;
+			}
+			
 		}
 		if(typeof callback === 'function'){
 			callback();

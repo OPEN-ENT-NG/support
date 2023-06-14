@@ -54,7 +54,17 @@ public class Issue implements IdObject
         JsonArray jsonAttachments = new JsonArray();
 
         for(Attachment a : this.attachments)
-            jsonAttachments.add(new JsonObject().put("id", a.bugTrackerId).put("document_id", a.documentId).put("gridfs_id", a.fileSystemId));
+        {
+            JsonObject att = new JsonObject()
+                .put("id", a.bugTrackerId)
+                .put("filename", a.name)
+                .put("content_type", a.contentType)
+                .put("size", a.size)
+                .put("created_on", a.created)
+                .put("document_id", a.documentId)
+                .put("gridfs_id", a.fileSystemId);
+            jsonAttachments.add(att);
+        }
 
         return new JsonObject().put("id", this.id.get()).put("content", this.getContent()).put("attachments", jsonAttachments);
     }
