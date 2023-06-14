@@ -534,7 +534,7 @@ public class EscalationServicePivotImpl implements EscalationService
                 {
                     if(!(o instanceof JsonObject)) continue;
                     JsonObject jsonAtt = (JsonObject) o;
-                    issueObj.attachments.add(new WorkspaceAttachment(null, jsonAtt.getString("name"), jsonAtt.getInteger("size"), jsonAtt.getString("id")));
+                    issueObj.attachments.add(new WorkspaceAttachment(null, jsonAtt.getString("name"), null, jsonAtt.getInteger("size"), jsonAtt.getString("id")));
                 }
                 ticketServiceSql.endSuccessfulEscalation(
                         ticketId, issueObj, issueId, userIws, handler

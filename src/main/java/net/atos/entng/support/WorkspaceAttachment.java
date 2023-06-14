@@ -7,18 +7,18 @@ public class WorkspaceAttachment extends Attachment
         super(bugTrackerId, name);
     }
 
-    public WorkspaceAttachment(Long bugTrackerId, String name, Integer size)
+    public WorkspaceAttachment(Long bugTrackerId, String name, String contentType, Integer size)
     {
-        super(bugTrackerId, name, size);
+        super(bugTrackerId, name, contentType, size);
     }
 
     public WorkspaceAttachment(Long bugTrackerId, String name, String documentId)
     {
-        super(bugTrackerId, name, documentId, null);
+        super(bugTrackerId, name, documentId, (String) null);
     }
 
-    public WorkspaceAttachment(Long bugTrackerId, String name, Integer size, String documentId)
+    public WorkspaceAttachment(Long bugTrackerId, String name, String contentType, Integer size, String documentId)
     {
-        super(bugTrackerId, name, size, documentId, null);
+        super(bugTrackerId, name, contentType, size, documentId, null);
     }
 }
