@@ -81,7 +81,7 @@ public interface TicketServiceSql extends CrudService {
 
     public void updateEventCount(String ticketId, Handler<Either<String, JsonObject>> handler);
 
-    public void createTicketHisto(String ticketId, String event, int status, String userid, int eventType, Handler<Either<String, JsonObject>> handler);
+    public void createTicketHisto(String ticketId, String event, int status, String userid, TicketHisto histoType, Handler<Either<String, Void>> handler);
 
     public void getTicketFromIssueId(String issueId, Handler<Either<String, JsonObject>> handler);
 

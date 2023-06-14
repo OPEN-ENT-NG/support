@@ -36,6 +36,7 @@ import net.atos.entng.support.constants.JiraTicket;
 import net.atos.entng.support.enums.BugTracker;
 import net.atos.entng.support.enums.EscalationStatus;
 import net.atos.entng.support.enums.TicketStatus;
+import net.atos.entng.support.enums.TicketHisto;
 import net.atos.entng.support.helpers.DateHelper;
 import net.atos.entng.support.services.TicketServiceSql;
 
@@ -931,7 +932,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
      *                    6 : bug-tracker updated.
      * @param handler
      */
-    public void createTicketHisto(String ticketId, String event, int status, String userid, int eventType, Handler<Either<String, JsonObject>> handler) {
+    public void createTicketHisto(String ticketId, String event, int status, String userid, TicketHisto histoType, Handler<Either<String, Void>> handler) {
         String query = "INSERT INTO support.tickets_histo( ticket_id, event, status, user_id, event_type) "
                 + " values( ?, ?, ?, ?, ? )";
 
@@ -940,9 +941,19 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
                 .add(event)
                 .add(status)
                 .add(userid)
-                .add(eventType);
+                .add(histoType.eventType());
 
-        sql.prepared(query, values, validUniqueResultHandler(handler));
+        sql.prepared(query, values, validUniqueResultHandler(new Handler<Either<String, JsonObject>>()
+		{
+			@Override
+			public void handle(Either<String, JsonObject> res)
+			{
+				if(res.isLeft())
+					handler.handle(new Either.Left<String, Void>(res.left().getValue()));
+				else
+					handler.handle(new Either.Right<String ,Void>(null));
+			}
+		}));
     }
 
 }

@@ -12,6 +12,7 @@ import net.atos.entng.support.constants.JiraTicket;
 import net.atos.entng.support.enums.BugTracker;
 import net.atos.entng.support.enums.TicketStatus;
 import net.atos.entng.support.enums.TicketStatusJira;
+import net.atos.entng.support.enums.TicketHisto;
 import net.atos.entng.support.helpers.EscalationPivotHelper;
 import net.atos.entng.support.helpers.impl.EscalationPivotHelperImpl;
 import net.atos.entng.support.services.EscalationService;
@@ -474,7 +475,7 @@ public class EscalationServicePivotImpl implements EscalationService
         if (JiraTicket.SOURCE_CGI.equals(issue.getString(JiraTicket.SOURCE))) {
             int statusForHisto = TicketStatusJira.getTicketStatusJira(issue.getString(STATUSJIRA_FIELD, "")).getStatus();
             ticketServiceSql.createTicketHisto(ticketId, JiraTicket.JIRA_COMMENT_HEADER,
-                    statusForHisto, JiraTicket.ID, 2, res -> {
+                    statusForHisto, JiraTicket.ID, TicketHisto.UPDATED, res -> {
                         if (res.isLeft()) {
                             String message = String.format("[Support@%s::addAttachmentAndUpdate] Support : Error creation historization : %s",
                                     this.getClass().getSimpleName(), res.left().getValue());
@@ -504,7 +505,7 @@ public class EscalationServicePivotImpl implements EscalationService
             } else {
                 if (statusUpdated) {
                     ticketServiceSql.createTicketHisto(
-                            ticketId, "", issueStatus, userIws.getUserId(), 2,
+                            ticketId, "", issueStatus, userIws.getUserId(), TicketHisto.UPDATED,
                             event -> {
                                 if (event.isLeft()) {
                                     log.error("Support : error when saving ticket histo " + event.left().getValue());
