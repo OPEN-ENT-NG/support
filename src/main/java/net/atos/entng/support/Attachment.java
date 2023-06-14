@@ -2,7 +2,7 @@ package net.atos.entng.support;
 
 public class Attachment
 {
-    public Integer bugTrackerId;
+    public Long bugTrackerId;
     public String name;
     public Integer size;
 
@@ -10,22 +10,22 @@ public class Attachment
     public String documentId;   // The id of the file in the documents collection
     public String fileSystemId; // The id of the file in the filesystem
 
-    public Attachment(Integer bugTrackerId, String name)
+    public Attachment(Long bugTrackerId, String name)
     {
         this(bugTrackerId, name, null);
     }
 
-    public Attachment(Integer bugTrackerId, String name, Integer size)
+    public Attachment(Long bugTrackerId, String name, Integer size)
     {
         this(bugTrackerId, name, size, null, null);
     }
 
-    public Attachment(Integer bugTrackerId, String name, String documentId, String fileSystemId)
+    public Attachment(Long bugTrackerId, String name, String documentId, String fileSystemId)
     {
         this(bugTrackerId, name, null, documentId, fileSystemId);
     }
 
-    public Attachment(Integer bugTrackerId, String name, Integer size, String documentId, String fileSystemId)
+    public Attachment(Long bugTrackerId, String name, Integer size, String documentId, String fileSystemId)
     {
         this.bugTrackerId = bugTrackerId;
         this.name = name;

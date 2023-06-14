@@ -182,7 +182,7 @@ public class TicketController extends ControllerHelper {
                                         sendTicketUpdateToIssue(request, ticketId, ticket, user, false);
                                     }
                                     if (res.isRight()) {
-                                        Integer issueId = res.right().getValue().get();
+                                        Long issueId = res.right().getValue().get();
                                         if (issueId != null) {
                                             refreshIssue(issueId, request, new Handler<Either<String, Issue>>()
                                             {
@@ -740,7 +740,7 @@ public class TicketController extends ControllerHelper {
                 if (issueId != null) {
                     escalationService.getIssue(issueId, getIssueHandler(request, issueId, ticketId, user, doResponse, issue));
                 } else {
-                    badRequest(request);
+                    badRequest(request, "Error when retrieving issue id");
                 }
                 // get the whole issue (i.e. with attachments' metadata and comments) to save it in database
             } else {
@@ -782,7 +782,7 @@ public class TicketController extends ControllerHelper {
                     log.error("Error when trying to get bug tracker issue");
                     // Update escalation status to successful
                     // (escalation succeeded, but data could not be saved in postgresql)
-                    ticketServiceSql.endSuccessfulEscalation(ticketId, new Issue(issueId.intValue(), null), issueId,
+                    ticketServiceSql.endSuccessfulEscalation(ticketId, new Issue(issueId.longValue(), null), issueId,
                             user, event -> {
                                 if (event.isLeft()) {
                                     log.error("Error when trying to update escalation status to successful");
@@ -871,7 +871,7 @@ public class TicketController extends ControllerHelper {
 
     }
 
-    private void refreshIssue(final Integer issueId, final HttpServerRequest request, Handler<Either<String, Issue>> handler) {
+    private void refreshIssue(final Long issueId, final HttpServerRequest request, Handler<Either<String, Issue>> handler) {
         escalationService.getIssue(issueId, response -> {
             if (response.isRight()) {
                 final Issue issue = response.right().getValue();
@@ -920,7 +920,7 @@ public class TicketController extends ControllerHelper {
     public void sendIssueComment(final UserInfos user, Comment comment, final String id, final HttpServerRequest request, boolean answerRequest/*, Handler<Either<String, JsonObject>> handler*/){
         // add author name to comment
         StringBuilder content = new StringBuilder();
-        final Integer issueId = Integer.parseInt(id);
+        final Long issueId = Long.parseLong(id);
 
         content.append(I18n.getInstance().translate("support.escalated.ticket.author", getHost(request), I18n.acceptLanguage(request)))
                 .append(" : ")

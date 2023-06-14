@@ -60,6 +60,6 @@ public interface EscalationService {
 
 	public void updateTicketFromBugTracker(Message<JsonObject> message, Handler<Either<String, JsonObject>> handler);
 
-	void syncAttachments(String ticketId, List<Attachment> attachments, Handler<Either<String, Id<Issue, Integer>>> handler);
+	void syncAttachments(String ticketId, List<Attachment> attachments, Handler<Either<String, Id<Issue, Long>>> handler);
 
 }

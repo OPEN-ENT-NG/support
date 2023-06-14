@@ -274,7 +274,7 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 																.getString("token");
 														String attachmentIdInRedmine = token.substring(0,
 																token.indexOf('.'));
-														issueAttachments.add(new WorkspaceAttachment(Integer.valueOf(attachmentIdInRedmine), filename, file.getDocument().getString("_id")));
+														issueAttachments.add(new WorkspaceAttachment(Long.valueOf(attachmentIdInRedmine), filename, file.getDocument().getString("_id")));
 
 														JsonObject attachment = new JsonObject().put("token", token)
 																.put("filename", filename)
@@ -332,7 +332,7 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 						if (resp.statusCode() == 201) { // Issue creation was successful
 							try {
 								final JsonObject response = new JsonObject(data.toString());
-								Issue issue = new Issue(response.getJsonObject("issue").getInteger("id"), response);
+								Issue issue = new Issue(response.getJsonObject("issue").getLong("id"), response);
 								if (comments == null || comments.size() == 0) {
 									handler.handle(new Either.Right<String, Issue>(issue));
 									return;
@@ -866,7 +866,7 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 	}
 
 	private void doDownloadAttachment(final String attachmentUrl, final JsonObject attachment, final Number issueId) {
-		final Number attachmentIdInRedmine = attachment.getLong("id");
+		final Long attachmentIdInRedmine = attachment.getLong("id");
 
 		EscalationServiceRedmineImpl.this.downloadAttachment(attachmentUrl, new Handler<Buffer>() {
 			@Override
@@ -1096,13 +1096,13 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 						JsonObject response = new JsonObject(data.toString());
 						if (resp.statusCode() == 200)
 						{
-							Issue issue = new Issue(issueId.intValue(), response);
+							Issue issue = new Issue(issueId.longValue(), response);
 							JsonArray attachments = response.getJsonObject("issue", new JsonObject()).getJsonArray("attachments", new JsonArray());
 							for(Object o : attachments)
 							{
 								if(!(o instanceof JsonObject)) continue;
 								JsonObject att = (JsonObject) o;
-								issue.attachments.add(new GridFSAttachment(att.getInteger("id"), att.getString("filename"), att.getInteger("filesize")));
+								issue.attachments.add(new GridFSAttachment(att.getLong("id"), att.getString("filename"), att.getInteger("filesize")));
 							}
 							handler.handle(new Either.Right<String, Issue>(issue));
 						} else {
@@ -1176,8 +1176,8 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 		handler.handle(new Either.Left<String, JsonObject>("Not implemented in synchronous mode"));
 	}
 
-	private void uploadDocuments(final Integer issueId, Set<String> exists, List<Attachment> documents,
-			final Handler<Either<String, Id<Issue, Integer>>> handler) {
+	private void uploadDocuments(final Long issueId, Set<String> exists, List<Attachment> documents,
+			final Handler<Either<String, Id<Issue, Long>>> handler) {
 		Set<String> d = new HashSet<>();
 		for (Attachment a : documents) {
 			if (a.documentId != null && !exists.contains(a.documentId)) {
@@ -1233,13 +1233,13 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 																					public void handle(
 																							Either<String, JsonObject> r) {
 																						handler.handle(
-																								new Either.Right<String, Id<Issue, Integer>>(
-																										new Id<Issue, Integer>(issueId)));
+																								new Either.Right<String, Id<Issue, Long>>(
+																										new Id<Issue, Long>(issueId)));
 																					}
 																				});
 																	} else {
 																		handler.handle(
-																				new Either.Left<String, Id<Issue, Integer>>(
+																				new Either.Left<String, Id<Issue, Long>>(
 																						"upload.attachments.error : "
 																								+ resp.statusMessage()));
 																	}
@@ -1247,11 +1247,11 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 															});
 												} else {
 													if (uploadError.get()) {
-														handler.handle(new Either.Left<String, Id<Issue, Integer>>(
+														handler.handle(new Either.Left<String, Id<Issue, Long>>(
 																"upload.attachments.error"));
 													} else {
 														handler.handle(
-																new Either.Right<String, Id<Issue, Integer>>(new Id<Issue, Integer>(null)));
+																new Either.Right<String, Id<Issue, Long>>(new Id<Issue, Long>(null)));
 													}
 												}
 											}
@@ -1279,10 +1279,10 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 
 	@Override
 	public void syncAttachments(final String ticketId, final List<Attachment> attachments,
-			final Handler<Either<String, Id<Issue, Integer>>> handler) {
-		getIssueId(ticketId, new Handler<Integer>() {
+			final Handler<Either<String, Id<Issue, Long>>> handler) {
+		getIssueId(ticketId, new Handler<Long>() {
 			@Override
-			public void handle(final Integer issueId) {
+			public void handle(final Long issueId) {
 				if (issueId != null) {
 					String query = "SELECT a.document_id as attachmentId "
 							+ "FROM support.bug_tracker_attachments AS a " + "WHERE a.issue_id = ? ";
@@ -1299,25 +1299,25 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 										}
 										uploadDocuments(issueId, exists, attachments, handler);
 									} else {
-										handler.handle(new Either.Left<String, Id<Issue, Integer>>(r.left().getValue()));
+										handler.handle(new Either.Left<String, Id<Issue, Long>>(r.left().getValue()));
 									}
 								}
 							}));
 				} else {
-					handler.handle(new Either.Right<String, Id<Issue, Integer>>(null));
+					handler.handle(new Either.Right<String, Id<Issue, Long>>(null));
 				}
 			}
 		});
 	}
 
-	private void getIssueId(String ticketId, final Handler<Integer> handler) {
+	private void getIssueId(String ticketId, final Handler<Long> handler) {
 		String query = "SELECT id FROM support.bug_tracker_issues WHERE ticket_id = ? ";
 		sql.prepared(query, new JsonArray().add(Sql.parseId(ticketId)),
 				SqlResult.validUniqueResultHandler(new Handler<Either<String, JsonObject>>() {
 					@Override
 					public void handle(Either<String, JsonObject> r) {
 						if (r.isRight()) {
-							handler.handle(r.right().getValue().getInteger("id"));
+							handler.handle(r.right().getValue().getLong("id"));
 						} else {
 							handler.handle(null);
 						}

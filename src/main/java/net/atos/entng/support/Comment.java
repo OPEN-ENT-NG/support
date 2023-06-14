@@ -7,7 +7,7 @@ import io.vertx.core.json.JsonObject;
 
 public class Comment implements IdObject
 {
-    public Id<Comment, Integer> id;
+    public final Id<Comment, Long> id;
     public String created;
     public String content;
     public String ownerName;
@@ -18,14 +18,14 @@ public class Comment implements IdObject
     }
 
     @Override
-    public Id<Comment, Integer> getId()
+    public Id<Comment, Long> getId()
     {
         return this.id;
     }
 
-    public Comment(Integer id, String content, String ownerName, String created)
+    public Comment(Long id, String content, String ownerName, String created)
     {
-        this.id = new Id<Comment, Integer>(id);
+        this.id = new Id<Comment, Long>(id);
         this.content = content;
         this.ownerName = ownerName;
         this.created = created;
