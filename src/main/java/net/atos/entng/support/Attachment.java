@@ -3,6 +3,7 @@ package net.atos.entng.support;
 public class Attachment
 {
     public Long bugTrackerId;
+    public String bugTrackerToken;
 
     public String name;
     public Integer size;

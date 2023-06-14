@@ -31,6 +31,20 @@ public class Comment implements IdObject
         this.created = created;
     }
 
+    public Comment(Comment o)
+    {
+        if(o != null)
+        {
+            this.id = new Id<Comment, Long>(o.id.get());
+            this.created = o.created;
+            this.content = o.content;
+            this.ownerName = o.ownerName;
+        }
+        else
+            this.id = new Id<Comment, Long>(null);
+    }
+
+
     public JsonObject toJsonObject()
     {
         return new JsonObject().put("id", this.id.get()).put("content", this.content).put("owner_name", this.ownerName).put("created", this.created);

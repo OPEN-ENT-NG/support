@@ -503,6 +503,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 					ticket.modified = sqlTicket.getString("modified");
 					ticket.escalationStatus = sqlTicket.getInteger("escalation_status");
 					ticket.escalationDate = sqlTicket.getString("escalation_date");
+					ticket.locale = sqlTicket.getString("locale");
 
 					JsonArray attachments = new JsonArray(sqlTicket.getString("attachments", "[]"));
 					JsonArray attachmentsNames = new JsonArray(sqlTicket.getString("attachmentsNames", sqlTicket.getString("attachmentsnames", "[]")));

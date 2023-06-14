@@ -30,6 +30,7 @@ public class Issue implements IdObject
     {
         this.id = o.id;
         this.setContent(o.getContent());
+        this.attachments.addAll(o.attachments);
     }
 
     @Override

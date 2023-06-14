@@ -230,7 +230,7 @@ public class TicketController extends ControllerHelper {
         ticketServiceSql.getIssue(ticketId, res -> {
             if (res.isRight()) {
                 Issue issue = res.right().getValue();
-                Comment comment = new Comment(null);
+                Comment comment = new Comment((String) null);
                 if(ticket != null && ticket.containsKey("newComment")) {
                     comment.content = ticket.getString("newComment");
                 }
@@ -760,14 +760,15 @@ public class TicketController extends ControllerHelper {
     private Handler<Either<String, Issue>> getIssueHandler(final HttpServerRequest request, final Number issueId,
                                                                 final String ticketId, final UserInfos user,
                                                                 final boolean doResponse, Issue issue) {
-        return getWholeIssueResponse -> {
-            if (getWholeIssueResponse.isRight()) {
-                final Issue wholeIssue = getWholeIssueResponse.right().getValue();
-                ticketServiceSql.endSuccessfulEscalation(ticketId, wholeIssue, issueId, user,
+        return getRemoteIssueResponse -> {
+            if (getRemoteIssueResponse.isRight()) {
+                final Issue remoteIssue = getRemoteIssueResponse.right().getValue();
+                issue.setContent(remoteIssue.getContent());
+                ticketServiceSql.endSuccessfulEscalation(ticketId, issue, issueId, user,
                         event -> {
                             if (event.isRight()) {
                                 if (doResponse) {
-                                    renderJson(request, wholeIssue.getContent());
+                                    renderJson(request, issue.getContent());
                                 }
                             } else {
                                 log.error("Error when trying to update escalation status to successful and to save bug tracker issue");
@@ -790,7 +791,7 @@ public class TicketController extends ControllerHelper {
                                 }
                             });
                     if(doResponse) {
-                        renderError(request, new JsonObject().put("error", getWholeIssueResponse.left().getValue()));
+                        renderError(request, new JsonObject().put("error", getRemoteIssueResponse.left().getValue()));
                     }
                 } else {
                     // Bug tracker is async, can't get information of tracker issue

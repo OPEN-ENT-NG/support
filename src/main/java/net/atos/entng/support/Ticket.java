@@ -25,6 +25,7 @@ public class Ticket implements IdObject
     public String ownerName;
     public String created;
     public String modified;
+    public String locale;
 
     public Integer escalationStatus;
     public String escalationDate;

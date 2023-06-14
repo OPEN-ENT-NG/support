@@ -29,6 +29,7 @@ import net.atos.entng.support.services.TicketServiceSql;
 import net.atos.entng.support.services.UserService;
 import net.atos.entng.support.services.impl.EscalationServiceRedmineImpl;
 import net.atos.entng.support.services.impl.EscalationServicePivotImpl;
+import net.atos.entng.support.services.impl.EscalationServiceZendeskImpl;
 
 
 class EscalationServiceFactory {
@@ -42,6 +43,9 @@ class EscalationServiceFactory {
 
 			case PIVOT:
 				return new EscalationServicePivotImpl(vertx, config, ts, us, storage);
+
+			case ZENDESK:
+				return new EscalationServiceZendeskImpl(vertx, config, ts, us, storage);
 
 			default:
 				throw new IllegalArgumentException("Invalid parameter bugTracker");
