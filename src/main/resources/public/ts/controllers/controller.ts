@@ -312,8 +312,6 @@ export const SupportController: Controller = ng.controller('SupportController',
 		$scope.preSelectNewTicketStatus = async (): Promise<void> => {
 			if ($scope.userIsLocalAdmin($scope.ticket) && $scope.ticket.status == model.ticketStatusEnum.NEW) {
 				$scope.editedTicket.status = model.ticketStatusEnum.OPENED
-			} else if ($scope.userIsLocalAdmin($scope.ticket) && $scope.ticket.status == model.ticketStatusEnum.OPENED) {
-				$scope.editedTicket.status = model.ticketStatusEnum.WAITING
 			} else if (!$scope.userIsLocalAdmin($scope.ticket) && $scope.ticket.status == model.ticketStatusEnum.WAITING) {
 				$scope.editedTicket.status = model.ticketStatusEnum.OPENED
 			}
