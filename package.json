@@ -1,6 +1,6 @@
 {
   "name": "support",
-  "version": "1.16.2",
+  "version": "1.16-SNAPSHOT",
   "description": "Allow users to reporting ENT issues via Support application",
   "main": "gulpfile.js",
   "scripts": {
@@ -8,7 +8,7 @@
     "test": "npm run coverage"
   },
   "dependencies": {
-    "entcore": "4.7.2",
+    "entcore": "~4.8.0-dev",
     "awesome-typescript-loader": "3.2.1",
     "axios": "0.16.2",
     "core-js": "2.4.1",
