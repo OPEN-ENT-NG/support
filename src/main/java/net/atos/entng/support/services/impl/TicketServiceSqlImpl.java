@@ -554,8 +554,8 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 			statements.prepared(UPSERT_USER_QUERY, new JsonArray().add(user.getUserId()).add(user.getUsername()));
 
 			// 3. Insert bug tracker issue in ENT, so that local administrators can see it
-			String insertQuery = "INSERT INTO support.bug_tracker_issues(id, ticket_id, content, owner)"
-					+ " VALUES(?, ?, ?::JSON, ?)"
+			String insertQuery = "INSERT INTO support.bug_tracker_issues(id, ticket_id, content, bugtracker, owner)"
+					+ " VALUES(?, ?, ?::JSON, ?, ?)"
 					+ " ON CONFLICT (id)"
 					+ " DO UPDATE"
 					+ " SET content = excluded.content";
@@ -563,6 +563,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 			JsonArray insertValues = new JsonArray().add(issueId)
 					.add(parseId(ticketId))
 					.add(issue.getContent())
+					.add(bugTrackerType.name())
 					.add(user.getUserId());
 
 			statements.prepared(insertQuery, insertValues);
@@ -670,7 +671,8 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 	public void getLastIssuesUpdate(Handler<Either<String, String>> handler) {
 		String query = "SELECT max(content"
 				+ bugTrackerType.getLastIssueUpdateFromPostgresqlJson()
-				+ ") AS last_update FROM support.bug_tracker_issues";
+				+ ") AS last_update FROM support.bug_tracker_issues"
+				+ " WHERE bugtracker = '" + bugTrackerType.name() + "'";
 
 		sql.raw(query, validResultHandler(new Handler<Either<String, JsonArray>>()
 		{
@@ -706,10 +708,13 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 			.append(" LEFT JOIN support.bug_tracker_attachments AS a")
 			.append(" ON a.issue_id = i.id");
 
+		query.append(" WHERE bugtracker = ? ");
+
 		JsonArray values = new JsonArray();
+		values.add(bugTrackerType.name());
 
 		if(issueIds != null && issueIds.length>0) {
-			query.append(" WHERE i.id IN (");
+			query.append(" AND i.id IN (");
 			for (Number id : issueIds) {
 				query.append("?,");
 				values.add(id);
