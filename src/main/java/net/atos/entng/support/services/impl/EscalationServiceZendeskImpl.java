@@ -113,6 +113,8 @@ public class EscalationServiceZendeskImpl implements EscalationService {
 
 	private long parseDateToEpoch(String date)
 	{
+		if(date == null)
+			return 0;
 		try
 		{
 			return (df.parse(date).getTime() / 1000);
