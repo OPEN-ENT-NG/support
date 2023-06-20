@@ -41,7 +41,10 @@
             "STATUS_RESOLVED":"Résolu",
             "STATUS_CLOSED":"Fermé"
         },
-        "refresh-period" : 15,
+        {% if supportZendeskRemote %} "zendesk-remote":{{supportZendeskRemote}}, {% endif %}
+        {% if supportZendeskEscalationConf %} "zendesk-escalation-conf":{{supportZendeskEscalationConf}}, {% endif %}
+        {% if supportZendeskIssueTemplate %} "zendesk-issue-template":{{supportZendeskIssueTemplate}}, {% endif %}
+        "refresh-period" : {{ supportRefreshPeriod | default(15) }},
         "publicConf": {
             "xiti": {
                 "ID_SERVICE": {
