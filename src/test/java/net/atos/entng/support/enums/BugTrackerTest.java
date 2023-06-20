@@ -22,6 +22,12 @@ public class BugTrackerTest {
 
     }
 
+    @Test
+    public void emptyTest(TestContext ctx)
+    {
+        ctx.assertNull(null);
+    }
+
     //@Test
     //public void getIssueIdPivotTest(TestContext ctx) {
     //    Number issueIdExpected = 545;
