@@ -47,6 +47,12 @@ export const ticketService: ITicketService = {
         http.get(`/support/check/user/${userId}/workflow/${workflow}/structure/${structureId}/auto/open`)
             .then((res: AxiosResponse) => (<ICanAccessResponse>res.data).canAccess),
 
+    /**
+     * check if the structure and the user have a certain workflow
+     *
+     * @param ticketJiraId {string} id of the ticket in Jira
+     * @returns {void}
+     **/
     updateJiraStatus(ticketJiraId: string) {
         http.get(`/supportpivot/updateJira/${ticketJiraId}`);
     }

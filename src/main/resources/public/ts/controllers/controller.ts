@@ -616,7 +616,7 @@ export const SupportController: Controller = ng.controller('SupportController',
 
 			});
 
-			if ($scope.ticket.escalation_status != 1){
+			if ($scope.ticket.escalation_status != 1) {
 				ticketService.updateJiraStatus($scope.ticket.issue.id_jira);
 			}
 
