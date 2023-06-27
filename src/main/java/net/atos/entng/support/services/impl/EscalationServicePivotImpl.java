@@ -155,18 +155,23 @@ public class EscalationServicePivotImpl implements EscalationService
 
                 wksHelper.readDocument(attachmentId, file -> {
                     try {
-                        final String filename = file.getDocument().getString("name");
-                        final String encodedData = Base64.getMimeEncoder().encodeToString( file.getData().getBytes() );
+                        if (file.getDocument().getJsonObject(Ticket.METADATE).getInteger(Ticket.SIZE) < 10000000) {
+                            final String filename = file.getDocument().getString(Ticket.NAME);
+                            final String encodedData = Base64.getMimeEncoder().encodeToString( file.getData().getBytes() );
 
-                        JsonObject attachment = new JsonObject().put(ATTACHMENT_NAME_FIELD, filename)
-                                .put(ATTACHMENT_CONTENT_FIELD, encodedData);
-                        attachments.add(attachment);
+                            JsonObject attachment = new JsonObject().put(ATTACHMENT_NAME_FIELD, filename)
+                                    .put(ATTACHMENT_CONTENT_FIELD, encodedData);
+                            attachments.add(attachment);
 
-                        // Create issue only if all attachments have been retrieved successfully
-                        if (successfulDocs.incrementAndGet() == attachmentsIds.size()) {
-                            EscalationServicePivotImpl.this.getDataAndCreateIssue( ticket, attachments,
-                                    finalComments, issue, escalationUser, handler);
+                            // Create issue only if all attachments have been retrieved successfully
+                            if (successfulDocs.incrementAndGet() == attachmentsIds.size()) {
+                                EscalationServicePivotImpl.this.getDataAndCreateIssue( ticket, attachments,
+                                        finalComments, issue, escalationUser, handler);
+                            }
+                        } else {
+                            handler.handle(new Either.Left<>("support.escalation.error.attachment.too.large"));
                         }
+
                     } catch (Exception e) {
                         log.error("Error when processing response from readDocument", e);
                     }

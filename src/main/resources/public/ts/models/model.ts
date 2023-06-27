@@ -102,7 +102,7 @@ models.Ticket.prototype.updateTicket = function(data, callback) {
 	}.bind(this));
 };
 
-models.Ticket.prototype.escalateTicket = function(callback, errorCallback, badRequestCallback) {
+models.Ticket.prototype.escalateTicket = function(callback, errorCallback, badRequestCallback, fileTooLargeCallback) {
 	http().postJson('/support/ticket/' + this.id + '/escalate', null, {requestName: 'escalation-request' })
 		.done(function(result){
 				this.last_issue_update = result.issue.updated_on;
@@ -114,11 +114,14 @@ models.Ticket.prototype.escalateTicket = function(callback, errorCallback, badRe
 				}
 			}.bind(this)
 		)
-		.e500(function(){
+		.e500(function(e){
 				this.escalation_status = model.escalationStatuses.FAILED;
 				this.trigger('change');
 				if(typeof errorCallback === 'function'){
 					errorCallback();
+				}
+				if (e.responseJSON.error == "support.escalation.error.attachment.too.large"){
+					fileTooLargeCallback();
 				}
 			}.bind(this)
 		)

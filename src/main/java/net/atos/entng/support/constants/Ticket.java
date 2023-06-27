@@ -51,4 +51,7 @@ public class Ticket {
     public static final String STRUCTURE_ID = "structureId";
     public static final String USERID = "userId";
     public static final String AUTO_OPEN_TICKET = "support.ticket.auto.open";
+
+    public static final String METADATE = "metadata";
+    public static final String SIZE = "size";
 }
