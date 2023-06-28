@@ -114,15 +114,18 @@ models.Ticket.prototype.escalateTicket = function(callback, errorCallback, badRe
 				}
 			}.bind(this)
 		)
-		.e500(function(e){
+		.e500(function(){
 				this.escalation_status = model.escalationStatuses.FAILED;
 				this.trigger('change');
 				if(typeof errorCallback === 'function'){
 					errorCallback();
 				}
-				if (e.responseJSON.error == "support.escalation.error.attachment.too.large"){
-					fileTooLargeCallback();
-				}
+			}.bind(this)
+		)
+		.e413(function(){
+				this.escalation_status = model.escalationStatuses.FAILED;
+				this.trigger('change');
+				fileTooLargeCallback();
 			}.bind(this)
 		)
 		.e400(function(){

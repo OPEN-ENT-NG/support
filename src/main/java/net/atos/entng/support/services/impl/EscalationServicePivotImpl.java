@@ -169,7 +169,7 @@ public class EscalationServicePivotImpl implements EscalationService
                                         finalComments, issue, escalationUser, handler);
                             }
                         } else {
-                            handler.handle(new Either.Left<>("support.escalation.error.attachment.too.large"));
+                            handler.handle(new Either.Left<>(Ticket.PAYLOADTOOLARGE));
                         }
 
                     } catch (Exception e) {

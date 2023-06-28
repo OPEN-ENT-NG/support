@@ -54,4 +54,5 @@ public class Ticket {
 
     public static final String METADATE = "metadata";
     public static final String SIZE = "size";
+    public static final String PAYLOADTOOLARGE = "Payload Too Large";
 }
