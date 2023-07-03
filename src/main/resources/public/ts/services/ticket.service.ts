@@ -53,7 +53,7 @@ export const ticketService: ITicketService = {
      * @param ticketJiraId {string} id of the ticket in Jira
      * @returns {void}
      **/
-    updateJiraStatus(ticketJiraId: string) {
+    updateJiraStatus(ticketJiraId: string): void {
         http.get(`/supportpivot/updateJira/${ticketJiraId}`);
     }
 };
