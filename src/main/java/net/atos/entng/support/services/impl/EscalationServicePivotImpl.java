@@ -79,6 +79,8 @@ public class EscalationServicePivotImpl implements EscalationService
 
     private static final int SUBJECT_LENGTH_IN_NOTIFICATION = 50;
 
+    private static final int MAX_SIZE_ATTACHMENT_JIRA = 10000000;
+
     private final UserInfos userIws;
 
     private final EscalationPivotHelper helper;
@@ -155,7 +157,7 @@ public class EscalationServicePivotImpl implements EscalationService
 
                 wksHelper.readDocument(attachmentId, file -> {
                     try {
-                        if (file.getDocument().getJsonObject(Ticket.METADATA).getInteger(Ticket.SIZE) < 10000000) {
+                        if (file.getDocument().getJsonObject(Ticket.METADATA).getInteger(Ticket.SIZE) < MAX_SIZE_ATTACHMENT_JIRA) {
                             final String filename = file.getDocument().getString(Ticket.NAME);
                             final String encodedData = Base64.getMimeEncoder().encodeToString( file.getData().getBytes() );
 
