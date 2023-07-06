@@ -156,8 +156,9 @@ public class EscalationServicePivotImpl implements EscalationService
                 final String attachmentId = (String) o;
 
                 wksHelper.readDocument(attachmentId, file -> {
+                    final int attachmentSize = file.getDocument().getJsonObject(Ticket.METADATA).getInteger(Ticket.SIZE);
                     try {
-                        if (file.getDocument().getJsonObject(Ticket.METADATA).getInteger(Ticket.SIZE) < MAX_SIZE_ATTACHMENT_JIRA) {
+                        if (attachmentSize > 0 && attachmentSize < MAX_SIZE_ATTACHMENT_JIRA) {
                             final String filename = file.getDocument().getString(Ticket.NAME);
                             final String encodedData = Base64.getMimeEncoder().encodeToString( file.getData().getBytes() );
 
@@ -172,7 +173,7 @@ public class EscalationServicePivotImpl implements EscalationService
                             }
                         } else {
                             log.error(String.format("[Support@%s::doTicketEscalation] %s",
-                                    this.getClass().getSimpleName(), "Payload too large, metadata size : " + file.getDocument().getJsonObject(Ticket.METADATA).getInteger(Ticket.SIZE)));
+                                    this.getClass().getSimpleName(), "Payload too large, metadata size : " + file.getDocument().getJsonObject(Ticket.METADATA, new JsonObject()).getInteger(Ticket.SIZE,0)));
                             handler.handle(new Either.Left<>(Ticket.PAYLOADTOOLARGE));
                         }
 
