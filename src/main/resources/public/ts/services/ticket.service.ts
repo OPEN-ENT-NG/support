@@ -48,7 +48,7 @@ export const ticketService: ITicketService = {
             .then((res: AxiosResponse) => (<ICanAccessResponse>res.data).canAccess),
 
     updateJiraStatusWithEventBus(idTicketJira: string): void{
-        http.get(`/support/updateJira/${idTicketJira}`);
+        http.get(`/supportpivot/updateJira/${idTicketJira}`);
     }
 };
 export const TicketService = ng.service('TicketService', (): ITicketService => ticketService);
