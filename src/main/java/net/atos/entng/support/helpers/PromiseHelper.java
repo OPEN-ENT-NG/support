@@ -28,7 +28,7 @@ public class PromiseHelper {
                 promise.complete(event.right().getValue());
                 return;
             }
-            log.error(String.format("%s %s", (errorMessage != null ? errorMessage : "[PresencesCommon@%s::handle]: %s"), event.left().getValue()));
+            log.error(String.format("%s %s", (errorMessage != null ? errorMessage : "[SupportCommon@%s::handle]: %s"), event.left().getValue()));
             promise.fail(errorMessage != null ? errorMessage : event.left().getValue());
         };
     }

@@ -8,6 +8,7 @@ export interface ITicketService {
 
     exportSelectionCSV(ids: Array<number>): void;
     schoolWorkflow(userId: string, workflow: string, structureId: string): Promise<boolean>;
+    updateJiraStatusWithEventBus(idTicketJira: string): void;
 }
 
 export const ticketService: ITicketService = {
@@ -44,6 +45,10 @@ export const ticketService: ITicketService = {
      **/
     schoolWorkflow: (userId: string, workflow: string, structureId: string): Promise<boolean> =>
         http.get(`/support/check/user/${userId}/workflow/${workflow}/structure/${structureId}/auto/open`)
-            .then((res: AxiosResponse) => (<ICanAccessResponse>res.data).canAccess)
+            .then((res: AxiosResponse) => (<ICanAccessResponse>res.data).canAccess),
+
+    updateJiraStatusWithEventBus(idTicketJira: string): void{
+        http.get(`/support/updateJira/${idTicketJira}`);
+    }
 };
 export const TicketService = ng.service('TicketService', (): ITicketService => ticketService);

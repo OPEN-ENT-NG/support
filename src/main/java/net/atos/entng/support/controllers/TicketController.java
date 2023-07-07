@@ -26,6 +26,7 @@ import io.vertx.core.*;
 import net.atos.entng.support.filters.AdminOfTicketsStructure;
 import net.atos.entng.support.helpers.CSVHelper;
 import net.atos.entng.support.helpers.RequestHelper;
+import net.atos.entng.support.message.MessageResponseHandler;
 import net.atos.entng.support.model.I18nConfig;
 import net.atos.entng.support.services.TicketService;
 
@@ -84,6 +85,8 @@ public class TicketController extends ControllerHelper {
     private static final String TICKET_CREATED_EVENT_TYPE = SUPPORT_NAME + "_TICKET_CREATED";
     private static final String TICKET_UPDATED_EVENT_TYPE = SUPPORT_NAME + "_TICKET_UPDATED";
     private static final int SUBJECT_LENGTH_IN_NOTIFICATION = 50;
+
+    private static final String UPDATEJIRA_ADDRESS = "supportpivot.updateJira";
 
     private final TicketServiceSql ticketServiceSql;
     private final TicketService ticketService;
@@ -941,5 +944,22 @@ public class TicketController extends ControllerHelper {
                 unauthorized(request);
             }
         });
+    }
+
+    @Get("/updateJira/:idTicketJira")
+    @ApiDoc("Update escalation status from Jira")
+    @SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+    public void updateEscalationStatus(HttpServerRequest request) {
+        final String idTicketJira = request.params().get(Ticket.IDTICKETJIRA);
+        JsonObject action = new JsonObject()
+                .put(Ticket.IDTICKETJIRA, idTicketJira);
+
+        Promise<JsonObject> promise = Promise.promise();
+        eb.send(UPDATEJIRA_ADDRESS, action,
+                MessageResponseHandler.messageJsonObjectHandler(PromiseHelper.handler(promise)));
+
+        promise.future()
+                .onSuccess(result -> renderJson(request,result))
+                .onFailure(err -> renderError(request,new JsonObject().put(Ticket.MESSAGE, err.getMessage())));
     }
 }

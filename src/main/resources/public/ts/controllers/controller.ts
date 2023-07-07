@@ -616,6 +616,10 @@ export const SupportController: Controller = ng.controller('SupportController',
 
 			});
 
+			if ($scope.ticket.escalation_status != model.escalationStatuses.NOT_DONE) {
+				ticketService.updateJiraStatusWithEventBus($scope.ticket.issue.id_jira);
+			}
+
 		}.bind(this);
 
 		$scope.cancelEditTicket = function() {
