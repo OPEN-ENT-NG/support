@@ -590,8 +590,11 @@ export const SupportController: Controller = ng.controller('SupportController',
 				}
 			}
 
-			$scope.createProtectedCopies($scope.editedTicket, false, function () {
+			$scope.createProtectedCopies($scope.editedTicket, false, async function () {
 				$scope.ticket = $scope.editedTicket;
+				if ($scope.ticket.escalation_status != model.escalationStatuses.NOT_DONE) {
+					await ticketService.updateJiraStatusWithEventBus($scope.ticket.issue.id_jira);
+				}
 				$scope.ticket.updateTicket($scope.ticket, function () {
 					if ($scope.ticket.newAttachments && $scope.ticket.newAttachments.length > 0) {
 						$scope.ticket.getAttachments();
@@ -614,10 +617,6 @@ export const SupportController: Controller = ng.controller('SupportController',
 				});
 
 			});
-
-			if ($scope.ticket.escalation_status != model.escalationStatuses.NOT_DONE) {
-				await ticketService.updateJiraStatusWithEventBus($scope.ticket.issue.id_jira);
-			}
 
 		}.bind(this);
 
