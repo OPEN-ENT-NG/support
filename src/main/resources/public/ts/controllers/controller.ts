@@ -556,19 +556,19 @@ export const SupportController: Controller = ng.controller('SupportController',
 			}
 		};
 
-		$scope.updateTicket = function(){
+		$scope.updateTicket = async function () {
 			$scope.checkUpdateTicket($scope.editedTicket);
-			if(!$scope.editedTicket.processing){
+			if (!$scope.editedTicket.processing) {
 				return;
 			}
 
 			// check that the "new" attachments have not already been saved for the current ticket
-			if($scope.ticket.newAttachments && $scope.ticket.newAttachments.length > 0) {
+			if ($scope.ticket.newAttachments && $scope.ticket.newAttachments.length > 0) {
 				const attachmentsIds = $scope.ticket.attachments.pluck('document_id');
 				const newAttachmentsInDuplicate = [];
 
-				for (let i=0; i < $scope.ticket.newAttachments.length; i++) {
-					if(_.contains(attachmentsIds, $scope.ticket.newAttachments[i]._id)) {
+				for (let i = 0; i < $scope.ticket.newAttachments.length; i++) {
+					if (_.contains(attachmentsIds, $scope.ticket.newAttachments[i]._id)) {
 						newAttachmentsInDuplicate.push({
 							id: $scope.ticket.newAttachments[i]._id,
 							name: $scope.ticket.newAttachments[i].title
@@ -576,25 +576,24 @@ export const SupportController: Controller = ng.controller('SupportController',
 					}
 				}
 
-				if(newAttachmentsInDuplicate.length > 0) {
-					if(newAttachmentsInDuplicate.length === 1) {
+				if (newAttachmentsInDuplicate.length > 0) {
+					if (newAttachmentsInDuplicate.length === 1) {
 						notify.error(lang.translate('support.ticket.validation.error.attachment') +
 							newAttachmentsInDuplicate[0].name +
 							lang.translate('support.ticket.validation.error.already.linked.to.ticket'));
-					}
-					else {
+					} else {
 						notify.error(lang.translate('support.ticket.validation.error.attachments.already.linked.to.ticket') +
-							_.pluck(newAttachmentsInDuplicate,'name').join(", "));
+							_.pluck(newAttachmentsInDuplicate, 'name').join(", "));
 					}
 					$scope.editedTicket.processing = false;
 					return;
 				}
 			}
 
-			$scope.createProtectedCopies($scope.editedTicket, false, function() {
+			$scope.createProtectedCopies($scope.editedTicket, false, function () {
 				$scope.ticket = $scope.editedTicket;
-				$scope.ticket.updateTicket($scope.ticket, function() {
-					if($scope.ticket.newAttachments && $scope.ticket.newAttachments.length > 0) {
+				$scope.ticket.updateTicket($scope.ticket, function () {
+					if ($scope.ticket.newAttachments && $scope.ticket.newAttachments.length > 0) {
 						$scope.ticket.getAttachments();
 						if ($scope.canEscalate($scope.ticket)) {
 							$scope.ticket.getBugTrackerIssue();
@@ -605,7 +604,7 @@ export const SupportController: Controller = ng.controller('SupportController',
 					// clean the collection and refill (either comment or histo can be added).
 					$scope.ticket.comments.all = [];
 
-					$scope.ticket.getComments(function() {
+					$scope.ticket.getComments(function () {
 						$scope.initHisto($scope.ticket.id);
 					});
 
@@ -617,7 +616,7 @@ export const SupportController: Controller = ng.controller('SupportController',
 			});
 
 			if ($scope.ticket.escalation_status != model.escalationStatuses.NOT_DONE) {
-				ticketService.updateJiraStatusWithEventBus($scope.ticket.issue.id_jira);
+				await ticketService.updateJiraStatusWithEventBus($scope.ticket.issue.id_jira);
 			}
 
 		}.bind(this);

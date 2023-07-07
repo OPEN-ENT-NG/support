@@ -8,7 +8,7 @@ export interface ITicketService {
 
     exportSelectionCSV(ids: Array<number>): void;
     schoolWorkflow(userId: string, workflow: string, structureId: string): Promise<boolean>;
-    updateJiraStatusWithEventBus(idTicketJira: string): void;
+    updateJiraStatusWithEventBus(idTicketJira: string): Promise<void>;
 }
 
 export const ticketService: ITicketService = {
@@ -47,7 +47,7 @@ export const ticketService: ITicketService = {
         http.get(`/support/check/user/${userId}/workflow/${workflow}/structure/${structureId}/auto/open`)
             .then((res: AxiosResponse) => (<ICanAccessResponse>res.data).canAccess),
 
-    updateJiraStatusWithEventBus(idTicketJira: string): void{
+    updateJiraStatusWithEventBus(idTicketJira: string): Promise<void>{
         http.get(`/supportpivot/updateJira/${idTicketJira}`);
     }
 };
