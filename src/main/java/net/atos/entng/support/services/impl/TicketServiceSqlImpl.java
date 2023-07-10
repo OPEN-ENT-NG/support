@@ -597,8 +597,8 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
     public void endInProgressEscalationAsync(String ticketId, UserInfos user, JsonObject issueJira, Handler<Either<String, JsonObject>> handler) {
 		JsonObject issue = new JsonObject()
 				.put(Ticket.ISSUE, new JsonObject()
-						.put(Ticket.ID, issueJira.getString(Ticket.ID_JIRA_FIELD))
-						.put(Ticket.STATUS, issueJira.getString(Ticket.STATUS_JIRA_FIELD))
+						.put(Ticket.ID, issueJira.getJsonObject(Ticket.ISSUE).getString(Ticket.ID_JIRA_FIELD))
+						.put(Ticket.STATUS, issueJira.getJsonObject(Ticket.ISSUE).getString(Ticket.STATUS_JIRA_FIELD))
 						.put(Ticket.DATE, DateHelper.convertDateFormat())
 						.put(Ticket.ID_ENT, ticketId));
 
