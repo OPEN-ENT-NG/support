@@ -749,6 +749,17 @@ public class TicketController extends ControllerHelper {
                     ticketServiceSql.endInProgressEscalationAsync(ticketId, user, issue, event -> {
                         if (event.isLeft()) {
                             log.error("Error when trying to update escalation status to in_progress");
+                        }else {
+                            JsonObject action = new JsonObject()
+                                    .put(Ticket.IDTICKETJIRA, issue.getJsonObject(Ticket.ISSUE).getString(Ticket.ID_JIRA_FIELD));
+
+                            Promise<JsonObject> promise = Promise.promise();
+                            eb.send(UPDATEJIRA_ADDRESS, action,
+                                    MessageResponseHandler.messageJsonObjectHandler(PromiseHelper.handler(promise)));
+
+                            promise.future()
+                                    .onSuccess(result -> renderJson(request,result))
+                                    .onFailure(err -> renderError(request,new JsonObject().put(Ticket.MESSAGE, err.getMessage())));
                         }
                     });
                     String status = I18n.getInstance().translate(
