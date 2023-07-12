@@ -697,7 +697,11 @@ public class TicketController extends ControllerHelper {
                     }
                 });
                 if (doResponse) {
-                    renderError(request, new JsonObject().put("error", escalationResponse.left().getValue()));
+                    if(escalationResponse.left().getValue() == Ticket.PAYLOADTOOLARGE){
+                        renderError(request, new JsonObject().put(Ticket.ERROR, escalationResponse.left().getValue()),413,Ticket.PAYLOADTOOLARGE);
+                    }else {
+                        renderError(request, new JsonObject().put(Ticket.ERROR, escalationResponse.left().getValue()));
+                    }
                 }
             }
         };

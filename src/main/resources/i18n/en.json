@@ -15,6 +15,7 @@
     "support.escalated.ticket.ticket.owner": "Demandeur",
     "support.escalation.error": "Erreur : la demande n'a pas pu être transmise",
     "support.escalation.error.data.cannot.be.retrieved.from.database": "Erreur : la base de données n'a pas pu renvoyer la demande. La transmission n'a pas pu être lancée",
+    "support.escalation.error.attachment.too.large": "Erreur : Le fichier joint est trop lourd, la limite est de ",
     "support.escalation.error.upload.attachment.failed": "Erreur : Une ou plusieurs pièces jointes n'ont pas pu être transmises",
     "support.escalation.failed": "Transmission en échec.",
     "support.escalation.in.progress": "Transmission en cours...",
