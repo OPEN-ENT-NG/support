@@ -659,8 +659,11 @@ export const SupportController: Controller = ng.controller('SupportController',
 					notify.error('support.error.escalation.conflict');
 				}
 			};
+			const e413Callback = function () {
+				notify.error(lang.translate('support.escalation.error.attachment.too.large') + " 10mb");
+			};
 
-			$scope.ticket.escalateTicket(successCallback, e500Callback, e400Callback);
+			$scope.ticket.escalateTicket(successCallback, e500Callback, e400Callback, e413Callback);
 			$scope.ticket.status = 2;
 		};
 
