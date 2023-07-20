@@ -140,7 +140,7 @@ public class EscalationServiceZendeskImpl implements EscalationService {
 		ZendeskIssue.zendeskIssueTemplate.fromJson(config.getJsonObject("zendesk-issue-template"));
 		ZendeskIssue.escalationConf.fromJson(config.getJsonObject("zendesk-escalation-conf"));
 
-		Long delayInMinutes = config.getLong("refresh-period", 30L);
+		Long delayInMinutes = config.getLong("zendesk-refresh-period", config.getLong("refresh-period", 30L));
 		log.info("[Support] Data will be pulled from Zendesk every " + delayInMinutes + " minutes");
 		final Long delay = TimeUnit.MILLISECONDS.convert(delayInMinutes, TimeUnit.MINUTES);
 

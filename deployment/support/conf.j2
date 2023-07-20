@@ -44,6 +44,9 @@
         {% if supportZendeskRemote %} "zendesk-remote":{{supportZendeskRemote}}, {% endif %}
         {% if supportZendeskEscalationConf %} "zendesk-escalation-conf":{{supportZendeskEscalationConf}}, {% endif %}
         {% if supportZendeskIssueTemplate %} "zendesk-issue-template":{{supportZendeskIssueTemplate}}, {% endif %}
+        {% if supportZendeskRefreshPeriod %}
+          "zendesk-refresh-period": {% if (not(ha) or item == 'jobs') %} {{supportZendeskRefreshPeriod}} {% else %} 0 {% endif %},
+        {% endif %}
         "refresh-period" : {{ supportRefreshPeriod | default(15) }},
         "publicConf": {
             "xiti": {
