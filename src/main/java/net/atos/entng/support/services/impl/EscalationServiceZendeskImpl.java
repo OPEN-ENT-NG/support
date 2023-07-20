@@ -144,33 +144,35 @@ public class EscalationServiceZendeskImpl implements EscalationService {
 		log.info("[Support] Data will be pulled from Zendesk every " + delayInMinutes + " minutes");
 		final Long delay = TimeUnit.MILLISECONDS.convert(delayInMinutes, TimeUnit.MINUTES);
 
-		ticketServiceSql.getLastIssuesUpdate(new Handler<Either<String, String>>()
+		if(delay != 0)
 		{
-			@Override
-			public void handle(Either<String, String> event)
+			ticketServiceSql.getLastIssuesUpdate(new Handler<Either<String, String>>()
 			{
-				if (event.isRight())
+				@Override
+				public void handle(Either<String, String> event)
 				{
-					lastPullEpoch.set(parseDateToEpoch(event.right().getValue()));
-					log.info("[Support] Last pull from Zendesk : " + lastPullEpoch);
-					vertx.setPeriodic(delay, new Handler<Long>()
+					if (event.isRight())
 					{
-						@Override
-						public void handle(Long timerId)
+						lastPullEpoch.set(parseDateToEpoch(event.right().getValue()));
+						log.info("[Support] Last pull from Zendesk : " + lastPullEpoch);
+						vertx.setPeriodic(delay, new Handler<Long>()
 						{
-							if(pullInProgess.get() == false)
+							@Override
+							public void handle(Long timerId)
 							{
-								pullInProgess.set(true);
-								pullDataAndUpdateIssues();
+								if(pullInProgess.get() == false)
+								{
+									pullInProgess.set(true);
+									pullDataAndUpdateIssues();
+								}
 							}
-						}
-					});
+						});
+					}
+					else
+						log.error("[Support] Last pull from Zendesk error : " + event.left().getValue());
 				}
-				else
-					log.error("[Support] Last pull from Zendesk error : " + event.left().getValue());
-			}
-		});
-
+			});
+		}
 	}
 
 	/**
