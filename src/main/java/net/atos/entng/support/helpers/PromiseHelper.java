@@ -28,7 +28,7 @@ public class PromiseHelper {
                 promise.complete(event.right().getValue());
                 return;
             }
-            log.error(String.format("%s %s", (errorMessage != null ? errorMessage : "[PresencesCommon@%s::handle]: %s"), event.left().getValue()));
+            log.error(String.format("%s %s", (errorMessage != null ? errorMessage : "[SupportCommon@%s::handle]: %s"), event.left().getValue()));
             promise.fail(errorMessage != null ? errorMessage : event.left().getValue());
         };
     }
@@ -41,4 +41,25 @@ public class PromiseHelper {
         return CompositeFutureImpl.join(futures.toArray(new Future[futures.size()]));
     }
 
+    public static Handler<Either<String, JsonArray>> handlerJsonArray(Handler<AsyncResult<JsonArray>> handler) {
+        return event -> {
+            if (event.isRight()) {
+                handler.handle(Future.succeededFuture(event.right().getValue()));
+            } else {
+                log.error(event.left().getValue());
+                handler.handle(Future.failedFuture(event.left().getValue()));
+            }
+        };
+    }
+
+    public static Handler<Either<String, JsonObject>> handlerJsonObject(Handler<AsyncResult<JsonObject>> handler) {
+        return event -> {
+            if (event.isRight()) {
+                handler.handle(Future.succeededFuture(event.right().getValue()));
+            } else {
+                log.error(event.left().getValue());
+                handler.handle(Future.failedFuture(event.left().getValue()));
+            }
+        };
+    }
 }

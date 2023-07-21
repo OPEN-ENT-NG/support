@@ -23,9 +23,12 @@ import static net.atos.entng.support.Support.SUPPORT_NAME;
 import static net.atos.entng.support.Support.bugTrackerCommDirect;
 
 import io.vertx.core.*;
+import net.atos.entng.support.export.ExportData;
+import net.atos.entng.support.export.TicketExportWorker;
 import net.atos.entng.support.filters.AdminOfTicketsStructure;
 import net.atos.entng.support.helpers.CSVHelper;
 import net.atos.entng.support.helpers.RequestHelper;
+import net.atos.entng.support.helpers.UserInfosHelper;
 import net.atos.entng.support.model.I18nConfig;
 import net.atos.entng.support.services.TicketService;
 
@@ -91,8 +94,9 @@ public class TicketController extends ControllerHelper {
     private final EscalationService escalationService;
     private final Storage storage;
     private final EventHelper eventHelper;
+    private final ExportData exportData;
 
-    public TicketController(TicketServiceSql ts, TicketService ticketService, EscalationService es, UserService us, Storage storage) {
+    public TicketController(TicketServiceSql ts, TicketService ticketService, EscalationService es, UserService us, Storage storage, ExportData exportData) {
         ticketServiceSql = ts;
         this.ticketService = ticketService;
         userService = us;
@@ -100,6 +104,7 @@ public class TicketController extends ControllerHelper {
         this.storage = storage;
         final EventStore eventStore = EventStoreFactory.getFactory().getEventStore(Support.class.getSimpleName());
         this.eventHelper = new EventHelper(eventStore);
+        this.exportData = exportData;
     }
 
     @Override
@@ -942,6 +947,80 @@ public class TicketController extends ControllerHelper {
                         .onFailure(err -> renderError(request, new JsonObject().put(Ticket.MESSAGE, err.getMessage())));
             } else {
                 log.debug("[Support@%s::getWorkflow] User not found in session.");
+                unauthorized(request);
+            }
+        });
+    }
+
+    @Get("/tickets/export/count/:structureId")
+    @ApiDoc("Return the number of tickets to export")
+    @SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+    public void countTickets(HttpServerRequest request) {
+        final String structureId = request.params().get(Ticket.STRUCTURE_ID);
+        UserUtils.getUserInfos(eb, request, user -> {
+            if (user != null) {
+                Promise<JsonObject> promise = Promise.promise();
+                promise.future()
+                        .compose(result -> ticketServiceSql.countTicketToExport(user,result))
+                        .onSuccess(result -> renderJson(request, result))
+                        .onFailure(err -> renderError(request, new JsonObject().put(Ticket.MESSAGE, err.getMessage())));
+
+                if(!Objects.equals(structureId, Ticket.ASTERISK)) ticketService.listChildren(structureId).onComplete(promise);
+                else promise.complete(new JsonObject());
+            } else {
+                log.debug("[Support@%s::countTickets] User not found in session.");
+                unauthorized(request);
+            }
+        });
+    }
+
+    @Get("/tickets/export/direct/:structureId")
+    @ApiDoc("Generate export CSV and directly download it")
+    @SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+    public void directExport(HttpServerRequest request) {
+        UserUtils.getUserInfos(eb, request, user -> {
+            if (user != null) {
+                final String structureId = request.params().get(Ticket.STRUCTURE_ID);
+                I18nConfig i18nConfig = new I18nConfig(request);
+                Promise<JsonArray> promise = Promise.promise();
+                promise.future()
+                        .compose(tickets -> ticketService.getProfileFromTickets(tickets, i18nConfig))
+                        .compose(ticketService::getSchoolFromTickets)
+                        .onSuccess(result -> {
+                            TicketsCSVExport pce = new TicketsCSVExport(result, i18nConfig);
+                            CSVHelper.sendCSV(request, pce.filename(), pce.generate());
+                        })
+                        .onFailure(err -> renderError(request, new JsonObject()));
+
+                if (!Objects.equals(structureId, Ticket.ASTERISK)) ticketService.listChildren(structureId)
+                        .compose(ticketServiceSql::getTicketsFromArrayOfStructureId)
+                        .onComplete(promise);
+                else ticketServiceSql.getAllTicketsOfUser(user).onComplete(promise);
+            } else {
+                log.debug("[Support@%s::directExport] User not found in session.");
+                unauthorized(request);
+            }
+        });
+    }
+
+    @Get("/tickets/export/worker/:structureId")
+    @ApiDoc("Generate export CSV and download it in workspace")
+    @SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+    public void workerExport(HttpServerRequest request) {
+        UserUtils.getUserInfos(eb, request, user -> {
+            if (user != null) {
+                final String structureId = request.params().get(Ticket.STRUCTURE_ID);
+                I18nConfig i18nConfig = new I18nConfig(request);
+
+                JsonObject params = new JsonObject()
+                        .put(Ticket.STRUCTURE_ID, structureId)
+                        .put(Ticket.USER, UserInfosHelper.toJSON(user))
+                        .put(Ticket.LOCALE, i18nConfig.getLang())
+                        .put(Ticket.DOMAIN, i18nConfig.getDomain());
+                exportData.export(TicketExportWorker.class.getName(), Ticket.EXPORT_TICKETS, params);
+
+            } else {
+                log.debug("[Support@%s::workerExport] User not found in session.");
                 unauthorized(request);
             }
         });

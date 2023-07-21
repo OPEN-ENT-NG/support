@@ -935,6 +935,19 @@ export const SupportController: Controller = ng.controller('SupportController',
 			ticketService.exportSelectionCSV(model.getItemsIds($scope.tickets.selection()));
 		}
 
+		$scope.exportAllTickets = async (): Promise<void> => {
+			$scope.maxExportedTickets = await ticketService.getConfig();
+			ticketService.countTicketsToExport($scope.display.filters.school_id)
+				.then(async (res: AxiosResponse) => {
+					if (res.data.count > $scope.maxExportedTickets) {
+						toasts.info('support.toast.export.worker');
+						await ticketService.workerExport($scope.display.filters.school_id);
+					} else {
+						ticketService.directExport($scope.display.filters.school_id);
+					}
+				});
+		}
+
 		$scope.toggleAll = (isToggled: boolean) : void => {
 			$scope.tickets.all.forEach((ticket : Ticket) => ticket.selected = isToggled);
 		}

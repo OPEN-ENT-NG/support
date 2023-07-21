@@ -24,4 +24,5 @@ public interface TicketService {
     Future<JsonArray> getSchoolFromTickets(JsonArray ticketsList);
 
     Future<JsonObject> getSchoolWorkflowRightFromUserId(String userId, String workflowWanted, String structureId);
+    Future<JsonObject> listChildren(String structureId);
 }

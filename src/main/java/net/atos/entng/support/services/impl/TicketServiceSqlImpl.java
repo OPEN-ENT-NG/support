@@ -870,4 +870,66 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 		sql.prepared(query, values, validResultHandler(PromiseHelper.handler(promise)));
 		return promise.future();
 	}
+
+	/**
+	 * @param user : used to get user structures
+	 * @param schoolId : id the structure you want to count
+	 * @return {@link Future} of {@link JsonObject}
+	 **/
+	@Override
+	public Future<JsonObject> countTicketToExport(UserInfos user, JsonObject schoolId){
+		Promise<JsonObject> promise = Promise.promise();
+
+		StringBuilder query = new StringBuilder();
+		query.append("SELECT COUNT(*) FROM support.tickets ");
+		query.append(" WHERE school_id IN" );
+		JsonArray values = new JsonArray();
+
+		JsonArray structure_ids = schoolId.getJsonArray(Ticket.STRUCTURE_IDS);
+
+		if (structure_ids == null) {
+			query.append(Sql.listPrepared(user.getStructures()));
+			values.addAll(new JsonArray(user.getStructures()));
+		} else {
+			List<String> listIdStructure = structure_ids.getList();
+			query.append(Sql.listPrepared(listIdStructure));
+			values.addAll(new JsonArray(listIdStructure));
+		}
+
+		sql.prepared(query.toString(), values, validUniqueResultHandler(PromiseHelper.handler(promise)));
+
+		return promise.future();
+	}
+
+	/**
+	 * @param user : used to get user structures
+	 * @return {@link Future} of {@link JsonArray}
+	 **/
+	@Override
+	public Future<JsonArray> getAllTicketsOfUser(UserInfos user) {
+		Promise<JsonArray> promise = Promise.promise();
+		String query = "SELECT * FROM support.tickets" +
+				" WHERE school_id IN " + Sql.listPrepared(user.getStructures());
+		JsonArray values = new JsonArray(user.getStructures());
+		sql.prepared(query, values, validResultHandler(PromiseHelper.handler(promise)));
+
+		return promise.future();
+	}
+
+	/**
+	 * @param idList : list of structure ids I want to retrieve
+	 * @return {@link Future} of {@link JsonArray}
+	 **/
+	@Override
+	public Future<JsonArray> getTicketsFromArrayOfStructureId(JsonObject idList) {
+		Promise<JsonArray> promise = Promise.promise();
+		JsonArray structure_ids = idList.getJsonArray(Ticket.STRUCTURE_IDS);
+		List<String> listIdStructure = structure_ids.getList();
+		String query = "SELECT * FROM support.tickets" +
+				" WHERE school_id IN " + Sql.listPrepared(listIdStructure);
+		JsonArray values = structure_ids;
+		sql.prepared(query, values, validResultHandler(PromiseHelper.handler(promise)));
+		return promise.future();
+	}
+
 }

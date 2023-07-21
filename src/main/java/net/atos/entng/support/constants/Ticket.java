@@ -55,4 +55,52 @@ public class Ticket {
     public static final String METADATA = "metadata";
     public static final String SIZE = "size";
     public static final String PAYLOADTOOLARGE = "Payload Too Large";
+
+    public static final String ASTERISK = "*";
+    public static final String STRUCTURE_IDS = "structure_ids";
+    public static final String LOCALE = "locale";
+    public static final String DOMAIN = "domain";
+    public static final String EXPORT = "Exports des demandes Assistance ENT";
+    public static final String EXPORT_TICKETS = "export-tickets";
+    public static final String MAX_EXPORTED_TICKETS= "max-exported-tickets";
+    public static final String MAX = "max";
+
+    public static final String ACTION = "action";
+    public static final String TYPE = "type";
+    public static final String PARAMS = "params";
+    public static final String OWNERNAME = "ownerName";
+    public static final String PARENTFOLDERID = "parentFolderId";
+    public static final String RESULT = "result";
+    public static final String RESULTS = "results";
+    public static final String OK = "ok";
+    public static final String USER = "user";
+    public static final String DISPLAYNAME = "displayName";
+    public static final String _ID = "_id";
+    public static final String FILENAME = "fileName";
+    public static final String FOLDERURI = "folderUri";
+    public static final String EPARENT = "eParent";
+    public static final String PUSHNOTIF = "pushNotif";
+    public static final String TITLE = "title";
+    public static final String BODY = "body";
+
+
+    // UserInfos
+    public static final String HASAPP = "hasApp";
+    public static final String EXTERNALID = "externalId";
+    public static final String CLASSNAMES = "classNames";
+    public static final String REALCLASSNAMES = "realClassNames";
+    public static final String STRUCTURENAMES = "structureNames";
+    public static final String UAI = "uai";
+    public static final String CHILDRENIDS = "childrenIds";
+    public static final String LEVEL = "level";
+    public static final String LOGIN = "login";
+    public static final String AUTHORIZEDACTIONS = "authorizedActions";
+    public static final String GROUPSIDS = "groupsIds";
+    public static final String CLASSES = "classes";
+    public static final String STRUCTURES = "structures";
+
+    // Registers
+    public static final String BIRTHDATE = "birthDay";
+    public static final String FIRSTNAME = "firstName";
+    public static final String LASTNAME = "lastName";
 }

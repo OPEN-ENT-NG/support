@@ -51,8 +51,9 @@
     "support.ticket.cancel": "Annuler",
     "support.ticket.category": "Catégorie",
     "support.ticket.create": "Nouvelle demande",
-    "support.ticket.export": "Exporter les demandes",
-    "support.ticket.export.filename": "export-tickets",
+    "support.ticket.export.all": "Exporter toutes les demandes",
+    "support.ticket.export.selected": "Exporter les demandes sélectionnées",
+    "support.ticket.export.filename": "Exports des demandes Assistance ENT",
     "support.ticket.creation.date": "Date de création",
     "support.ticket.description": "Description",
     "support.ticket.edit": "Mettre à jour la demande",
@@ -162,5 +163,6 @@
     "push-notif.bugtracker-issue-resolved.body": "Votre demande n°{0} associée à la demande escaladée n°{1} a été résolue",
     "push-notif.bugtracker-issue-updated.body": "Votre demande n°{0} associée à la demande escaladée n°{1} a été mise à jour",
     "push-notif.ticket-created.body": "{0} a créé la demande de support n°{1}",
-    "push-notif.ticket-updated.body": "{0} a mis à jour la demande de support n°{1}"
+    "push-notif.ticket-updated.body": "{0} a mis à jour la demande de support n°{1}",
+    "support.toast.export.worker": "Le fichier demandé est trop lourd pour être téléchargé directement dans le navigateur. Il est en cours de création dans l'espace documentaire."
 }

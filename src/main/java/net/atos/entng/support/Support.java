@@ -20,9 +20,12 @@
 package net.atos.entng.support;
 
 import fr.wseduc.mongodb.MongoDb;
+import io.vertx.core.DeploymentOptions;
 import net.atos.entng.support.controllers.*;
 import net.atos.entng.support.enums.BugTracker;
 import net.atos.entng.support.events.SupportSearchingEvents;
+import net.atos.entng.support.export.ExportData;
+import net.atos.entng.support.export.TicketExportWorker;
 import net.atos.entng.support.services.*;
 import net.atos.entng.support.services.impl.TicketServiceImpl;
 import net.atos.entng.support.services.impl.TicketServiceNeo4jImpl;
@@ -77,7 +80,7 @@ public class Support extends BaseServer {
 		final boolean useOldQueryChildren = config.getBoolean("old-query", false);
 		FolderManager folderManager = FolderManager.mongoManager("documents", storage, vertx, shareService, imageResizerAddress, useOldQueryChildren);
 
-
+		ExportData exportData = new ExportData(vertx);
 		TicketServiceSql ticketServiceSql = new TicketServiceSqlImpl(bugTrackerType);
 		UserService userService = new UserServiceDirectoryImpl(eb);
 		TicketService ticketService = new TicketServiceImpl(ticketServiceNeo4jImpl);
@@ -102,7 +105,7 @@ public class Support extends BaseServer {
 						ticketServiceSql, userService, storage)
 				: null;
 
-        TicketController ticketController = new TicketController(ticketServiceSql, ticketService, escalationService, userService, storage);
+        TicketController ticketController = new TicketController(ticketServiceSql, ticketService, escalationService, userService, storage, exportData);
 		addController(ticketController);
 
 		SqlConf commentSqlConf = SqlConfs.createConf(CommentController.class.getName());
@@ -120,6 +123,8 @@ public class Support extends BaseServer {
 		if (config.getBoolean("searching-event", true)) {
 			setSearchingEvents(new SupportSearchingEvents());
 		}
+		vertx.deployVerticle(TicketExportWorker.class, new DeploymentOptions().setConfig(config).setWorker(true));
+
 	}
 
 	public static boolean escalationIsActivated() {
