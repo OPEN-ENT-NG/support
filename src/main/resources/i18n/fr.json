@@ -16,6 +16,7 @@
     "support.escalate.ticket": "Transmettre la demande au support",
     "support.escalated.ticket.category": "Catégorie",
     "support.escalated.ticket.author": "Auteur",
+    "support.escalated.ticket.empty": "L'utilisateur n'a pas renseigné de commentaire",
     "support.escalated.ticket.manager": "Gestionnaire",
     "support.escalated.ticket.school.name": "Nom de l'établissement",
     "support.escalated.ticket.ticket.id": "Identifiant de la demande dans l'ENT",
