@@ -255,6 +255,19 @@ public class ZendeskIssue extends Issue implements JSONAble
         this.fromJson(o);
     }
 
+    public static ZendeskIssue followUp(ZendeskIssue oldIssue)
+    {
+        ZendeskIssue newIssue = new ZendeskIssue(oldIssue);
+        newIssue.status = ZendeskStatus.NEW;
+        newIssue.via_followup_source_id = oldIssue.id.get();
+        newIssue.comment = oldIssue.comments != null ? oldIssue.comments.get(0) : null;
+
+        if(newIssue.comment == null)
+            newIssue.comment = new ZendeskComment();
+
+        return newIssue;
+    }
+
     public static Future<ZendeskIssue> fromTicket(Ticket ticket, UserInfos gestionnaireInfos)
     {
         ZendeskIssue issue = new ZendeskIssue(zendeskIssueTemplate);

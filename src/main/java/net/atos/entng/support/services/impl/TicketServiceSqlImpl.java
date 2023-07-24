@@ -648,11 +648,11 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 		values.add(issueId);
 
 		query.append(" UPDATE support.bug_tracker_issues")
-			.append(" SET content = ?::JSON, modified = timezone('UTC', NOW())")
+			.append(" SET id = ?, content = ?::JSON, modified = timezone('UTC', NOW())")
 			.append(" WHERE id = ?")
 			.append(" RETURNING (SELECT status_id FROM old_issue)");
 
-		values.add(content.getContent().toString())
+		values.add(content.id.get()).add(content.getContent().toString())
 			.add(issueId);
 
 		sql.prepared(query.toString(), values, validUniqueResultHandler(new Handler<Either<String, JsonObject>>()
