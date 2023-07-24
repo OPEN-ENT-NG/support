@@ -757,7 +757,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 			 {"id":932,"document_id":null,"gridfs_id":"17223f70-d9a8-4983-92b1-d867fc881d44"},
 			 {"id":933,"document_id":"c7b27108-8715-40e1-a32f-e90828857c35","gridfs_id":null}]
 		 */
-		StringBuilder query = new StringBuilder("SELECT i.id, i.content,")
+		StringBuilder query = new StringBuilder("SELECT i.id, i.content, i.bugtracker,")
 			.append(" CASE WHEN COUNT(a.id) = 0 THEN '[]'")
 			.append(" ELSE json_agg((a.*))")
 			.append(" END AS attachments")
