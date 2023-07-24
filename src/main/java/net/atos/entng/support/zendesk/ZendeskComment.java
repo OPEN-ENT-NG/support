@@ -16,7 +16,7 @@ import net.atos.entng.support.Comment;
 
 // cf. https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_comments/
 @JSONInherit(field="id")
-@JSONInherit(field="content", rename="body")
+@JSONInherit(field="content", rename="html_body")
 @JSONInherit(field="created", rename="created_at")
 public class ZendeskComment extends Comment implements JSONAble
 {
@@ -28,7 +28,7 @@ public class ZendeskComment extends Comment implements JSONAble
     public String plain_body;
     public ZendeskCommentType type;
     public Long author_id;
-    public String html_body;
+    public String body;
     @JSONRename("public")
     public Boolean Public;
     public List<String> uploads;
