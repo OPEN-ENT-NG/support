@@ -29,6 +29,7 @@ public class Ticket implements IdObject
 
     public Integer escalationStatus;
     public String escalationDate;
+    public String issueUpdateDate;
 
     public List<Attachment> attachments = new ArrayList<Attachment>();
     public List<Comment> comments = new ArrayList<Comment>();
@@ -75,6 +76,7 @@ public class Ticket implements IdObject
                     .put("modified", this.modified)
                     .put("escalation_status", this.escalationStatus)
                     .put("escalation_date", this.escalationDate)
+                    .put("issue_update_date", this.issueUpdateDate)
                     .put("attachments", jsonAttachments)
                     .put("attachmentsNames", jsonAttachmentsNames)
                     .put("comments", jsonComments);
