@@ -784,7 +784,7 @@ public class TicketController extends ControllerHelper {
                     log.error("Error when trying to get bug tracker issue");
                     // Update escalation status to successful
                     // (escalation succeeded, but data could not be saved in postgresql)
-                    ticketServiceSql.endSuccessfulEscalation(ticketId, new Issue(issueId.longValue(), null), issueId,
+                    ticketServiceSql.endSuccessfulEscalation(ticketId, new Issue(issueId.longValue(), escalationService.getBugTrackerType()), issueId,
                             user, event -> {
                                 if (event.isLeft()) {
                                     log.error("Error when trying to update escalation status to successful");

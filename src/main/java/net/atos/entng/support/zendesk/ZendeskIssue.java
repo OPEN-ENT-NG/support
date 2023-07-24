@@ -21,6 +21,7 @@ import org.entcore.common.utils.Id;
 
 import net.atos.entng.support.Issue;
 import net.atos.entng.support.Ticket;
+import net.atos.entng.support.enums.BugTracker;
 import net.atos.entng.support.enums.TicketStatus;
 import net.atos.entng.support.Attachment;
 
@@ -217,22 +218,23 @@ public class ZendeskIssue extends Issue implements JSONAble
 
     public ZendeskIssue(Long id)
     {
-        super(id);
+        super(id, BugTracker.ZENDESK);
     }
 
     public ZendeskIssue(Long id, JsonObject content)
     {
-        super(id, content);
+        super(id, BugTracker.ZENDESK, content);
     }
 
     public ZendeskIssue(Issue o)
     {
         super(o);
+        this.bugTracker = BugTracker.ZENDESK;
     }
 
     public ZendeskIssue(JsonObject o)
     {
-        super((Long)null);
+        super((Long)null, BugTracker.ZENDESK);
         this.fromJson(o);
     }
 

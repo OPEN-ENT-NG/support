@@ -5,6 +5,7 @@ import org.entcore.common.utils.IdObject;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import net.atos.entng.support.enums.BugTracker;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -12,23 +13,36 @@ import java.util.ArrayList;
 public class Issue implements IdObject
 {
     public Id<Issue, Long> id;
+    public BugTracker bugTracker;
     private JsonObject content;
     public List<Attachment> attachments = new ArrayList<Attachment>();
 
     public Issue(Long id)
     {
-        this(id, null);
+        this(id, (BugTracker) null);
+    }
+
+    public Issue(Long id, BugTracker bugTracker)
+    {
+        this(id, bugTracker, null);
     }
 
     public Issue(Long id, JsonObject content)
     {
+        this(id, null, content);
+    }
+
+    public Issue(Long id, BugTracker bugTracker, JsonObject content)
+    {
         this.id = new Id<Issue, Long>(id);
+        this.bugTracker = bugTracker;
         this.setContent(content);
     }
 
     public Issue(Issue o)
     {
         this.id = o.id;
+        this.bugTracker = o.bugTracker;
         this.setContent(o.getContent());
         this.attachments.addAll(o.attachments);
     }
