@@ -201,7 +201,29 @@ public class EscalationServiceZendeskImpl implements EscalationService {
 				@Override
 				public void handle(CompositeFuture allUploadsResult)
 				{
-					createTicket(ticket, user, handler);
+					Future<ZendeskIssue> future = ZendeskIssue.fromTicket(ticket, user);
+					future.onSuccess(new Handler<ZendeskIssue>()
+					{
+						@Override
+						public void handle(ZendeskIssue issue)
+						{
+							createIssue(issue, new Handler<Either<String, ZendeskIssue>>()
+							{
+								@Override
+								public void handle(Either<String, ZendeskIssue> res)
+								{
+									if(res.isLeft())
+										handler.handle(new Either.Left<String, Issue>(res.left().getValue()));
+									else
+									{
+										ZendeskIssue zIssue = res.right().getValue();
+										zIssue.attachments = ticket.attachments;
+										handler.handle(new Either.Right<String, Issue>(zIssue));
+									}
+								}
+							});
+						}
+					});
 				}
 			}).onFailure(new Handler<Throwable>()
 			{
@@ -299,56 +321,47 @@ public class EscalationServiceZendeskImpl implements EscalationService {
 		return uploadPromise.future();
 	}
 
-	private void createTicket(Ticket ticket, UserInfos user, Handler<Either<String, Issue>> handler)
+	private void createIssue(ZendeskIssue issue, Handler<Either<String, ZendeskIssue>> handler)
 	{
-		Future<ZendeskIssue> future = ZendeskIssue.fromTicket(ticket, user);
-		future.onSuccess(new Handler<ZendeskIssue>()
+		HttpClientRequest req = zendeskClient.post("/api/v2/tickets.json", new Handler<HttpClientResponse>()
 		{
 			@Override
-			public void handle(ZendeskIssue issue)
+			public void handle(HttpClientResponse response)
 			{
-				HttpClientRequest req = zendeskClient.post("/api/v2/tickets.json", new Handler<HttpClientResponse>()
+				response.bodyHandler(new Handler<Buffer>()
 				{
 					@Override
-					public void handle(HttpClientResponse response)
+					public void handle(Buffer data)
 					{
-						response.bodyHandler(new Handler<Buffer>()
+						if(response.statusCode()  != 201)
 						{
-							@Override
-							public void handle(Buffer data)
-							{
-								if(response.statusCode()  != 201)
-								{
-									log.error("[Support] Error : Zendesk ticket escalation failed: " + data.toString());
-									handler.handle(new Either.Left<String, Issue>("support.escalation.zendesk.error.ticket.failure"));
-								}
-								else
-								{
-									JsonObject res = new JsonObject(data.toString());
-									ZendeskIssue zIssue = new ZendeskIssue(res.getJsonObject("ticket"));
+							log.error("[Support] Error : Zendesk ticket escalation failed: " + data.toString());
+							handler.handle(new Either.Left<String, ZendeskIssue>("support.escalation.zendesk.error.ticket.failure"));
+						}
+						else
+						{
+							JsonObject res = new JsonObject(data.toString());
+							ZendeskIssue zIssue = new ZendeskIssue(res.getJsonObject("ticket"));
 
-									zIssue.attachments = ticket.attachments;
-									handler.handle(new Either.Right<String, Issue>(zIssue));
-								}
-							}
-						});
-					}
-				}).exceptionHandler(new Handler<Throwable>()
-				{
-					@Override
-					public void handle(Throwable t)
-					{
-						log.error("[Support] Error : exception raised by zendesk escalation httpClient", t);
-						handler.handle(new Either.Left<String, Issue>("support.escalation.zendesk.error.ticket.request"));
+							handler.handle(new Either.Right<String, ZendeskIssue>(zIssue));
+						}
 					}
 				});
-
-				String data = new JsonObject().put("ticket", issue.toJson()).toString();
-				req.putHeader(HttpHeaders.CONTENT_TYPE, "application/json");
-				req.setChunked(true);
-				req.write(data).end();
+			}
+		}).exceptionHandler(new Handler<Throwable>()
+		{
+			@Override
+			public void handle(Throwable t)
+			{
+				log.error("[Support] Error : exception raised by zendesk escalation httpClient", t);
+				handler.handle(new Either.Left<String, ZendeskIssue>("support.escalation.zendesk.error.ticket.request"));
 			}
 		});
+
+		String data = new JsonObject().put("ticket", issue.toJson()).toString();
+		req.putHeader(HttpHeaders.CONTENT_TYPE, "application/json");
+		req.setChunked(true);
+		req.write(data).end();
 	}
 
 	/**
@@ -508,6 +521,33 @@ public class EscalationServiceZendeskImpl implements EscalationService {
 					{
 						if(response.statusCode()  != 200)
 						{
+							// Not sure we get a json back 100% of the time
+							try
+							{
+								JsonObject jo = new JsonObject(data.toString());
+								String errorCode = jo.getString("error");
+								if("RecordInvalid".equals(errorCode))
+								{
+									createFollowUpIssue(issueId, comment.ownerName, new Handler<Either<String, ZendeskIssue>>()
+									{
+										@Override
+										public void handle(Either<String, ZendeskIssue> res)
+										{
+											if(res.isLeft())
+												handler.handle(new Either.Left<String, Void>(res.left().getValue()));
+											else
+											{
+												ZendeskIssue followup = res.right().getValue();
+												commentIssue(followup.id.get(), updateStatus, comment, handler);
+											}
+										}
+									});
+									return;
+								}
+							}
+							catch(Exception e)
+							{
+							}
 							log.error("[Support] Error : Zendesk ticket comment failed: " + data.toString());
 							handler.handle(new Either.Left<String, Void>("support.escalation.zendesk.error.comment.failure"));
 						}
@@ -534,6 +574,80 @@ public class EscalationServiceZendeskImpl implements EscalationService {
 		req.putHeader(HttpHeaders.CONTENT_TYPE, "application/json; charset=utf-16");
 		req.setChunked(true); // Without this, comments with too many accents fail despite the 200
 		req.write(data).end();
+	}
+
+	private void createFollowUpIssue(Number issueId, String ownerName, Handler<Either<String, ZendeskIssue>> handler)
+	{
+		getIssue(issueId, new Handler<Either<String, Issue>>()
+		{
+			@Override
+			public void handle(Either<String, Issue> res)
+			{
+				if(res.isLeft())
+					handler.handle(new Either.Left<String, ZendeskIssue>(res.left().getValue()));
+				else
+				{
+					ZendeskIssue oldIssue = (ZendeskIssue) res.right().getValue();
+					ZendeskIssue newIssue = ZendeskIssue.followUp(oldIssue);
+
+					createIssue(newIssue, new Handler<Either<String, ZendeskIssue>>()
+					{
+						@Override
+						public void handle(Either<String, ZendeskIssue> res)
+						{
+							if(res.isLeft())
+								handler.handle(res.left());
+							else
+							{
+								ZendeskIssue createdIssue = (ZendeskIssue) res.right().getValue();
+								ticketServiceSql.updateIssue(issueId, createdIssue, new Handler<Either<String, String>>()
+								{
+									@Override
+									public void handle(Either<String, String> res)
+									{
+										if(res.isLeft())
+											handler.handle(new Either.Left<String, ZendeskIssue>(res.left().getValue()));
+										else
+										{
+											ticketServiceSql.getTicketIdAndSchoolId(createdIssue.id.get(), new Handler<Either<String, Ticket>>()
+											{
+												@Override
+												public void handle(Either<String, Ticket> event)
+												{
+													if(event.isLeft())
+														handler.handle(new Either.Left<String, ZendeskIssue>(event.left().getValue()));
+													else
+													{
+														Ticket ticket = event.right().getValue();
+														ticketServiceSql.createTicketHisto(
+															ticket.id.get().toString(),
+															I18n.getInstance().translate("support.ticket.histo.escalate", I18n.DEFAULT_DOMAIN, ticket.locale) + ownerName,
+															createdIssue.status.correspondingStatus.status(),
+															null,
+															TicketHisto.ESCALATION,
+															new Handler<Either<String, Void>>()
+															{
+																@Override
+																public void handle(Either<String, Void> res)
+																{
+																	if(res.isLeft())
+																		handler.handle(new Either.Left<String, ZendeskIssue>(res.left().getValue()));
+																	else
+																		handler.handle(new Either.Right<String, ZendeskIssue>(createdIssue));
+																}
+															});
+													}
+												}
+											});
+										}
+									}
+								});
+							}
+						}
+					});
+				}
+			}
+		});
 	}
 
 	// In Zendesk attachments are linked to comments, so we need to create a "fake" comment with the new attachments
