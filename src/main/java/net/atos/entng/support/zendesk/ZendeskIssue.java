@@ -98,7 +98,7 @@ public class ZendeskIssue extends Issue implements JSONAble
     public static enum ZendeskStatus
     {
         @JSONRename("new")
-        NEW(TicketStatus.NEW),
+        NEW(TicketStatus.OPENED), // Le ticket, bien que nouveau dans Zendesk, a commencé à être traité du point de vue de l'ENT, car il a été transmis
         open(TicketStatus.OPENED),
         pending(TicketStatus.OPENED),
         hold(TicketStatus.OPENED),
@@ -119,6 +119,23 @@ public class ZendeskIssue extends Issue implements JSONAble
                 return ZendeskStatus.NEW;
             else
                 return ZendeskStatus.valueOf(statusStr);
+        }
+
+        public static ZendeskStatus from(TicketStatus ticketStatus)
+        {
+            switch(ticketStatus)
+            {
+                case NEW:
+                    return ZendeskStatus.NEW;
+                case OPENED:
+                    return ZendeskStatus.open;
+                case RESOLVED:
+                    return ZendeskStatus.solved;
+                case CLOSED:
+                    return ZendeskStatus.solved;
+                default:
+                    return null;
+            }
         }
     }
 

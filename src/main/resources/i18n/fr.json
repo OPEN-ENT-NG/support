@@ -36,6 +36,7 @@
     "support.escalation.zendesk.error.ticket.failure": "Erreur: Le ticket n'a pas pu être escaladé",
     "support.escalation.zendesk.error.ticket.find.failure": "Erreur: Le ticket n'a pas pu être retrouvé",
     "support.escalation.zendesk.error.ticket.find.request": "Erreur: La recherche de ticket a échoué",
+    "support.escalation.zendesk.error.comment.invalid": "Erreur: Le commentaire ne peut pas être transmis",
     "support.escalation.zendesk.error.comments.failure": "Erreur: Les commentaires n'ont pas pu être récupérés",
     "support.escalation.zendesk.error.comments.request": "Erreur: La récupération des commentaires a échoué",
     "support.escalation.zendesk.error.comment.failure": "Erreur: Le commentaire n'a pas pu être transmis",

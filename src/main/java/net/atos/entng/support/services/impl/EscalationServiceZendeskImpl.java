@@ -466,6 +466,30 @@ public class EscalationServiceZendeskImpl implements EscalationService {
 	@Override
 	public void commentIssue(Number issueId, Comment comment, final Handler<Either<String, Void>> handler)
 	{
+		if(issueId == null)
+			handler.handle(new Either.Left<String, Void>("support.escalation.zendesk.error.comment.invalid"));
+		else
+		{
+			this.ticketServiceSql.getTicketFromIssueId(issueId.toString(), new Handler<Either<String, Ticket>>()
+			{
+				@Override
+				public void handle(Either<String, Ticket> res)
+				{
+					if(res.isLeft())
+						handler.handle(new Either.Left<String, Void>(res.left().getValue()));
+					else
+					{
+						Ticket t = res.right().getValue();
+						ZendeskStatus updatedStatus = ZendeskStatus.from(t.status);
+						commentIssue(issueId, updatedStatus, comment, handler);
+					}
+				}
+			});
+		}
+	}
+
+	private void commentIssue(Number issueId, ZendeskStatus updateStatus, Comment comment, final Handler<Either<String, Void>> handler)
+	{
 		ZendeskComment zComment;
 		if(comment instanceof ZendeskComment)
 			zComment = (ZendeskComment) comment;
@@ -503,6 +527,7 @@ public class EscalationServiceZendeskImpl implements EscalationService {
 		});
 
 		ZendeskIssue capsule = new ZendeskIssue(issueId.longValue());
+		capsule.status = updateStatus;
 		capsule.comment = zComment;
 
 		String data = new JsonObject().put("ticket", capsule.toJson()).toString();
@@ -554,7 +579,7 @@ public class EscalationServiceZendeskImpl implements EscalationService {
 							for(Attachment a : missingAttachments)
 								zComment.uploads.add(a.bugTrackerToken);
 
-							commentIssue(zIssue.id.get(), zComment, new Handler<Either<String, Void>>()
+							commentIssue(zIssue.id.get(), null, zComment, new Handler<Either<String, Void>>()
 							{
 								@Override
 								public void handle(Either<String, Void> result)
