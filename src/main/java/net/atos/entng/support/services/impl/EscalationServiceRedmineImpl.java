@@ -656,12 +656,12 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 															final JsonObject issueJson = issue.getContent();
 															// check if this issue had already been received.
 															ticketServiceSql.getTicketFromIssueId(issueId.toString(),
-																	new Handler<Either<String, JsonObject>>() {
+																	new Handler<Either<String, Ticket>>() {
 																		public void handle(
-																				final Either<String, JsonObject> res) {
+																				final Either<String, Ticket> res) {
 																			if (res.isRight()) {
 																				final JsonObject ticket = res.right()
-																						.getValue();
+																						.getValue().toJsonObject();
 																				final DateFormat dfTicket = new SimpleDateFormat(
 																						"yyyy-MM-dd'T'HH:mm:ss");
 																				final DateFormat dfIssue = new SimpleDateFormat(
