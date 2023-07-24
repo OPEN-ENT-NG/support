@@ -923,12 +923,13 @@ public class TicketController extends ControllerHelper {
         // add author name to comment
         StringBuilder content = new StringBuilder();
         final Long issueId = Long.parseLong(id);
+        String defaultComment = I18n.getInstance().translate("support.escalated.ticket.empty", getHost(request), I18n.acceptLanguage(request));
 
         content.append(I18n.getInstance().translate("support.escalated.ticket.author", getHost(request), I18n.acceptLanguage(request)))
                 .append(" : ")
                 .append(user.getUsername())
                 .append("\n")
-                .append(comment.content);
+                .append(comment.content == null ? defaultComment : comment.content);
         comment.content = content.toString();
 
         escalationService.commentIssue(issueId, comment, event -> {
