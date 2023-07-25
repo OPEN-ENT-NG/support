@@ -5,6 +5,8 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import net.atos.entng.support.model.I18nConfig;
 
+import java.util.List;
+
 public interface TicketService {
     /**
      * Get user profile from tickets
@@ -32,4 +34,6 @@ public interface TicketService {
      * @returns {Future<JsonObject>} JsonObject containing structure "childrens" and the "parent" structure
      **/
     Future<JsonObject> listStructureChildren(String structureId);
+
+    Future<JsonObject> sortSchoolByName(List<String> schoolIds);
 }

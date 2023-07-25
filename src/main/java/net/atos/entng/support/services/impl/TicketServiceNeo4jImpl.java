@@ -5,6 +5,7 @@ import static org.entcore.common.neo4j.Neo4jResult.validUniqueResultHandler;
 
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
+import io.vertx.core.json.Json;
 import net.atos.entng.support.constants.Ticket;
 import net.atos.entng.support.helpers.PromiseHelper;
 import org.entcore.common.neo4j.Neo4j;
@@ -12,6 +13,9 @@ import fr.wseduc.webutils.Either;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+
+import javax.sound.sampled.Port;
+import java.util.List;
 
 
 public class TicketServiceNeo4jImpl {
@@ -83,4 +87,13 @@ public class TicketServiceNeo4jImpl {
         return promise.future();
     }
 
+    public static Future<JsonObject> sortSchoolByName(List<String> schoolIds) {
+        Promise<JsonObject> promise = Promise.promise();
+        String query = "MATCH (s:Structure) "
+                + " WHERE s.id IN {structure_ids} WITH s ORDER BY s.name RETURN COLLECT(s.id) AS structureIds";
+        Neo4j neo4j = Neo4j.getInstance();
+        JsonObject params = new JsonObject().put(Ticket.STRUCTURE_IDS,schoolIds);
+        neo4j.execute(query,params, validUniqueResultHandler(PromiseHelper.handler(promise)));
+        return promise.future();
+    }
 }

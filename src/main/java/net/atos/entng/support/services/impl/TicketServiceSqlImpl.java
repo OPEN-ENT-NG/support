@@ -64,7 +64,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 
 	private final static String UPSERT_USER_QUERY = "SELECT support.merge_users(?,?)";
     protected static final Logger log = LoggerFactory.getLogger(Renders.class);
-	private final List<String> ALLOWED_SORT_BY_COLUMN = new ArrayList<>(Arrays.asList("id","modified","status","category","owner","event_count","subject"));
+	private final List<String> ALLOWED_SORT_BY_COLUMN = new ArrayList<>(Arrays.asList("id","modified","status","category","owner","event_count","subject","school_id"));
 	private final BugTracker bugTrackerType;
 	private final Logger LOGGER = LoggerFactory.getLogger(TicketServiceSqlImpl.class);
 	public TicketServiceSqlImpl(BugTracker bugTracker) {
@@ -932,6 +932,21 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 				.collect(Collectors.toList());
 		String query = "SELECT * FROM support.tickets WHERE school_id IN " + Sql.listPrepared(listIdStructure);
 		JsonArray values = idList.getJsonArray(Ticket.STRUCTUREIDS);
+		sql.prepared(query, values, validResultHandler(PromiseHelper.handler(promise)));
+		return promise.future();
+	}
+
+
+	@Override
+	public Future<JsonArray> getOrderedTickets(JsonObject orderedStructures) {
+		Promise<JsonArray> promise = Promise.promise();
+		JsonArray structure_ids = orderedStructures.getJsonArray("structureIds");
+		List<String> listIdStructure = structure_ids.getList();
+		String query = "SELECT * FROM support.tickets " +
+				"ORDER BY array_position('{" +
+				Sql.listPrepared(listIdStructure) +
+	"}',school_id) ASC";
+		JsonArray values = new JsonArray(listIdStructure);
 		sql.prepared(query, values, validResultHandler(PromiseHelper.handler(promise)));
 		return promise.future();
 	}
