@@ -1044,4 +1044,23 @@ public class TicketController extends ControllerHelper {
             }
         });
     }
+
+    @Get("/tickets/sort/school/name")
+    @ApiDoc("")
+    @SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+    public void getTicketsSortedBySchoolName(HttpServerRequest request) {
+        UserUtils.getUserInfos(eb, request, user -> {
+            if (user != null) {
+                I18nConfig i18nConfig = new I18nConfig(request);
+                ticketService.sortSchoolByName(user.getStructures())
+                        .compose(ticketServiceSql::getOrderedTickets)
+                        .compose(tickets -> ticketService.getProfileFromTickets(tickets, i18nConfig))
+                        .onSuccess(result -> renderJson(request, result))
+                        .onFailure(err -> renderError(request, new JsonObject()));
+            } else {
+                log.debug("[Support@%s::getTicketsSortedBySchoolName] User not found in session.");
+                unauthorized(request);
+            }
+        });
+    }
 }

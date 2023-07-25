@@ -126,4 +126,5 @@ public interface TicketServiceSql extends CrudService {
 	 * @return {Future<JsonObject>} tickets of structures
 	 **/
 	Future<JsonArray> getTicketsFromStructureIds(JsonObject idList);
+	Future<JsonArray> getOrderedTickets(JsonObject orderedStructures);
 }

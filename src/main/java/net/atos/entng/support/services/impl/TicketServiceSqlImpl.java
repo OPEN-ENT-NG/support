@@ -959,4 +959,19 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 		return promise.future();
 	}
 
+
+	@Override
+	public Future<JsonArray> getOrderedTickets(JsonObject orderedStructures) {
+		Promise<JsonArray> promise = Promise.promise();
+		JsonArray structure_ids = orderedStructures.getJsonArray("structureIds");
+		List<String> listIdStructure = structure_ids.getList();
+		String query = "SELECT * FROM support.tickets " +
+				"ORDER BY array_position('{" +
+				Sql.listPrepared(listIdStructure) +
+	"}',school_id) ASC";
+		JsonArray values = new JsonArray(listIdStructure);
+		sql.prepared(query, values, validResultHandler(PromiseHelper.handler(promise)));
+		return promise.future();
+	}
+
 }

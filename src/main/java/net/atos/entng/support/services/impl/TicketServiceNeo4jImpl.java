@@ -5,7 +5,6 @@ import static org.entcore.common.neo4j.Neo4jResult.validUniqueResultHandler;
 
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
-import io.vertx.core.json.Json;
 import net.atos.entng.support.constants.Ticket;
 import net.atos.entng.support.helpers.PromiseHelper;
 import org.entcore.common.neo4j.Neo4j;
@@ -14,9 +13,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
-import javax.sound.sampled.Port;
 import java.util.List;
-
 
 public class TicketServiceNeo4jImpl {
 
