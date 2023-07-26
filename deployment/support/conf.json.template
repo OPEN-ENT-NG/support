@@ -30,7 +30,7 @@
         "escalation-httpclient-maxpoolsize" : 16,
         "escalation-httpclient-keepalive" : false,
         "escalation-httpclient-tryusecompression" : true,
-        "max-exported-tickets": "$supportMaxExportedTickets",
+        "threshold-direct-export-tickets": "$supportThresholdDirectExportTickets",
         <% if (SupportBugTrackername != null && "PIVOT".equals(SupportBugTrackername)) { %>
          "user-iws-id" : "$SupportUserIwsId",
          "user-iws-name" : "$SupportUserIwsName",

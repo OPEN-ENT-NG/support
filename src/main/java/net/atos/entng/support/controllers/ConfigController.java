@@ -19,10 +19,10 @@ public class ConfigController extends ControllerHelper {
         renderJson(request, config);
     }
 
-    @Get("/config/maxTickets")
+    @Get("/config/thresholdDirectExportTickets")
     @SecuredAction(value = "", type = ActionType.RESOURCE)
     @ResourceFilter(AdminFilter.class)
     public void getConfigMaxTickets(final HttpServerRequest request) {
-        renderJson(request, new JsonObject().put(Ticket.MAX,config.getString(Ticket.MAX_EXPORTED_TICKETS)));
+        renderJson(request, new JsonObject().put(Ticket.THRESHOLD, config.getString(Ticket.THRESHOLD_DIRECT_EXPORT_TICKETS)));
     }
 }

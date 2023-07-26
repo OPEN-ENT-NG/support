@@ -46,6 +46,7 @@
     "support.ticket.create": "Nouvelle demande",
     "support.ticket.export": "Exporter toutes les demandes",
     "support.ticket.export.filename": "Exports des demandes Assistance ENT",
+    "support.ticket.export.error" : "Une erreur est survenue lors de l'exportation des tickets",
     "support.ticket.creation.date": "Date de création",
     "support.ticket.description": "Description",
     "support.ticket.edit": "Mettre à jour la demande",

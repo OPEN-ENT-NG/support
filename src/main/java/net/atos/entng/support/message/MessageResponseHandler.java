@@ -18,28 +18,21 @@ public class MessageResponseHandler {
             if (event.succeeded() && Ticket.OK.equals(event.result().body().getString(Ticket.STATUS))) {
                 handler.handle(new Either.Right<>(event.result().body().getJsonArray(Ticket.RESULT, event.result().body().getJsonArray(Ticket.RESULTS))));
             } else {
-                if (event.failed()) {
-                    handler.handle(new Either.Left<>(event.cause().getMessage()));
-                    return;
-                }
-                handler.handle(new Either.Left<>(event.result().body().getString(Ticket.MESSAGE)));
+                handler.handle(new Either.Left<>(event.failed() ? event.cause().getMessage() : event.result().body().getString(Ticket.MESSAGE)));
             }
         };
     }
 
     public static Handler<AsyncResult<Message<JsonObject>>> messageJsonObjectHandler(Handler<Either<String, JsonObject>> handler) {
         return event -> {
-            if (event.succeeded() && Ticket.OK.equals(event.result().body().getString(Ticket.STATUS))) {
-                if (!event.result().body().containsKey(Ticket.RESULT))
-                    handler.handle(new Either.Right<>(event.result().body()));
-                else
-                    handler.handle(new Either.Right<>(event.result().body().getJsonObject(Ticket.RESULT)));
+            JsonObject body = event.result().body();
+            String status = body.getString(Ticket.STATUS);
+            String message = body.getString(Ticket.MESSAGE);
+            JsonObject result = body.getJsonObject(Ticket.RESULT);
+            if (event.succeeded() && Ticket.OK.equals(status)) {
+                handler.handle(new Either.Right<>(result != null ? result : body));
             } else {
-                if (event.failed()) {
-                    handler.handle(new Either.Left<>(event.cause().getMessage()));
-                    return;
-                }
-                handler.handle(new Either.Left<>(event.result().body().getString(Ticket.MESSAGE)));
+                handler.handle(new Either.Left<>(event.failed() ? event.cause().getMessage() : message));
             }
         };
     }

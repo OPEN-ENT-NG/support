@@ -106,8 +106,10 @@ public interface TicketServiceSql extends CrudService {
 
 	Future<JsonArray> getTicketsFromListId(List<String> idList);
 	Future<List<Event>> getlistEvents(String ticketId);
-	Future<JsonObject> countTicketToExport(UserInfos user, JsonObject school_id);
-	Future<JsonArray> getAllTicketsOfUser (UserInfos user);
+
+	Future<JsonObject> countTickets(UserInfos user, JsonObject school_id);
+
+	Future<JsonArray> getAllTicketsOfUser(UserInfos user);
 
 	Future<JsonArray> getTicketsFromArrayOfStructureId(JsonObject idList);
 }

@@ -2,10 +2,7 @@ package net.atos.entng.support.helpers;
 
 import fr.wseduc.webutils.Either;
 import io.vertx.core.*;
-import io.vertx.core.eventbus.Message;
 import io.vertx.core.impl.CompositeFutureImpl;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -39,27 +36,5 @@ public class PromiseHelper {
 
     public static <T> CompositeFuture join(List<Future<T>> futures) {
         return CompositeFutureImpl.join(futures.toArray(new Future[futures.size()]));
-    }
-
-    public static Handler<Either<String, JsonArray>> handlerJsonArray(Handler<AsyncResult<JsonArray>> handler) {
-        return event -> {
-            if (event.isRight()) {
-                handler.handle(Future.succeededFuture(event.right().getValue()));
-            } else {
-                log.error(event.left().getValue());
-                handler.handle(Future.failedFuture(event.left().getValue()));
-            }
-        };
-    }
-
-    public static Handler<Either<String, JsonObject>> handlerJsonObject(Handler<AsyncResult<JsonObject>> handler) {
-        return event -> {
-            if (event.isRight()) {
-                handler.handle(Future.succeededFuture(event.right().getValue()));
-            } else {
-                log.error(event.left().getValue());
-                handler.handle(Future.failedFuture(event.left().getValue()));
-            }
-        };
     }
 }

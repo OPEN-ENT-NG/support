@@ -23,6 +23,7 @@ import {ITicketService} from "../services";
 import {ITicketPayload, Ticket} from "../models/ticket.model";
 import {WORKFLOW} from "../core/enum/workflow.enum";
 import {copy} from "angular";
+import {ICountTicketsResponse} from "../models/countTickets.model";
 
 declare let model: any;
 
@@ -936,16 +937,22 @@ export const SupportController: Controller = ng.controller('SupportController',
 		}
 
 		$scope.exportAllTickets = async (): Promise<void> => {
-			$scope.maxExportedTickets = await ticketService.getConfig();
-			ticketService.countTicketsToExport($scope.display.filters.school_id)
-				.then(async (res: AxiosResponse) => {
-					if (res.data.count > $scope.maxExportedTickets) {
+			Promise.all([ticketService.getThresholdDirectExportTickets(), ticketService.countTickets($scope.display.filters.school_id)])
+				.then((values: any[]) => {
+					let thresholdDirectExportTickets: Number = (<Number>values[0]);
+					let countTickets = (<ICountTicketsResponse>values[1].data).count;
+					if (countTickets > thresholdDirectExportTickets) {
 						toasts.info('support.toast.export.worker');
-						await ticketService.workerExport($scope.display.filters.school_id);
+						ticketService.workerExport($scope.display.filters.school_id);
 					} else {
 						ticketService.directExport($scope.display.filters.school_id);
 					}
-				});
+				})
+				.catch(err => {
+						notify.error("support.ticket.export.error");
+						console.error(err);
+					}
+				)
 		}
 
 		$scope.toggleAll = (isToggled: boolean) : void => {

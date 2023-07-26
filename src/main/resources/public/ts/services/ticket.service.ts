@@ -8,10 +8,10 @@ export interface ITicketService {
 
     exportSelectionCSV(ids: Array<number>): void;
     schoolWorkflow(userId: string, workflow: string, structureId: string): Promise<boolean>;
-    countTicketsToExport(structureId: string): Promise<AxiosResponse>;
-    directExport(structureId: string): void;
-    workerExport(structureId: string): void;
-    getConfig(): Promise<AxiosResponse>;
+    countTickets(structureId: string): Promise<AxiosResponse>;
+    directExport(structureId: string): Promise<void>;
+    workerExport(structureId: string): Promise<void>;
+    getThresholdDirectExportTickets(): Promise<AxiosResponse>;
 }
 
 export const ticketService: ITicketService = {
@@ -56,8 +56,8 @@ export const ticketService: ITicketService = {
      * @param structureId {string} id of the structure
      * @returns {Promise<AxiosResponse>} number of ticket to export
      **/
-    countTicketsToExport: (structureId: string): Promise<AxiosResponse> =>
-        http.get(`/support/tickets/export/count/${structureId}`),
+    countTickets: (structureId: string): Promise<AxiosResponse> =>
+        http.get(`/support/structures/${structureId}/tickets/count`),
 
     /**
      * create and directly download the csv
@@ -65,8 +65,8 @@ export const ticketService: ITicketService = {
      * @param structureId {string} id of the structure
      * @returns {void}
      **/
-    directExport: (structureId: string): void => {
-        window.open(`/support/tickets/export/direct/${structureId}`)
+    directExport: async (structureId: string): Promise<void> => {
+       window.open(`/support/tickets/export/direct/${structureId}`)
     },
 
     /**
@@ -75,13 +75,13 @@ export const ticketService: ITicketService = {
      * @param structureId {string} id of the structure
      * @returns {void}
      **/
-    workerExport: (structureId: string): void => {
+     workerExport: async (structureId: string): Promise<void> => {
         http.get(`/support/tickets/export/worker/${structureId}`)
     },
 
-    getConfig: (): Promise<AxiosResponse> =>
-        http.get(`/support/config/maxTickets`)
-            .then((res: AxiosResponse) => res.data.max)
+    getThresholdDirectExportTickets: (): Promise<AxiosResponse> =>
+        http.get(`/support/config/thresholdDirectExportTickets`)
+            .then((res: AxiosResponse) => res.data.threshold)
 
 
 

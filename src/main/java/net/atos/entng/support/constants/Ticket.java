@@ -57,13 +57,11 @@ public class Ticket {
     public static final String PAYLOADTOOLARGE = "Payload Too Large";
 
     public static final String ASTERISK = "*";
-    public static final String STRUCTURE_IDS = "structure_ids";
+    public static final String STRUCTUREIDS = "structureIds";
     public static final String LOCALE = "locale";
     public static final String DOMAIN = "domain";
-    public static final String EXPORT = "Exports des demandes Assistance ENT";
-    public static final String EXPORT_TICKETS = "export-tickets";
-    public static final String MAX_EXPORTED_TICKETS= "max-exported-tickets";
-    public static final String MAX = "max";
+    public static final String THRESHOLD_DIRECT_EXPORT_TICKETS= "threshold-direct-export-tickets";
+    public static final String THRESHOLD = "threshold";
 
     public static final String ACTION = "action";
     public static final String TYPE = "type";

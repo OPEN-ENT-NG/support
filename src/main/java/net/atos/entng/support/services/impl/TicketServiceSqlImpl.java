@@ -877,7 +877,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 	 * @return {@link Future} of {@link JsonObject}
 	 **/
 	@Override
-	public Future<JsonObject> countTicketToExport(UserInfos user, JsonObject schoolId){
+	public Future<JsonObject> countTickets(UserInfos user, JsonObject schoolId){
 		Promise<JsonObject> promise = Promise.promise();
 
 		StringBuilder query = new StringBuilder();
@@ -885,13 +885,13 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 		query.append(" WHERE school_id IN" );
 		JsonArray values = new JsonArray();
 
-		JsonArray structure_ids = schoolId.getJsonArray(Ticket.STRUCTURE_IDS);
+		JsonArray structureIds = schoolId.getJsonArray(Ticket.STRUCTUREIDS);
 
-		if (structure_ids == null) {
+		if (structureIds == null) {
 			query.append(Sql.listPrepared(user.getStructures()));
 			values.addAll(new JsonArray(user.getStructures()));
 		} else {
-			List<String> listIdStructure = structure_ids.getList();
+			List<String> listIdStructure = structureIds.getList();
 			query.append(Sql.listPrepared(listIdStructure));
 			values.addAll(new JsonArray(listIdStructure));
 		}
@@ -923,11 +923,11 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 	@Override
 	public Future<JsonArray> getTicketsFromArrayOfStructureId(JsonObject idList) {
 		Promise<JsonArray> promise = Promise.promise();
-		JsonArray structure_ids = idList.getJsonArray(Ticket.STRUCTURE_IDS);
-		List<String> listIdStructure = structure_ids.getList();
+		JsonArray structureIds = idList.getJsonArray(Ticket.STRUCTUREIDS);
+		List<String> listIdStructure = structureIds.getList();
 		String query = "SELECT * FROM support.tickets" +
 				" WHERE school_id IN " + Sql.listPrepared(listIdStructure);
-		JsonArray values = structure_ids;
+		JsonArray values = structureIds;
 		sql.prepared(query, values, validResultHandler(PromiseHelper.handler(promise)));
 		return promise.future();
 	}

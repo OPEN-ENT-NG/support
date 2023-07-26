@@ -22,13 +22,13 @@ public class EventBusHelper {
      */
     public static Future<JsonObject> requestJsonObject(String address, EventBus eb, JsonObject action) {
         Promise<JsonObject> promise = Promise.promise();
-        eb.request(address, action, MessageResponseHandler.messageJsonObjectHandler(PromiseHelper.handlerJsonObject(promise)));
+        eb.request(address, action, MessageResponseHandler.messageJsonObjectHandler(PromiseHelper.handler(promise)));
         return promise.future();
     }
 
     public static Future<JsonArray> requestJsonArray(String address, EventBus eb, JsonObject action) {
         Promise<JsonArray> promise = Promise.promise();
-        eb.request(address, action, MessageResponseHandler.messageJsonArrayHandler(PromiseHelper.handlerJsonArray(promise)));
+        eb.request(address, action, MessageResponseHandler.messageJsonArrayHandler(PromiseHelper.handler(promise)));
         return promise.future();
     }
 
