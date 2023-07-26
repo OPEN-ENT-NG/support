@@ -36,7 +36,6 @@ import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 public class TicketExportWorker extends BusModBase implements Handler<Message<JsonObject>> {
 
     protected final Logger log = LoggerFactory.getLogger(TicketExportWorker.class);
-    protected ExportLogs exportLogs;
     protected Context exportContext;
 
     private TicketServiceSql ticketServiceSql;
@@ -63,11 +62,9 @@ public class TicketExportWorker extends BusModBase implements Handler<Message<Js
         timelineHelper = new TimelineHelper(this.vertx, this.vertx.eventBus(), config());
 
         exportContext = vertx.getOrCreateContext();
-        exportLogs = new ExportLogs(this.getClass().getSimpleName() + ".log");
         String launchLog = String.format("[Common@%s::start] Launching worker %s, deploy verticle %s",
                 this.getClass().getSimpleName(), this.getClass().getSimpleName(), exportContext.deploymentID());
         log.info(launchLog);
-        exportLogs.addLog(launchLog);
 
         eb.consumer(this.getClass().getName(), this);
     }
@@ -92,20 +89,17 @@ public class TicketExportWorker extends BusModBase implements Handler<Message<Js
                 .onFailure(fail -> {
                     exportNotification = "support.export-events-error";
                     sendNotification(user, new JsonObject());
-                    this.exportLogs.addLog(fail.getMessage());
-                    exportData(this.exportLogs.getLogFile(), user, i18nConfig);
                 });
     }
 
     private Future<ExportFile> createCSVFile(JsonObject params, I18nConfig i18nConfig) {
         Promise<ExportFile> promise = Promise.promise();
         String structureId = params.getString(Ticket.STRUCTURE_ID);
-        JsonObject user = params.getJsonObject(Ticket.USER);
 
         Future<JsonObject> structureIdsFuture;
         if (Objects.equals(structureId, Ticket.ASTERISK))
             structureIdsFuture = Future.succeededFuture(new JsonObject().put(Ticket.STRUCTUREIDS,
-                    user.getJsonArray(Ticket.STRUCTURES)));
+                    params.getJsonObject(Ticket.USER).getJsonArray(Ticket.STRUCTURES)));
         else
             structureIdsFuture = ticketService.listStructureChildren(structureId);
 
@@ -144,7 +138,6 @@ public class TicketExportWorker extends BusModBase implements Handler<Message<Js
                     String message = String.format("[Common@%s::exportData] Error adding folder/file in workspace for export",
                             this.getClass().getSimpleName());
                     log.error(message, fail.getMessage());
-                    exportLogs.addLog(message);
                     promise.fail(fail.getMessage());
                 });
 
@@ -155,7 +148,6 @@ public class TicketExportWorker extends BusModBase implements Handler<Message<Js
         Promise<JsonObject> promise = Promise.promise();
         workspaceService.listRootDocuments(user)
                 .onFailure(fail -> {
-                    exportLogs.addLog(fail.getMessage());
                     promise.fail(fail.getMessage());
                 })
                 .onSuccess(files -> {
