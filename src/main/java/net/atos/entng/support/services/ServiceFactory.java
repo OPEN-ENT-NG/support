@@ -3,6 +3,7 @@ package net.atos.entng.support.services;
 import fr.wseduc.mongodb.MongoDb;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
+import net.atos.entng.support.EscalationServiceFactory;
 import net.atos.entng.support.enums.BugTracker;
 import net.atos.entng.support.services.impl.TicketServiceImpl;
 import net.atos.entng.support.services.impl.TicketServiceNeo4jImpl;
@@ -22,6 +23,7 @@ public class ServiceFactory {
     private final MongoDb mongoDb;
     private final JsonObject config;
     private final BugTracker bugTrackerType;
+    private boolean escalationActivated;
 
     public ServiceFactory(Vertx vertx, Storage storage, Neo4j neo4j, Sql sql, MongoDb mongoDb, JsonObject config
             , BugTracker bugTrackerType) {
@@ -48,5 +50,21 @@ public class ServiceFactory {
 
     public UserService userService() {
         return new UserServiceDirectoryImpl(getEventBus(vertx));
+    }
+
+    public EscalationService escalationService() {
+        return escalationActivated
+                ? EscalationServiceFactory.makeEscalationService(bugTrackerType, vertx, config,
+                this.ticketServiceSql(), this.userService(), storage)
+                : null;
+    }
+
+    public Boolean isEscalationActivated() {
+        return escalationActivated = config.getBoolean("activate-escalation", false);
+    }
+
+
+    public Storage getStorage() {
+        return storage;
     }
 }

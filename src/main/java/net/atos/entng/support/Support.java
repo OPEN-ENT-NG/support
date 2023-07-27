@@ -63,12 +63,10 @@ public class Support extends BaseServer {
 	@Override
 	public void start() throws Exception {
 		super.start();
-		final EventBus eb = getEventBus(vertx);
 
 		addController(new DisplayController());
 
 		BugTracker bugTrackerType;
-		TicketServiceNeo4jImpl ticketServiceNeo4jImpl = new TicketServiceNeo4jImpl();
 
 		// Default value to REDMINE for compatibility purpose
 		bugTrackerType = BugTracker.valueOf(config.getString("bug-tracker-name", BugTracker.REDMINE.toString()).toUpperCase());
@@ -88,10 +86,6 @@ public class Support extends BaseServer {
 
 		ServiceFactory serviceFactory = new ServiceFactory(vertx, storage, Neo4j.getInstance(), Sql.getInstance(), MongoDb.getInstance(), config, bugTrackerType);
 
-		TicketServiceSql ticketServiceSql = new TicketServiceSqlImpl(bugTrackerType);
-		UserService userService = new UserServiceDirectoryImpl(eb);
-		TicketService ticketService = new TicketServiceImpl(ticketServiceNeo4jImpl);
-
         // Indicates if the user can have direct communication with redmine, or if the admin has to transfer the informations.
         bugTrackerCommDirect = config.getBoolean("bug-tracker-comm-direct", true);
 
@@ -107,12 +101,7 @@ public class Support extends BaseServer {
 			log.info("[Support] Rich Editor is desactivated");
 		}
 
-		EscalationService escalationService = escalationActivated
-				? EscalationServiceFactory.makeEscalationService(bugTrackerType, vertx, config,
-						ticketServiceSql, userService, storage)
-				: null;
-
-        TicketController ticketController = new TicketController(serviceFactory, escalationService, storage);
+        TicketController ticketController = new TicketController(serviceFactory);
 		addController(ticketController);
 
 		SqlConf commentSqlConf = SqlConfs.createConf(CommentController.class.getName());

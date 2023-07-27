@@ -906,7 +906,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 	 * @return {@link Future} of {@link JsonArray}
 	 **/
 	@Override
-	public Future<JsonArray> getAllTicketsOfUser(UserInfos user) {
+	public Future<JsonArray> getUserTickets(UserInfos user) {
 		Promise<JsonArray> promise = Promise.promise();
 		String query = "SELECT * FROM support.tickets" +
 				" WHERE school_id IN " + Sql.listPrepared(user.getStructures());
@@ -921,7 +921,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 	 * @return {@link Future} of {@link JsonArray}
 	 **/
 	@Override
-	public Future<JsonArray> getTicketsFromArrayOfStructureId(JsonObject idList) {
+	public Future<JsonArray> getTicketsFromStructureIds(JsonObject idList) {
 		Promise<JsonArray> promise = Promise.promise();
 		JsonArray structureIds = idList.getJsonArray(Ticket.STRUCTUREIDS);
 		List<String> listIdStructure = structureIds.getList();

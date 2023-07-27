@@ -91,12 +91,12 @@ public class TicketController extends ControllerHelper {
     private final Storage storage;
     private final EventHelper eventHelper;
 
-    public TicketController(ServiceFactory serviceFactory, EscalationService es, Storage storage) {
+    public TicketController(ServiceFactory serviceFactory) {
         ticketServiceSql = serviceFactory.ticketServiceSql();
         this.ticketService = serviceFactory.ticketService();
         userService = serviceFactory.userService();
-        escalationService = es;
-        this.storage = storage;
+        escalationService = serviceFactory.escalationService();
+        this.storage = serviceFactory.getStorage();
         final EventStore eventStore = EventStoreFactory.getFactory().getEventStore(Support.class.getSimpleName());
         this.eventHelper = new EventHelper(eventStore);
     }
@@ -990,9 +990,9 @@ public class TicketController extends ControllerHelper {
                         .onFailure(err -> renderError(request, new JsonObject()));
 
                 if (!Objects.equals(structureId, Ticket.ASTERISK)) ticketService.listStructureChildren(structureId)
-                        .compose(ticketServiceSql::getTicketsFromArrayOfStructureId)
+                        .compose(ticketServiceSql::getTicketsFromStructureIds)
                         .onComplete(promise);
-                else ticketServiceSql.getAllTicketsOfUser(user).onComplete(promise);
+                else ticketServiceSql.getUserTickets(user).onComplete(promise);
             } else {
                 log.debug("[Support@%s::directExport] User not found in session.");
                 unauthorized(request);

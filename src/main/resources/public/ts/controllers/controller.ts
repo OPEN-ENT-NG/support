@@ -940,7 +940,7 @@ export const SupportController: Controller = ng.controller('SupportController',
 			Promise.all([ticketService.getThresholdDirectExportTickets(), ticketService.countTickets($scope.display.filters.school_id)])
 				.then((values: any[]) => {
 					let thresholdDirectExportTickets: Number = (<Number>values[0]);
-					let countTickets = (<ICountTicketsResponse>values[1].data).count;
+					let countTickets: Number = (<ICountTicketsResponse>values[1].data).count;
 					if (countTickets > thresholdDirectExportTickets) {
 						toasts.info('support.toast.export.worker');
 						ticketService.workerExport($scope.display.filters.school_id);

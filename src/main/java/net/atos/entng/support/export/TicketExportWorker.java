@@ -71,7 +71,7 @@ public class TicketExportWorker extends BusModBase implements Handler<Message<Js
 
     @Override
     public void handle(Message<JsonObject> event) {
-        event.reply(new JsonObject().put("status", "ok"));
+        event.reply(new JsonObject().put(Ticket.STATUS, Ticket.OK));
         JsonObject params = event.body();
         UserInfos user = UserInfosHelper.getUserInfosFromJSON(event.body().getJsonObject(Ticket.USER));
 
@@ -96,15 +96,8 @@ public class TicketExportWorker extends BusModBase implements Handler<Message<Js
         Promise<ExportFile> promise = Promise.promise();
         String structureId = params.getString(Ticket.STRUCTURE_ID);
 
-        Future<JsonObject> structureIdsFuture;
-        if (Objects.equals(structureId, Ticket.ASTERISK))
-            structureIdsFuture = Future.succeededFuture(new JsonObject().put(Ticket.STRUCTUREIDS,
-                    params.getJsonObject(Ticket.USER).getJsonArray(Ticket.STRUCTURES)));
-        else
-            structureIdsFuture = ticketService.listStructureChildren(structureId);
-
-        structureIdsFuture
-                .compose(structureIds -> ticketServiceSql.getTicketsFromArrayOfStructureId(structureIds))
+        getStructureIds(structureId,params)
+                .compose(structureIds -> ticketServiceSql.getTicketsFromStructureIds(structureIds))
                 .compose(tickets -> ticketService.getProfileFromTickets(tickets, i18nConfig))
                 .compose(ticketService::getSchoolFromTickets)
                 .onSuccess(result -> {
@@ -114,6 +107,13 @@ public class TicketExportWorker extends BusModBase implements Handler<Message<Js
                 .onFailure(promise::fail);
 
         return promise.future();
+    }
+
+    private Future<JsonObject> getStructureIds(String structureId, JsonObject params) {
+        if (Objects.equals(structureId, Ticket.ASTERISK))
+            return Future.succeededFuture(new JsonObject().put(Ticket.STRUCTUREIDS,
+                    params.getJsonObject(Ticket.USER).getJsonArray(Ticket.STRUCTURES)));
+        return ticketService.listStructureChildren(structureId);
     }
 
     protected String getFolderName(I18nConfig i18nConfig) {
