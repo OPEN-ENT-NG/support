@@ -63,20 +63,13 @@ public class Ticket {
     public static final String THRESHOLD_DIRECT_EXPORT_TICKETS= "threshold-direct-export-tickets";
     public static final String THRESHOLD = "threshold";
 
-    public static final String ACTION = "action";
     public static final String TYPE = "type";
-    public static final String PARAMS = "params";
-    public static final String OWNERNAME = "ownerName";
-    public static final String PARENTFOLDERID = "parentFolderId";
     public static final String RESULT = "result";
     public static final String RESULTS = "results";
     public static final String OK = "ok";
     public static final String USER = "user";
     public static final String DISPLAYNAME = "displayName";
-    public static final String _ID = "_id";
     public static final String FILENAME = "fileName";
-    public static final String FOLDERURI = "folderUri";
-    public static final String EPARENT = "eParent";
     public static final String PUSHNOTIF = "pushNotif";
     public static final String TITLE = "title";
     public static final String BODY = "body";

@@ -1,6 +1,5 @@
 package net.atos.entng.support.export;
 
-import fr.wseduc.webutils.I18n;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -18,7 +17,6 @@ import net.atos.entng.support.model.I18nConfig;
 import net.atos.entng.support.services.FileService;
 import net.atos.entng.support.services.TicketService;
 import net.atos.entng.support.services.TicketServiceSql;
-import net.atos.entng.support.services.WorkspaceService;
 import net.atos.entng.support.services.impl.*;
 import org.entcore.common.bus.WorkspaceHelper;
 import org.entcore.common.notification.TimelineHelper;
@@ -28,7 +26,6 @@ import org.entcore.common.user.UserInfos;
 import org.vertx.java.busmods.BusModBase;
 
 import java.util.Collections;
-import java.util.List;
 import java.util.Objects;
 
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
@@ -44,7 +41,6 @@ public class TicketExportWorker extends BusModBase implements Handler<Message<Js
     private WorkspaceHelper workspaceHelper;
     private TimelineHelper timelineHelper;
     private FileService fileService;
-    private WorkspaceService workspaceService;
 
     protected String exportNotification;
 
@@ -56,7 +52,6 @@ public class TicketExportWorker extends BusModBase implements Handler<Message<Js
         ticketService = new TicketServiceImpl(ticketServiceNeo4jImpl);
 
         Storage storage = new StorageFactory(vertx, new JsonObject()).getStorage();
-        workspaceService = new DefaultWorkspaceService(this.vertx, storage, config());
         fileService = new DefaultFileService(storage);
         workspaceHelper = new WorkspaceHelper(vertx.eventBus(), storage);
         timelineHelper = new TimelineHelper(this.vertx, this.vertx.eventBus(), config());
@@ -84,7 +79,7 @@ public class TicketExportWorker extends BusModBase implements Handler<Message<Js
 
         this.exportNotification = "support.export-events";
         createCSVFile(params, i18nConfig)
-                .compose(file -> exportData(file, user, i18nConfig))
+                .compose(file -> exportData(file, user))
                 .compose(fileInfos -> sendNotification(user, fileInfos))
                 .onFailure(fail -> {
                     exportNotification = "support.export-events-error";
@@ -96,7 +91,7 @@ public class TicketExportWorker extends BusModBase implements Handler<Message<Js
         Promise<ExportFile> promise = Promise.promise();
         String structureId = params.getString(Ticket.STRUCTURE_ID);
 
-        getStructureIds(structureId,params)
+        getStructureIds(structureId, params)
                 .compose(structureIds -> ticketServiceSql.getTicketsFromStructureIds(structureIds))
                 .compose(tickets -> ticketService.getProfileFromTickets(tickets, i18nConfig))
                 .compose(ticketService::getSchoolFromTickets)
@@ -116,24 +111,16 @@ public class TicketExportWorker extends BusModBase implements Handler<Message<Js
         return ticketService.listStructureChildren(structureId);
     }
 
-    protected String getFolderName(I18nConfig i18nConfig) {
-        return I18n.getInstance().translate("support.ticket.export.filename",
-                i18nConfig.getDomain(), i18nConfig.getLang());
-    }
-
-    protected Future<JsonObject> exportData(ExportFile exportFile, UserInfos user, I18nConfig i18nConfig) {
+    protected Future<JsonObject> exportData(ExportFile exportFile, UserInfos user) {
         Promise<JsonObject> promise = Promise.promise();
 
-        addFolderIfExists(getFolderName(i18nConfig), user)
-                .compose(folder -> fileService.add(exportFile.getBuffer(), exportFile.getContentType(), exportFile.getFilename())
-                        .onSuccess(file -> this.workspaceHelper.addDocument(file, user, exportFile.getFilename(), "media-library",
-                                false, new JsonArray(), handlerToAsyncHandler(message -> {
-                                    if (Ticket.OK.equals(message.body().getString(Ticket.STATUS))) {
-                                        String documentId = message.body().getString(Ticket._ID);
-                                        workspaceHelper.moveDocument(documentId, folder.getString(Ticket._ID), user,
-                                                res -> promise.complete(res.result().body()));
-                                    }
-                                }))))
+        fileService.add(exportFile.getBuffer(), exportFile.getContentType(), exportFile.getFilename())
+                .onSuccess(file -> this.workspaceHelper.addDocument(file, user, exportFile.getFilename(), "media-library",
+                        false, new JsonArray(), handlerToAsyncHandler(message -> {
+                            if (Ticket.OK.equals(message.body().getString(Ticket.STATUS))) {
+                                promise.complete(message.body());
+                            }
+                        })))
                 .onFailure(fail -> {
                     String message = String.format("[Common@%s::exportData] Error adding folder/file in workspace for export",
                             this.getClass().getSimpleName());
@@ -144,35 +131,10 @@ public class TicketExportWorker extends BusModBase implements Handler<Message<Js
         return promise.future();
     }
 
-    private Future<JsonObject> addFolderIfExists(String folderName, UserInfos user) {
-        Promise<JsonObject> promise = Promise.promise();
-        workspaceService.listRootDocuments(user)
-                .onFailure(fail -> {
-                    promise.fail(fail.getMessage());
-                })
-                .onSuccess(files -> {
-                    JsonObject folder = ((List<JsonObject>) files.getList())
-                            .stream()
-                            .filter(res -> Objects.equals(res.getString(Ticket.NAME), folderName))
-                            .findFirst()
-                            .orElse(null);
-                    if (folder != null) {
-                        promise.complete(folder);
-                    } else {
-                        workspaceService.addFolder(folderName, user.getUserId(), user.getUsername(), null)
-                                .onFailure(fail -> promise.fail(fail.getMessage()))
-                                .onSuccess(promise::complete);
-                    }
-                });
-
-        return promise.future();
-    }
-
     protected Future<Void> sendNotification(UserInfos user, JsonObject fileInfos) {
         Promise<Void> promise = Promise.promise();
         JsonObject params = new JsonObject()
                 .put(Ticket.FILENAME, fileInfos.getString(Ticket.NAME))
-                .put(Ticket.FOLDERURI, "/workspace/workspace#/folder/" + fileInfos.getString(Ticket.EPARENT))
                 .put(Ticket.PUSHNOTIF, new JsonObject()
                         .put(Ticket.TITLE, "support.push.export.finished")
                         .put(Ticket.BODY, ""));

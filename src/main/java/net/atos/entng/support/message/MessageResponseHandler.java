@@ -13,16 +13,6 @@ public class MessageResponseHandler {
     private MessageResponseHandler() {
     }
 
-    public static Handler<AsyncResult<Message<JsonObject>>> messageJsonArrayHandler(Handler<Either<String, JsonArray>> handler) {
-        return event -> {
-            if (event.succeeded() && Ticket.OK.equals(event.result().body().getString(Ticket.STATUS))) {
-                handler.handle(new Either.Right<>(event.result().body().getJsonArray(Ticket.RESULT, event.result().body().getJsonArray(Ticket.RESULTS))));
-            } else {
-                handler.handle(new Either.Left<>(event.failed() ? event.cause().getMessage() : event.result().body().getString(Ticket.MESSAGE)));
-            }
-        };
-    }
-
     public static Handler<AsyncResult<Message<JsonObject>>> messageJsonObjectHandler(Handler<Either<String, JsonObject>> handler) {
         return event -> {
             JsonObject body = event.result().body();
