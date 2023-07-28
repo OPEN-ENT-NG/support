@@ -25,5 +25,11 @@ public interface TicketService {
 
     Future<JsonObject> getSchoolWorkflowRightFromUserId(String userId, String workflowWanted, String structureId);
 
+    /**
+     * Get "childrens" structures of a "parent" structure
+     *
+     * @param structureId {String} Id structure from which we want to retrieve the children
+     * @returns {Future<JsonObject>} JsonObject containing structure "childrens" and the "parent" structure
+     **/
     Future<JsonObject> listStructureChildren(String structureId);
 }

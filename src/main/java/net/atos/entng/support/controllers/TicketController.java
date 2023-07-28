@@ -964,7 +964,8 @@ public class TicketController extends ControllerHelper {
                     ticketService.listStructureChildren(structureId).onComplete(promise);
                 else promise.complete(new JsonObject());
             } else {
-                log.debug("[Support@%s::countTickets] User not found in session.");
+                log.debug(String.format("[Support@%s::countTickets] %s",
+                                this.getClass().getSimpleName(), "User not found in session."));
                 unauthorized(request);
             }
         });
@@ -994,7 +995,8 @@ public class TicketController extends ControllerHelper {
                         .onComplete(promise);
                 else ticketServiceSql.getUserTickets(user).onComplete(promise);
             } else {
-                log.debug("[Support@%s::directExport] User not found in session.");
+                log.debug(String.format("[Support@%s::directExport] %s",
+                        this.getClass().getSimpleName(), "User not found in session."));
                 unauthorized(request);
             }
         });
@@ -1020,7 +1022,8 @@ public class TicketController extends ControllerHelper {
                         .onFailure(err -> log.error(String.format("[Support@%s::workerExport] %s",
                                 this.getClass().getSimpleName(), err)));
             } else {
-                log.debug("[Support@%s::workerExport] User not found in session.");
+                log.debug(String.format("[Support@%s::workerExport] %s",
+                        this.getClass().getSimpleName(), "User not found in session."));
                 unauthorized(request);
             }
         });

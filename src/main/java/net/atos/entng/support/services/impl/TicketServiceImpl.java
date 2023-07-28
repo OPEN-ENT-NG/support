@@ -16,12 +16,6 @@ import java.util.stream.Collectors;
 
 public class TicketServiceImpl implements TicketService {
 
-    private final TicketServiceNeo4jImpl ticketServiceNeo4j;
-
-    public TicketServiceImpl(TicketServiceNeo4jImpl ticketServiceNeo4j) {
-        this.ticketServiceNeo4j = ticketServiceNeo4j;
-    }
-
     public Future<JsonArray> getProfileFromTickets(JsonArray ticketsList, I18nConfig i18nConfig) {
         Promise<JsonArray> promise = Promise.promise();
         final JsonArray jsonListTickets = ticketsList;
@@ -31,7 +25,7 @@ public class TicketServiceImpl implements TicketService {
                 .collect(Collectors.toSet());
 
         // get profiles from neo4j
-        ticketServiceNeo4j.getUsersFromList(new JsonArray(new ArrayList<>(listUserIds)), event1 -> {
+        TicketServiceNeo4jImpl.getUsersFromList(new JsonArray(new ArrayList<>(listUserIds)), event1 -> {
             if (event1.isRight()) {
                 JsonArray listUsers = event1.right().getValue();
                 // list of users got from neo4j
@@ -66,7 +60,7 @@ public class TicketServiceImpl implements TicketService {
                 .collect(Collectors.toList());
 
         // get school name from neo4j
-        ticketServiceNeo4j.getSchoolFromList(new JsonArray(new ArrayList<>(listSchoolIds)))
+        TicketServiceNeo4jImpl.getSchoolFromList(new JsonArray(new ArrayList<>(listSchoolIds)))
                 .onSuccess(listSchools -> {
                     listSchools.stream()
                             .filter(JsonObject.class::isInstance)
@@ -89,15 +83,15 @@ public class TicketServiceImpl implements TicketService {
 
     public Future<JsonObject> getSchoolWorkflowRightFromUserId(String userId, String workflowWanted, String structureId) {
         Promise<JsonObject> promise = Promise.promise();
-        ticketServiceNeo4j.getSchoolWorkflowRights(userId, workflowWanted, structureId)
+        TicketServiceNeo4jImpl.getSchoolWorkflowRights(userId, workflowWanted, structureId)
                 .onSuccess(promise::complete)
                 .onFailure(promise::fail);
         return promise.future();
     }
 
-    public Future<JsonObject> listStructureChildren(String school_id) {
+    public Future<JsonObject> listStructureChildren(String schoolId) {
         Promise<JsonObject> promise = Promise.promise();
-        ticketServiceNeo4j.listStructureChildren(school_id)
+        TicketServiceNeo4jImpl.listStructureChildren(schoolId)
                 .onSuccess(promise::complete)
                 .onFailure(promise::fail);
         return promise.future();

@@ -31,10 +31,6 @@ import net.atos.entng.support.export.TicketExportWorker;
 import net.atos.entng.support.helpers.PromiseHelper;
 import net.atos.entng.support.message.MessageResponseHandler;
 import net.atos.entng.support.services.*;
-import net.atos.entng.support.services.impl.TicketServiceImpl;
-import net.atos.entng.support.services.impl.TicketServiceNeo4jImpl;
-import net.atos.entng.support.services.impl.TicketServiceSqlImpl;
-import net.atos.entng.support.services.impl.UserServiceDirectoryImpl;
 
 import org.entcore.common.folders.FolderManager;
 import org.entcore.common.http.BaseServer;
@@ -134,7 +130,7 @@ public class Support extends BaseServer {
 
 	public static Future<JsonObject> launchExportTicketsWorker(EventBus eb, JsonObject params) {
 		Promise<JsonObject> promise = Promise.promise();
-		eb.send(TicketExportWorker.class.getName(), params,
+		eb.request(TicketExportWorker.class.getName(), params,
 				new DeliveryOptions().setSendTimeout(1000 * 1000L),
 				MessageResponseHandler.messageJsonObjectHandler(PromiseHelper.handler(promise)));
 

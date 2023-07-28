@@ -30,6 +30,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import fr.wseduc.webutils.http.Renders;
 import io.vertx.core.Future;
@@ -881,8 +882,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 		Promise<JsonObject> promise = Promise.promise();
 
 		StringBuilder query = new StringBuilder();
-		query.append("SELECT COUNT(*) FROM support.tickets ");
-		query.append(" WHERE school_id IN" );
+		query.append("SELECT COUNT(*) FROM support.tickets WHERE school_id IN ");
 		JsonArray values = new JsonArray();
 
 		JsonArray structureIds = schoolId.getJsonArray(Ticket.STRUCTUREIDS);
@@ -891,7 +891,10 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 			query.append(Sql.listPrepared(user.getStructures()));
 			values.addAll(new JsonArray(user.getStructures()));
 		} else {
-			List<String> listIdStructure = structureIds.getList();
+			List<String> listIdStructure = structureIds.stream()
+					.filter(String.class::isInstance)
+					.map(Object::toString)
+					.collect(Collectors.toList());
 			query.append(Sql.listPrepared(listIdStructure));
 			values.addAll(new JsonArray(listIdStructure));
 		}
@@ -908,8 +911,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 	@Override
 	public Future<JsonArray> getUserTickets(UserInfos user) {
 		Promise<JsonArray> promise = Promise.promise();
-		String query = "SELECT * FROM support.tickets" +
-				" WHERE school_id IN " + Sql.listPrepared(user.getStructures());
+		String query = "SELECT * FROM support.tickets WHERE school_id IN " + Sql.listPrepared(user.getStructures());
 		JsonArray values = new JsonArray(user.getStructures());
 		sql.prepared(query, values, validResultHandler(PromiseHelper.handler(promise)));
 
@@ -924,9 +926,11 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 	public Future<JsonArray> getTicketsFromStructureIds(JsonObject idList) {
 		Promise<JsonArray> promise = Promise.promise();
 		JsonArray structureIds = idList.getJsonArray(Ticket.STRUCTUREIDS);
-		List<String> listIdStructure = structureIds.getList();
-		String query = "SELECT * FROM support.tickets" +
-				" WHERE school_id IN " + Sql.listPrepared(listIdStructure);
+		List<String> listIdStructure = structureIds.stream()
+				.filter(String.class::isInstance)
+				.map(Object::toString)
+				.collect(Collectors.toList());
+		String query = "SELECT * FROM support.tickets WHERE school_id IN " + Sql.listPrepared(listIdStructure);
 		JsonArray values = structureIds;
 		sql.prepared(query, values, validResultHandler(PromiseHelper.handler(promise)));
 		return promise.future();

@@ -4,9 +4,9 @@ import fr.wseduc.mongodb.MongoDb;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import net.atos.entng.support.EscalationServiceFactory;
+import net.atos.entng.support.constants.Ticket;
 import net.atos.entng.support.enums.BugTracker;
 import net.atos.entng.support.services.impl.TicketServiceImpl;
-import net.atos.entng.support.services.impl.TicketServiceNeo4jImpl;
 import net.atos.entng.support.services.impl.TicketServiceSqlImpl;
 import net.atos.entng.support.services.impl.UserServiceDirectoryImpl;
 import org.entcore.common.neo4j.Neo4j;
@@ -36,12 +36,8 @@ public class ServiceFactory {
         this.bugTrackerType = bugTrackerType;
     }
 
-    public TicketServiceNeo4jImpl ticketServiceNeo4jImpl() {
-        return new TicketServiceNeo4jImpl();
-    }
-
     public TicketService ticketService() {
-        return new TicketServiceImpl(this.ticketServiceNeo4jImpl());
+        return new TicketServiceImpl();
     }
 
     public TicketServiceSql ticketServiceSql() {
@@ -60,7 +56,7 @@ public class ServiceFactory {
     }
 
     public Boolean isEscalationActivated() {
-        return escalationActivated = config.getBoolean("activate-escalation", false);
+        return escalationActivated = config.getBoolean(Ticket.ACTIVATE_ESCALATION, false);
     }
 
 

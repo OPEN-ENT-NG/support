@@ -68,7 +68,7 @@ public class TicketServiceNeo4jImpl {
     }
 
     /**
-     * Get childrens of a structure
+     * Get "childrens" structures of a "parent" structure
      * @param structureId neo4j structure ID
      */
     public static Future<JsonObject> listStructureChildren(String structureId) {

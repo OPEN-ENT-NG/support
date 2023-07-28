@@ -31,6 +31,7 @@
         "escalation-httpclient-maxpoolsize" : 16,
         "escalation-httpclient-keepalive" : false,
         "escalation-httpclient-tryusecompression" : true,
+        "threshold-direct-export-tickets": "$supportThresholdDirectExportTickets",
         {% if supportBugTrackername is defined and supportBugTrackername == 'PIVOT' %}
         "user-iws-id" : "{{ supportUserIwsId }}",
         "user-iws-name" : "{{ supportUserIwsName }}",

@@ -2,6 +2,7 @@ import {ng, toasts} from 'entcore'
 import http, {AxiosResponse} from "axios";
 import {ITicketPayload} from "../models/ticket.model";
 import {ICanAccessResponse} from "../models/schoolWorkflow.model";
+import {ICountTicketsResponse} from "../models/countTickets.model";
 
 export interface ITicketService {
     update(ticketId: number, body: ITicketPayload): Promise<AxiosResponse>;
@@ -11,7 +12,7 @@ export interface ITicketService {
     countTickets(structureId: string): Promise<AxiosResponse>;
     directExport(structureId: string): Promise<void>;
     workerExport(structureId: string): Promise<void>;
-    getThresholdDirectExportTickets(): Promise<AxiosResponse>;
+    getThresholdDirectExportTickets(): Promise<ICountTicketsResponse>;
 }
 
 export const ticketService: ITicketService = {
@@ -79,9 +80,9 @@ export const ticketService: ITicketService = {
         http.get(`/support/tickets/export/worker/${structureId}`)
     },
 
-    getThresholdDirectExportTickets: (): Promise<AxiosResponse> =>
+    getThresholdDirectExportTickets: (): Promise<ICountTicketsResponse> =>
         http.get(`/support/config/thresholdDirectExportTickets`)
-            .then((res: AxiosResponse) => res.data.threshold)
+            .then((res: AxiosResponse) => <ICountTicketsResponse>res.data.threshold)
 
 
 

@@ -48,8 +48,7 @@ public class TicketExportWorker extends BusModBase implements Handler<Message<Js
     public void start() {
         super.start();
         ticketServiceSql = new TicketServiceSqlImpl(null);
-        TicketServiceNeo4jImpl ticketServiceNeo4jImpl = new TicketServiceNeo4jImpl();
-        ticketService = new TicketServiceImpl(ticketServiceNeo4jImpl);
+        ticketService = new TicketServiceImpl();
 
         Storage storage = new StorageFactory(vertx, new JsonObject()).getStorage();
         fileService = new DefaultFileService(storage);
@@ -57,7 +56,7 @@ public class TicketExportWorker extends BusModBase implements Handler<Message<Js
         timelineHelper = new TimelineHelper(this.vertx, this.vertx.eventBus(), config());
 
         exportContext = vertx.getOrCreateContext();
-        String launchLog = String.format("[Common@%s::start] Launching worker %s, deploy verticle %s",
+        String launchLog = String.format("[Support@%s::start] Launching worker %s, deploy verticle %s",
                 this.getClass().getSimpleName(), this.getClass().getSimpleName(), exportContext.deploymentID());
         log.info(launchLog);
 
@@ -69,9 +68,6 @@ public class TicketExportWorker extends BusModBase implements Handler<Message<Js
         event.reply(new JsonObject().put(Ticket.STATUS, Ticket.OK));
         JsonObject params = event.body();
         UserInfos user = UserInfosHelper.getUserInfosFromJSON(event.body().getJsonObject(Ticket.USER));
-
-        log.info(String.format("[Common@%s::run] Starting worker %s process, generating export file",
-                this.getClass().getSimpleName(), this.getClass().getSimpleName()));
 
         String local = params.getString(Ticket.LOCALE);
         String domain = params.getString(Ticket.DOMAIN);
@@ -99,7 +95,12 @@ public class TicketExportWorker extends BusModBase implements Handler<Message<Js
                     TicketsCSVExport pce = new TicketsCSVExport(result, i18nConfig);
                     promise.complete(CSVHelper.getExportFile(pce.filename(), pce.generate()));
                 })
-                .onFailure(promise::fail);
+                .onFailure(fail -> {
+                    String message = String.format("[Support@%s::createCSVFile] Error while creating CSV file",
+                            this.getClass().getSimpleName());
+                    log.error(message, fail.getMessage());
+                    promise.fail(fail.getMessage());
+                });
 
         return promise.future();
     }
@@ -122,7 +123,7 @@ public class TicketExportWorker extends BusModBase implements Handler<Message<Js
                             }
                         })))
                 .onFailure(fail -> {
-                    String message = String.format("[Common@%s::exportData] Error adding folder/file in workspace for export",
+                    String message = String.format("[Support@%s::exportData] Error adding folder/file in workspace for export",
                             this.getClass().getSimpleName());
                     log.error(message, fail.getMessage());
                     promise.fail(fail.getMessage());

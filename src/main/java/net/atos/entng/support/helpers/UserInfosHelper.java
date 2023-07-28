@@ -22,7 +22,7 @@ public class UserInfosHelper {
                 .put(Ticket.FIRSTNAME, userInfos.getFirstName())
                 .put(Ticket.LASTNAME, userInfos.getLastName())
                 .put(Ticket.USERNAME, userInfos.getUsername())
-                .put(Ticket.BIRTHDATE, userInfos.getBirthDate())
+                .put(Ticket.BIRTHDAY, userInfos.getBirthDate())
                 .put(Ticket.CLASSNAMES, userInfos.getClasses())
                 .put(Ticket.REALCLASSNAMES, userInfos.getRealClassNames())
                 .put(Ticket.STRUCTURENAMES, userInfos.getStructureNames())
@@ -46,7 +46,7 @@ public class UserInfosHelper {
         user.setFirstName(infos.getString(Ticket.FIRSTNAME));
         user.setLastName(infos.getString(Ticket.LASTNAME));
         user.setUsername(infos.getString(Ticket.USERNAME));
-        user.setBirthDate(infos.getString(Ticket.BIRTHDATE));
+        user.setBirthDate(infos.getString(Ticket.BIRTHDAY));
         if (infos.getJsonArray(Ticket.REALCLASSNAMES) != null) {
             user.setRealClassNames(infos.getJsonArray(Ticket.REALCLASSNAMES, new JsonArray()).getList());
         }

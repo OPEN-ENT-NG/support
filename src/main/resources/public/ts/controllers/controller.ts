@@ -939,8 +939,8 @@ export const SupportController: Controller = ng.controller('SupportController',
 		$scope.exportAllTickets = async (): Promise<void> => {
 			Promise.all([ticketService.getThresholdDirectExportTickets(), ticketService.countTickets($scope.display.filters.school_id)])
 				.then((values: any[]) => {
-					let thresholdDirectExportTickets: Number = (<Number>values[0]);
-					let countTickets: Number = (<ICountTicketsResponse>values[1].data).count;
+					let thresholdDirectExportTickets: number = (<number>values[0]);
+					let countTickets: number = (<ICountTicketsResponse>values[1].data).count;
 					if (countTickets > thresholdDirectExportTickets) {
 						toasts.info('support.toast.export.worker');
 						ticketService.workerExport($scope.display.filters.school_id);

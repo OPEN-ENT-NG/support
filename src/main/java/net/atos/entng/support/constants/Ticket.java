@@ -73,6 +73,7 @@ public class Ticket {
     public static final String PUSHNOTIF = "pushNotif";
     public static final String TITLE = "title";
     public static final String BODY = "body";
+    public static final String ACTIVATE_ESCALATION = "activate-escalation";
 
 
     // UserInfos
@@ -91,7 +92,7 @@ public class Ticket {
     public static final String STRUCTURES = "structures";
 
     // Registers
-    public static final String BIRTHDATE = "birthDay";
+    public static final String BIRTHDAY = "birthDay";
     public static final String FIRSTNAME = "firstName";
     public static final String LASTNAME = "lastName";
 }

@@ -13,6 +13,7 @@
     "support.error.comment.has.not.been.added.to.escalated.ticket": "Erreur : le commentaire n'a pas pu être ajoutée à la demande transmise",
     "support.error.escalation.conflict": "Erreur : transmission impossible. Rafraîchissez la page et relancez la transmission",
     "support.error.escalation.incomplete": "Erreur : la transmission a été réalisée partiellement. Les commentaires n'ont pas pu être transmis",
+    "support.fail.upload.file": "Erreur : le fichier n'a pas pu être enregisté dans l'espace documentaire",
     "support.escalate.ticket": "Transmettre la demande au support",
     "support.escalated.ticket.category": "Catégorie",
     "support.escalated.ticket.author": "Auteur",
