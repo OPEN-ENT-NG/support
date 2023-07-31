@@ -21,6 +21,7 @@ import org.entcore.common.utils.Id;
 
 import net.atos.entng.support.Issue;
 import net.atos.entng.support.Ticket;
+import net.atos.entng.support.Comment;
 import net.atos.entng.support.enums.BugTracker;
 import net.atos.entng.support.enums.TicketStatus;
 import net.atos.entng.support.Attachment;
@@ -265,6 +266,9 @@ public class ZendeskIssue extends Issue implements JSONAble
         if(newIssue.comment == null)
             newIssue.comment = new ZendeskComment();
 
+        if(oldIssue.comments != null)
+            newIssue.comments = oldIssue.comments;
+
         return newIssue;
     }
 
@@ -278,6 +282,10 @@ public class ZendeskIssue extends Issue implements JSONAble
         issue.comment.uploads = new ArrayList<String>();
         for(Attachment a : ticket.attachments)
             issue.comment.uploads.add(a.bugTrackerToken);
+
+        issue.comments = new ArrayList<ZendeskComment>(ticket.comments.size());
+        for(Comment c : ticket.comments)
+            issue.comments.add(new ZendeskComment(c));
 
         if(issue.custom_fields == null)
             issue.custom_fields = new ArrayList<CustomField<?>>();

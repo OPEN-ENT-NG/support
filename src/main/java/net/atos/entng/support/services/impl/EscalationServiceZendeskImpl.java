@@ -343,7 +343,43 @@ public class EscalationServiceZendeskImpl implements EscalationService {
 							JsonObject res = new JsonObject(data.toString());
 							ZendeskIssue zIssue = new ZendeskIssue(res.getJsonObject("ticket"));
 
-							handler.handle(new Either.Right<String, ZendeskIssue>(zIssue));
+							List<Future> commentFutures = new ArrayList<Future>(issue.comments.size());
+
+							if(issue.comments != null)
+							{
+								Handler<Integer> nextSender = new Handler<Integer>()
+								{
+									@Override
+									public void handle(Integer ix)
+									{
+										Handler<Integer> nextSender = this;
+										if(ix == issue.comments.size())
+											handler.handle(new Either.Right<String, ZendeskIssue>(zIssue));
+										else
+										{
+											commentIssue(zIssue.id.get(), zIssue.status, issue.comments.get(ix)).onFailure(new Handler<Throwable>()
+											{
+												@Override
+												public void handle(Throwable t)
+												{
+													handler.handle(new Either.Left<String, ZendeskIssue>(t.getMessage()));
+												}
+											}).onSuccess(new Handler<Void>()
+											{
+												@Override
+												public void handle(Void v)
+												{
+													nextSender.handle(ix + 1);
+												}
+											});
+										}
+									}
+								};
+
+								nextSender.handle(0);
+							}
+							else
+								handler.handle(new Either.Right<String, ZendeskIssue>(zIssue));
 						}
 					}
 				});
@@ -494,15 +530,30 @@ public class EscalationServiceZendeskImpl implements EscalationService {
 					{
 						Ticket t = res.right().getValue();
 						ZendeskStatus updatedStatus = ZendeskStatus.from(t.status);
-						commentIssue(issueId, updatedStatus, comment, handler);
+						commentIssue(issueId, updatedStatus, comment).onFailure(new Handler<Throwable>()
+						{
+							@Override
+							public void handle(Throwable t)
+							{
+								handler.handle(new Either.Left<String, Void>(t.getMessage()));
+							}
+						}).onSuccess(new Handler<Void>()
+						{
+							@Override
+							public void handle(Void v)
+							{
+								handler.handle(new Either.Right<String, Void>(v));
+							}
+						});
 					}
 				}
 			});
 		}
 	}
 
-	private void commentIssue(Number issueId, ZendeskStatus updateStatus, Comment comment, final Handler<Either<String, Void>> handler)
+	private Future<Void> commentIssue(Number issueId, ZendeskStatus updateStatus, Comment comment)
 	{
+		Promise<Void> promise = Promise.promise();
 		ZendeskComment zComment;
 		if(comment instanceof ZendeskComment)
 			zComment = (ZendeskComment) comment;
@@ -534,11 +585,13 @@ public class EscalationServiceZendeskImpl implements EscalationService {
 										public void handle(Either<String, ZendeskIssue> res)
 										{
 											if(res.isLeft())
-												handler.handle(new Either.Left<String, Void>(res.left().getValue()));
+												promise.fail(res.left().getValue());
 											else
 											{
 												ZendeskIssue followup = res.right().getValue();
-												commentIssue(followup.id.get(), updateStatus, comment, handler);
+												commentIssue(followup.id.get(), updateStatus, comment)
+													.onFailure(t -> { promise.fail(t); })
+													.onSuccess(r -> { promise.complete(r); });
 											}
 										}
 									});
@@ -549,10 +602,10 @@ public class EscalationServiceZendeskImpl implements EscalationService {
 							{
 							}
 							log.error("[Support] Error : Zendesk ticket comment failed: " + data.toString());
-							handler.handle(new Either.Left<String, Void>("support.escalation.zendesk.error.comment.failure"));
+							promise.fail("support.escalation.zendesk.error.comment.failure");
 						}
 						else
-							handler.handle(new Either.Right<String, Void>(null));
+							promise.complete(null);
 					}
 				});
 			}
@@ -562,7 +615,7 @@ public class EscalationServiceZendeskImpl implements EscalationService {
 			public void handle(Throwable t)
 			{
 				log.error("[Support] Error : exception raised by zendesk escalation httpClient", t);
-				handler.handle(new Either.Left<String, Void>("support.escalation.zendesk.error.comment.request"));
+				promise.fail("support.escalation.zendesk.error.comment.request");
 			}
 		});
 
@@ -574,6 +627,7 @@ public class EscalationServiceZendeskImpl implements EscalationService {
 		req.putHeader(HttpHeaders.CONTENT_TYPE, "application/json; charset=utf-16");
 		req.setChunked(true); // Without this, comments with too many accents fail despite the 200
 		req.write(data).end();
+		return promise.future();
 	}
 
 	private void createFollowUpIssue(Number issueId, String ownerName, Handler<Either<String, ZendeskIssue>> handler)
@@ -693,15 +747,19 @@ public class EscalationServiceZendeskImpl implements EscalationService {
 							for(Attachment a : missingAttachments)
 								zComment.uploads.add(a.bugTrackerToken);
 
-							commentIssue(zIssue.id.get(), null, zComment, new Handler<Either<String, Void>>()
+							commentIssue(zIssue.id.get(), null, zComment).onFailure(new Handler<Throwable>()
 							{
 								@Override
-								public void handle(Either<String, Void> result)
+								public void handle(Throwable t)
 								{
-									if(result.isLeft())
-										handler.handle(new Either.Left<String, Id<Issue, Long>>(result.left().getValue()));
-									else
-										handler.handle(new Either.Right<String, Id<Issue, Long>>(zIssue.id));
+									handler.handle(new Either.Left<String, Id<Issue, Long>>(t.getMessage()));
+								}
+							}).onSuccess(new Handler<Void>()
+							{
+								@Override
+								public void handle(Void v)
+								{
+									handler.handle(new Either.Right<String, Id<Issue, Long>>(zIssue.id));
 								}
 							});
 						}
