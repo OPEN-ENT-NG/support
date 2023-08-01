@@ -78,6 +78,8 @@ public class TicketExportWorker extends BusModBase implements Handler<Message<Js
                 .compose(file -> exportData(file, user))
                 .compose(fileInfos -> sendNotification(user, fileInfos))
                 .onFailure(fail -> {
+                    log.error(String.format("[Support@%s::handle] Error while exporting tickets  %s",
+                            this.getClass().getSimpleName(), fail.getMessage()));
                     exportNotification = "support.export-events-error";
                     sendNotification(user, new JsonObject());
                 });
@@ -96,9 +98,8 @@ public class TicketExportWorker extends BusModBase implements Handler<Message<Js
                     promise.complete(CSVHelper.getExportFile(pce.filename(), pce.generate()));
                 })
                 .onFailure(fail -> {
-                    String message = String.format("[Support@%s::createCSVFile] Error while creating CSV file",
-                            this.getClass().getSimpleName());
-                    log.error(message, fail.getMessage());
+                    log.error(String.format("[Support@%s::createCSVFile] Error while creating CSV file %s",
+                            this.getClass().getSimpleName(), fail.getMessage()));
                     promise.fail(fail.getMessage());
                 });
 
@@ -123,9 +124,8 @@ public class TicketExportWorker extends BusModBase implements Handler<Message<Js
                             }
                         })))
                 .onFailure(fail -> {
-                    String message = String.format("[Support@%s::exportData] Error adding folder/file in workspace for export",
-                            this.getClass().getSimpleName());
-                    log.error(message, fail.getMessage());
+                    log.error(String.format("[Support@%s::exportData] Error adding folder/file in workspace for export %s",
+                            this.getClass().getSimpleName(), fail.getMessage()));
                     promise.fail(fail.getMessage());
                 });
 

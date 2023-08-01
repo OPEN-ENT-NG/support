@@ -3,6 +3,7 @@ import http, {AxiosResponse} from "axios";
 import {ITicketPayload} from "../models/ticket.model";
 import {ICanAccessResponse} from "../models/schoolWorkflow.model";
 import {ICountTicketsResponse} from "../models/countTickets.model";
+import {IWorkerExportResponse} from "../models/workerExport.model";
 
 export interface ITicketService {
     update(ticketId: number, body: ITicketPayload): Promise<AxiosResponse>;
@@ -11,7 +12,7 @@ export interface ITicketService {
     schoolWorkflow(userId: string, workflow: string, structureId: string): Promise<boolean>;
     countTickets(structureId: string): Promise<AxiosResponse>;
     directExport(structureId: string): Promise<void>;
-    workerExport(structureId: string): Promise<void>;
+    workerExport(structureId: string): Promise<IWorkerExportResponse>;
     getThresholdDirectExportTickets(): Promise<ICountTicketsResponse>;
 }
 
@@ -76,10 +77,16 @@ export const ticketService: ITicketService = {
      * @param structureId {string} id of the structure
      * @returns {void}
      **/
-     workerExport: async (structureId: string): Promise<void> => {
+     workerExport: async (structureId: string): Promise<IWorkerExportResponse> =>
         http.get(`/support/tickets/export/worker/${structureId}`)
-    },
+            .then((res: AxiosResponse) => <IWorkerExportResponse>res.data.status)
+    ,
 
+    /**
+     * get the threshold from which we export with the worker
+     *
+     * @returns {Promise<ICountTicketsResponse>} threshold
+     **/
     getThresholdDirectExportTickets: (): Promise<ICountTicketsResponse> =>
         http.get(`/support/config/thresholdDirectExportTickets`)
             .then((res: AxiosResponse) => <ICountTicketsResponse>res.data.threshold)

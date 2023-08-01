@@ -24,9 +24,8 @@ public class DefaultFileService implements FileService {
         Promise<JsonObject> promise = Promise.promise();
         storage.writeBuffer(file, contentType, filename, result -> {
             if (!Ticket.OK.equals(result.getString(Ticket.STATUS))) {
-                String message = String.format("[Support@%s::add] Failed to upload file from buffer",
-                        this.getClass().getSimpleName());
-                log.error(message, result.getString(Ticket.STATUS));
+                log.error(String.format("[Support@%s::add] Failed to upload file from buffer %s",
+                        this.getClass().getSimpleName(), result.getString(Ticket.STATUS)));
                 promise.fail("support.fail.upload.file");
             } else {
                 result.remove(Ticket.STATUS);
