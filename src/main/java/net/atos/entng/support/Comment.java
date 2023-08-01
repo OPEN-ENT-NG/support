@@ -17,6 +17,11 @@ public class Comment implements IdObject
         this(null, content, null, null);
     }
 
+    public Comment(String content, String ownerName)
+    {
+        this(null, content, ownerName, null);
+    }
+
     @Override
     public Id<Comment, Long> getId()
     {

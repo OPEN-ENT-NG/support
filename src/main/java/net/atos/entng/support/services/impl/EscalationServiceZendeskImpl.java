@@ -675,7 +675,7 @@ public class EscalationServiceZendeskImpl implements EscalationService {
 														Ticket ticket = event.right().getValue();
 														ticketServiceSql.createTicketHisto(
 															ticket.id.get().toString(),
-															I18n.getInstance().translate("support.ticket.histo.escalate", I18n.DEFAULT_DOMAIN, ticket.locale) + ownerName,
+															I18n.getInstance().translate("support.ticket.histo.escalate.auto", I18n.DEFAULT_DOMAIN, ticket.locale),
 															createdIssue.status.correspondingStatus.status(),
 															null,
 															TicketHisto.ESCALATION,
@@ -1127,7 +1127,7 @@ public class EscalationServiceZendeskImpl implements EscalationService {
 						{
 							long postDate = parseDateToEpoch(comment.created);
 							ZendeskVia via = comment.via; // Comments with an api via have been sent by the ENT (e.g. the first comment on each issue)
-							if((postDate > lastUpdate || postDate == 0) && (via == null || "api".equals(via.channel) == false))
+							if((postDate > lastUpdate || postDate == 0) && (via == null || via.isFromAPI() == false))
 							{
 								newComments.add(comment);
 								if(comment.attachments != null && comment.attachments.size() > 0)

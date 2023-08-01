@@ -278,7 +278,7 @@ public class ZendeskIssue extends Issue implements JSONAble
         Promise<ZendeskIssue> promise = Promise.promise();
 
         issue.subject = ticket.subject;
-        issue.comment = new ZendeskComment(ticket.description);
+        issue.comment = new ZendeskComment(ticket.description, ticket.ownerName);
         issue.comment.uploads = new ArrayList<String>();
         for(Attachment a : ticket.attachments)
             issue.comment.uploads.add(a.bugTrackerToken);
