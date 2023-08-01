@@ -89,6 +89,7 @@
     "support.ticket.histo.mass.modification":"Modification du statut en masse",
     "support.ticket.histo.creation":"Création du ticket",
     "support.ticket.histo.escalate":"Demande transmise au support par ",
+    "support.ticket.histo.escalate.auto": "Demande retransmise automatiquement",
     "support.ticket.histo.modification":"Modification",
     "support.ticket.id": "Identifiant",
     "support.ticket.infoRedmine": "Ticket escaladé",

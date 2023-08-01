@@ -2,9 +2,12 @@ package net.atos.entng.support.zendesk;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+
+import fr.wseduc.webutils.I18n;
 
 import org.entcore.common.json.JSONAble;
 import org.entcore.common.json.JSONIgnore;
@@ -45,9 +48,34 @@ public class ZendeskComment extends Comment implements JSONAble
         this.type = ZendeskCommentType.Comment;
     }
 
+    public ZendeskComment(String content, String ownerName)
+    {
+        super(content, ownerName);
+        this.type = ZendeskCommentType.Comment;
+    }
+
     public ZendeskComment(Comment c)
     {
         super(c);
         this.type = ZendeskCommentType.Comment;
+    }
+
+    @Override
+    public JsonObject toJson()
+    {
+        String originalContent = this.content;
+
+        if(this.content == null || "".equals(this.content.trim()))
+            this.content = I18n.getInstance().translate("support.escalated.ticket.empty", new Locale(ZendeskIssue.escalationConf.locale));
+
+            if(this.ownerName != null)
+        {
+            String authorHeader = I18n.getInstance().translate("support.escalated.ticket.author", new Locale(ZendeskIssue.escalationConf.locale));
+            this.content = authorHeader + " : " + this.ownerName + "\n\n" + this.content;
+        }
+
+        JsonObject jo = JSONAble.super.toJson();
+        this.content = originalContent;
+        return jo;
     }
 }

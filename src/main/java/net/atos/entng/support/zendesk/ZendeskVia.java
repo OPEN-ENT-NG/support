@@ -32,4 +32,17 @@ public class ZendeskVia implements JSONAble
 
     public String channel;
     public ViaSource source;
+
+    public boolean isFromAPI()
+    {
+        if("api".equals(this.channel))
+            return true;
+        else if(this.source != null && this.source.from != null)
+        {
+            if("follow_up".equals(this.source.rel) && "api".equals(this.source.from.getString("channel")))
+                return true;
+        }
+
+        return false;
+    }
 }
