@@ -6,9 +6,11 @@ import net.atos.entng.support.constants.Ticket;
 import net.atos.entng.support.helpers.DateHelper;
 import net.atos.entng.support.model.I18nConfig;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.TimeZone;
 
 public class TicketsCSVExport extends CSVExport {
     private final JsonArray tickets;
@@ -17,8 +19,10 @@ public class TicketsCSVExport extends CSVExport {
         super(i18nConfig);
 
         this.tickets = tickets;
-        String date = DateHelper.getDateString(new Date(), DateHelper.MONGO_FORMAT);
-        this.filename = this.translate(String.format("%s - %s.csv", this.translate("support.ticket.export.filename"), date));
+        SimpleDateFormat sdf = new SimpleDateFormat(DateHelper.MONGO_FORMAT);
+        sdf.setTimeZone(TimeZone.getTimeZone(Ticket.PARIS_TIMEZONE));
+
+        this.filename = this.translate(String.format("%s - %s.csv", this.translate("support.ticket.export.filename"), sdf.format(new Date())));
         this.acceptLanguage = i18nConfig.getLang();
     }
 

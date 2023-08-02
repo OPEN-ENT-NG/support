@@ -2,10 +2,7 @@ package net.atos.entng.support.helpers;
 
 import fr.wseduc.webutils.Either;
 import io.vertx.core.*;
-import io.vertx.core.eventbus.Message;
 import io.vertx.core.impl.CompositeFutureImpl;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -28,7 +25,7 @@ public class PromiseHelper {
                 promise.complete(event.right().getValue());
                 return;
             }
-            log.error(String.format("%s %s", (errorMessage != null ? errorMessage : "[PresencesCommon@%s::handle]: %s"), event.left().getValue()));
+            log.error(String.format("%s %s", (errorMessage != null ? errorMessage : "[SupportCommon@%s::handle]: %s"), event.left().getValue()));
             promise.fail(errorMessage != null ? errorMessage : event.left().getValue());
         };
     }
@@ -40,5 +37,4 @@ public class PromiseHelper {
     public static <T> CompositeFuture join(List<Future<T>> futures) {
         return CompositeFutureImpl.join(futures.toArray(new Future[futures.size()]));
     }
-
 }

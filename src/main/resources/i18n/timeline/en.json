@@ -7,5 +7,14 @@
     "timeline.support.has.updated": "has updated",
     "timeline.support.linked.to": "associée à la ",
     "timeline.support.on": "on",
-    "timeline.support.ticket": "ticket"
+    "timeline.support.ticket": "ticket",
+    "support.push.export.finished": "Exportation terminé",
+    "support.push.notif.title": "Exportation des demandes d'assistance ENT terminé",
+    "support.timeline.the.export": "L'exportation des demandes d'assistance ENT ",
+    "support.timeline.under.the.name": "sous le nom",
+    "support.timeline.is.now.available.in.your.workspace": "est désormais disponible dans votre espace documentaire",
+    "support.push.notif.title.error": "Erreur lors de l'exportation des demandes d'assistance ENT",
+    "support.timeline.export.error": "Une erreur est intervenue lors de la création du document d'export des demandes Assistance ENT.",
+    "support.timeline.export.verify": "Vérifiez l'espace disponible ou réessayez."
+
 }

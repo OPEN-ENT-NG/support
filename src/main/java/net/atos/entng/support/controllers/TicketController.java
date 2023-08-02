@@ -26,8 +26,9 @@ import io.vertx.core.*;
 import net.atos.entng.support.filters.AdminOfTicketsStructure;
 import net.atos.entng.support.helpers.CSVHelper;
 import net.atos.entng.support.helpers.RequestHelper;
+import net.atos.entng.support.helpers.UserInfosHelper;
 import net.atos.entng.support.model.I18nConfig;
-import net.atos.entng.support.services.TicketService;
+import net.atos.entng.support.services.*;
 
 import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
 
@@ -60,14 +61,12 @@ import net.atos.entng.support.export.TicketsCSVExport;
 import net.atos.entng.support.filters.Admin;
 import net.atos.entng.support.filters.OwnerOrLocalAdmin;
 import net.atos.entng.support.helpers.PromiseHelper;
-import net.atos.entng.support.services.EscalationService;
-import net.atos.entng.support.services.TicketServiceSql;
-import net.atos.entng.support.services.UserService;
 import net.atos.entng.support.services.impl.TicketServiceNeo4jImpl;
 import org.entcore.common.controller.ControllerHelper;
 import org.entcore.common.events.EventHelper;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
+import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.user.DefaultFunctions;
@@ -92,12 +91,12 @@ public class TicketController extends ControllerHelper {
     private final Storage storage;
     private final EventHelper eventHelper;
 
-    public TicketController(TicketServiceSql ts, TicketService ticketService, EscalationService es, UserService us, Storage storage) {
-        ticketServiceSql = ts;
-        this.ticketService = ticketService;
-        userService = us;
-        escalationService = es;
-        this.storage = storage;
+    public TicketController(ServiceFactory serviceFactory) {
+        ticketServiceSql = serviceFactory.ticketServiceSql();
+        this.ticketService = serviceFactory.ticketService();
+        userService = serviceFactory.userService();
+        escalationService = serviceFactory.escalationService();
+        this.storage = serviceFactory.getStorage();
         final EventStore eventStore = EventStoreFactory.getFactory().getEventStore(Support.class.getSimpleName());
         this.eventHelper = new EventHelper(eventStore);
     }
@@ -942,6 +941,89 @@ public class TicketController extends ControllerHelper {
                         .onFailure(err -> renderError(request, new JsonObject().put(Ticket.MESSAGE, err.getMessage())));
             } else {
                 log.debug("[Support@%s::getWorkflow] User not found in session.");
+                unauthorized(request);
+            }
+        });
+    }
+
+    @Get("structures/:structureId/tickets/count")
+    @ApiDoc("Return the number of tickets of a structure")
+    @SecuredAction(value = "", type = ActionType.RESOURCE)
+    @ResourceFilter(AdminFilter.class)
+    public void countTickets(HttpServerRequest request) {
+        final String structureId = request.params().get(Ticket.STRUCTURE_ID);
+        UserUtils.getUserInfos(eb, request, user -> {
+            if (user != null) {
+                Promise<JsonObject> promise = Promise.promise();
+                promise.future()
+                        .compose(result -> ticketServiceSql.countTickets(user, result))
+                        .onSuccess(result -> renderJson(request, result))
+                        .onFailure(err -> renderError(request, new JsonObject().put(Ticket.MESSAGE, err.getMessage())));
+
+                if (!Objects.equals(structureId, Ticket.ASTERISK))
+                    ticketService.listStructureChildren(structureId).onComplete(promise);
+                else promise.complete(new JsonObject());
+            } else {
+                log.debug(String.format("[Support@%s::countTickets] %s",
+                                this.getClass().getSimpleName(), "User not found in session."));
+                unauthorized(request);
+            }
+        });
+    }
+
+    @Get("/tickets/export/direct/:structureId")
+    @ApiDoc("Generate export CSV and directly download it")
+    @SecuredAction(value = "", type = ActionType.RESOURCE)
+    @ResourceFilter(AdminFilter.class)
+    public void directExport(HttpServerRequest request) {
+        UserUtils.getUserInfos(eb, request, user -> {
+            if (user != null) {
+                final String structureId = request.params().get(Ticket.STRUCTURE_ID);
+                I18nConfig i18nConfig = new I18nConfig(request);
+                Promise<JsonArray> promise = Promise.promise();
+                promise.future()
+                        .compose(tickets -> ticketService.getProfileFromTickets(tickets, i18nConfig))
+                        .compose(ticketService::getSchoolFromTickets)
+                        .onSuccess(result -> {
+                            TicketsCSVExport pce = new TicketsCSVExport(result, i18nConfig);
+                            CSVHelper.sendCSV(request, pce.filename(), pce.generate());
+                        })
+                        .onFailure(err -> renderError(request, new JsonObject()));
+
+                if (!Objects.equals(structureId, Ticket.ASTERISK)) ticketService.listStructureChildren(structureId)
+                        .compose(ticketServiceSql::getTicketsFromStructureIds)
+                        .onComplete(promise);
+                else ticketServiceSql.getUserTickets(user).onComplete(promise);
+            } else {
+                log.debug(String.format("[Support@%s::directExport] %s",
+                        this.getClass().getSimpleName(), "User not found in session."));
+                unauthorized(request);
+            }
+        });
+    }
+
+    @Get("/tickets/export/worker/:structureId")
+    @ApiDoc("Generate export CSV and download it in workspace")
+    @SecuredAction(value = "", type = ActionType.RESOURCE)
+    @ResourceFilter(AdminFilter.class)
+    public void workerExport(HttpServerRequest request) {
+        UserUtils.getUserInfos(eb, request, user -> {
+            if (user != null) {
+                final String structureId = request.params().get(Ticket.STRUCTURE_ID);
+                I18nConfig i18nConfig = new I18nConfig(request);
+
+                JsonObject params = new JsonObject()
+                        .put(Ticket.STRUCTURE_ID, structureId)
+                        .put(Ticket.USER, UserInfosHelper.toJSON(user))
+                        .put(Ticket.LOCALE, i18nConfig.getLang())
+                        .put(Ticket.DOMAIN, i18nConfig.getDomain());
+                Support.launchExportTicketsWorker(eb, params)
+                        .onSuccess(result -> renderJson(request, result))
+                        .onFailure(err -> log.error(String.format("[Support@%s::workerExport] %s",
+                                this.getClass().getSimpleName(), err)));
+            } else {
+                log.debug(String.format("[Support@%s::workerExport] %s",
+                        this.getClass().getSimpleName(), "User not found in session."));
                 unauthorized(request);
             }
         });

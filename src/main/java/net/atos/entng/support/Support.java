@@ -20,19 +20,24 @@
 package net.atos.entng.support;
 
 import fr.wseduc.mongodb.MongoDb;
+import io.vertx.core.DeploymentOptions;
+import io.vertx.core.Future;
+import io.vertx.core.Promise;
+import io.vertx.core.eventbus.DeliveryOptions;
 import net.atos.entng.support.controllers.*;
 import net.atos.entng.support.enums.BugTracker;
 import net.atos.entng.support.events.SupportSearchingEvents;
+import net.atos.entng.support.export.TicketExportWorker;
+import net.atos.entng.support.helpers.PromiseHelper;
+import net.atos.entng.support.message.MessageResponseHandler;
 import net.atos.entng.support.services.*;
-import net.atos.entng.support.services.impl.TicketServiceImpl;
-import net.atos.entng.support.services.impl.TicketServiceNeo4jImpl;
-import net.atos.entng.support.services.impl.TicketServiceSqlImpl;
-import net.atos.entng.support.services.impl.UserServiceDirectoryImpl;
 
 import org.entcore.common.folders.FolderManager;
 import org.entcore.common.http.BaseServer;
+import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.share.impl.GenericShareService;
 import org.entcore.common.share.impl.MongoDbShareService;
+import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlConf;
 import org.entcore.common.sql.SqlConfs;
 import org.entcore.common.storage.Storage;
@@ -54,12 +59,10 @@ public class Support extends BaseServer {
 	@Override
 	public void start() throws Exception {
 		super.start();
-		final EventBus eb = getEventBus(vertx);
 
 		addController(new DisplayController());
 
 		BugTracker bugTrackerType;
-		TicketServiceNeo4jImpl ticketServiceNeo4jImpl = new TicketServiceNeo4jImpl();
 
 		// Default value to REDMINE for compatibility purpose
 		bugTrackerType = BugTracker.valueOf(config.getString("bug-tracker-name", BugTracker.REDMINE.toString()).toUpperCase());
@@ -77,10 +80,7 @@ public class Support extends BaseServer {
 		final boolean useOldQueryChildren = config.getBoolean("old-query", false);
 		FolderManager folderManager = FolderManager.mongoManager("documents", storage, vertx, shareService, imageResizerAddress, useOldQueryChildren);
 
-
-		TicketServiceSql ticketServiceSql = new TicketServiceSqlImpl(bugTrackerType);
-		UserService userService = new UserServiceDirectoryImpl(eb);
-		TicketService ticketService = new TicketServiceImpl(ticketServiceNeo4jImpl);
+		ServiceFactory serviceFactory = new ServiceFactory(vertx, storage, Neo4j.getInstance(), Sql.getInstance(), MongoDb.getInstance(), config, bugTrackerType);
 
         // Indicates if the user can have direct communication with redmine, or if the admin has to transfer the informations.
         bugTrackerCommDirect = config.getBoolean("bug-tracker-comm-direct", true);
@@ -97,12 +97,7 @@ public class Support extends BaseServer {
 			log.info("[Support] Rich Editor is desactivated");
 		}
 
-		EscalationService escalationService = escalationActivated
-				? EscalationServiceFactory.makeEscalationService(bugTrackerType, vertx, config,
-						ticketServiceSql, userService, storage)
-				: null;
-
-        TicketController ticketController = new TicketController(ticketServiceSql, ticketService, escalationService, userService, storage);
+        TicketController ticketController = new TicketController(serviceFactory);
 		addController(ticketController);
 
 		SqlConf commentSqlConf = SqlConfs.createConf(CommentController.class.getName());
@@ -120,6 +115,9 @@ public class Support extends BaseServer {
 		if (config.getBoolean("searching-event", true)) {
 			setSearchingEvents(new SupportSearchingEvents());
 		}
+
+		vertx.deployVerticle(TicketExportWorker.class, new DeploymentOptions().setConfig(config).setWorker(true));
+
 	}
 
 	public static boolean escalationIsActivated() {
@@ -128,6 +126,15 @@ public class Support extends BaseServer {
 
 	public static boolean richEditorIsActivated() {
 		return richEditorActivated;
+	}
+
+	public static Future<JsonObject> launchExportTicketsWorker(EventBus eb, JsonObject params) {
+		Promise<JsonObject> promise = Promise.promise();
+		eb.request(TicketExportWorker.class.getName(), params,
+				new DeliveryOptions().setSendTimeout(1000 * 1000L),
+				MessageResponseHandler.messageJsonObjectHandler(PromiseHelper.handler(promise)));
+
+		return promise.future();
 	}
 
 }

@@ -31,9 +31,9 @@ import net.atos.entng.support.services.impl.EscalationServiceRedmineImpl;
 import net.atos.entng.support.services.impl.EscalationServicePivotImpl;
 
 
-class EscalationServiceFactory {
+public class EscalationServiceFactory {
 
-	static EscalationService makeEscalationService(final BugTracker bugTracker,
+	public static EscalationService makeEscalationService(final BugTracker bugTracker,
 														  final Vertx vertx, final JsonObject config, final TicketServiceSql ts, final UserService us,
 														  Storage storage) {
 		switch (bugTracker) {
