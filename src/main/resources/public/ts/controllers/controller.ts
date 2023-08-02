@@ -959,5 +959,12 @@ export const SupportController: Controller = ng.controller('SupportController',
 			$scope.tickets.all.forEach((ticket : Ticket) => ticket.selected = isToggled);
 		}
 
+		$scope.goToMainPage = function() {
+			window.location.hash = '/list-tickets/';
+			template.open('main', 'list-tickets');
+			template.open('filters', 'filters');
+			model.tickets.sync($scope.currentPage, $scope.display.filters, $scope.display.filters.school_id, $scope.sort.expression, $scope.sort.reverse);
+		}
+
 		this.initialize();
 	}]);
