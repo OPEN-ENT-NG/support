@@ -2,8 +2,6 @@ package net.atos.entng.support.model;
 
 import fr.wseduc.webutils.I18n;
 import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.json.JsonObject;
-import net.atos.entng.support.constants.Ticket;
 
 import static fr.wseduc.webutils.http.Renders.getHost;
 
@@ -15,6 +13,11 @@ public class I18nConfig {
     public I18nConfig(HttpServerRequest request) {
         this.domain = getHost(request);
         this.lang = I18n.acceptLanguage(request);
+    }
+
+    public I18nConfig(String domain, String lang) {
+        this.domain = domain;
+        this.lang = lang;
     }
 
     public String getDomain() {

@@ -7,6 +7,7 @@
     "support.error.comment.has.not.been.added.to.escalated.ticket": "Erreur : le commentaire n'a pas pu être ajoutée à la demande transmise",
     "support.error.escalation.conflict": "Erreur : transmission impossible. Rafraîchissez la page et relancez la transmission",
     "support.error.escalation.incomplete": "Erreur : la transmission a été réalisée partiellement. Les commentaires n'ont pas pu être transmis",
+    "support.fail.upload.file": "Erreur : le fichier n'a pas pu être enregisté dans l'espace documentaire",
     "support.escalate.ticket": "Transmettre la demande au support",
     "support.escalated.ticket.category": "Category",
     "support.escalated.ticket.author": "Auteur",
@@ -44,8 +45,9 @@
     "support.ticket.cancel": "Annuler",
     "support.ticket.category": "Catégorie",
     "support.ticket.create": "Nouvelle demande",
-    "support.ticket.export": "Exporter les demandes",
-    "support.ticket.export.filename": "export-tickets",
+    "support.ticket.export": "Exporter toutes les demandes",
+    "support.ticket.export.filename": "Exports des demandes Assistance ENT",
+    "support.ticket.export.error" : "Une erreur est survenue lors de l'exportation des tickets",
     "support.ticket.creation.date": "Date de création",
     "support.ticket.description": "Description",
     "support.ticket.edit": "Mettre à jour la demande",
@@ -96,5 +98,6 @@
     "competences": "Evaluations",
     "exercizer": "Exercices",
     "archive": "Mes données",
-    "apizimbra": "Messagerie"
+    "apizimbra": "Messagerie",
+    "support.toast.export.worker": "Le fichier demandé est trop lourd pour être téléchargé directement dans le navigateur. Il est en cours de création dans l'espace documentaire."
 }

@@ -30,6 +30,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import fr.wseduc.webutils.http.Renders;
 import io.vertx.core.Future;
@@ -870,4 +871,69 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 		sql.prepared(query, values, validResultHandler(PromiseHelper.handler(promise)));
 		return promise.future();
 	}
+
+	/**
+	 * @param user : used to get user structures
+	 * @param schoolId : id the structure you want to count
+	 * @return {@link Future} of {@link JsonObject}
+	 **/
+	@Override
+	public Future<JsonObject> countTickets(UserInfos user, JsonObject schoolId){
+		Promise<JsonObject> promise = Promise.promise();
+
+		StringBuilder query = new StringBuilder();
+		query.append("SELECT COUNT(*) FROM support.tickets WHERE school_id IN ");
+		JsonArray values = new JsonArray();
+
+		JsonArray structureIds = schoolId.getJsonArray(Ticket.STRUCTUREIDS);
+
+		if (structureIds == null) {
+			query.append(Sql.listPrepared(user.getStructures()));
+			values.addAll(new JsonArray(user.getStructures()));
+		} else {
+			List<String> listIdStructure = structureIds.stream()
+					.filter(String.class::isInstance)
+					.map(Object::toString)
+					.collect(Collectors.toList());
+			query.append(Sql.listPrepared(listIdStructure));
+			values.addAll(new JsonArray(listIdStructure));
+		}
+
+		sql.prepared(query.toString(), values, validUniqueResultHandler(PromiseHelper.handler(promise)));
+
+		return promise.future();
+	}
+
+	/**
+	 * @param user : used to get user structures
+	 * @return {@link Future} of {@link JsonArray}
+	 **/
+	@Override
+	public Future<JsonArray> getUserTickets(UserInfos user) {
+		Promise<JsonArray> promise = Promise.promise();
+		String query = "SELECT * FROM support.tickets WHERE school_id IN " + Sql.listPrepared(user.getStructures());
+		JsonArray values = new JsonArray(user.getStructures());
+		sql.prepared(query, values, validResultHandler(PromiseHelper.handler(promise)));
+
+		return promise.future();
+	}
+
+	/**
+	 * @param idList : list of structure ids I want to retrieve
+	 * @return {@link Future} of {@link JsonArray}
+	 **/
+	@Override
+	public Future<JsonArray> getTicketsFromStructureIds(JsonObject idList) {
+		Promise<JsonArray> promise = Promise.promise();
+		List<String> listIdStructure = idList.getJsonArray(Ticket.STRUCTUREIDS)
+				.stream()
+				.filter(String.class::isInstance)
+				.map(Object::toString)
+				.collect(Collectors.toList());
+		String query = "SELECT * FROM support.tickets WHERE school_id IN " + Sql.listPrepared(listIdStructure);
+		JsonArray values = idList.getJsonArray(Ticket.STRUCTUREIDS);
+		sql.prepared(query, values, validResultHandler(PromiseHelper.handler(promise)));
+		return promise.future();
+	}
+
 }

@@ -1,13 +1,19 @@
-import {ng} from 'entcore'
+import {ng, toasts} from 'entcore'
 import http, {AxiosResponse} from "axios";
 import {ITicketPayload} from "../models/ticket.model";
 import {ICanAccessResponse} from "../models/schoolWorkflow.model";
+import {ICountTicketsResponse} from "../models/countTickets.model";
+import {IWorkerExportResponse} from "../models/workerExport.model";
 
 export interface ITicketService {
     update(ticketId: number, body: ITicketPayload): Promise<AxiosResponse>;
 
     exportSelectionCSV(ids: Array<number>): void;
     schoolWorkflow(userId: string, workflow: string, structureId: string): Promise<boolean>;
+    countTickets(structureId: string): Promise<AxiosResponse>;
+    directExport(structureId: string): Promise<void>;
+    workerExport(structureId: string): Promise<IWorkerExportResponse>;
+    getThresholdDirectExportTickets(): Promise<ICountTicketsResponse>;
 }
 
 export const ticketService: ITicketService = {
@@ -44,6 +50,48 @@ export const ticketService: ITicketService = {
      **/
     schoolWorkflow: (userId: string, workflow: string, structureId: string): Promise<boolean> =>
         http.get(`/support/check/user/${userId}/workflow/${workflow}/structure/${structureId}/auto/open`)
-            .then((res: AxiosResponse) => (<ICanAccessResponse>res.data).canAccess)
+            .then((res: AxiosResponse) => (<ICanAccessResponse>res.data).canAccess),
+
+    /**
+     * count the number of ticket to export
+     *
+     * @param structureId {string} id of the structure
+     * @returns {Promise<AxiosResponse>} number of ticket to export
+     **/
+    countTickets: (structureId: string): Promise<AxiosResponse> =>
+        http.get(`/support/structures/${structureId}/tickets/count`),
+
+    /**
+     * create and directly download the csv
+     *
+     * @param structureId {string} id of the structure
+     * @returns {void}
+     **/
+    directExport: async (structureId: string): Promise<void> => {
+       window.open(`/support/tickets/export/direct/${structureId}`)
+    },
+
+    /**
+     * use worker to create the csv and download it in the workspace
+     *
+     * @param structureId {string} id of the structure
+     * @returns {void}
+     **/
+     workerExport: async (structureId: string): Promise<IWorkerExportResponse> =>
+        http.get(`/support/tickets/export/worker/${structureId}`)
+            .then((res: AxiosResponse) => <IWorkerExportResponse>res.data.status)
+    ,
+
+    /**
+     * get the threshold from which we export with the worker
+     *
+     * @returns {Promise<ICountTicketsResponse>} threshold
+     **/
+    getThresholdDirectExportTickets: (): Promise<ICountTicketsResponse> =>
+        http.get(`/support/config/thresholdDirectExportTickets`)
+            .then((res: AxiosResponse) => <ICountTicketsResponse>res.data.threshold)
+
+
+
 };
 export const TicketService = ng.service('TicketService', (): ITicketService => ticketService);

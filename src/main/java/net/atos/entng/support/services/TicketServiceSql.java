@@ -106,4 +106,23 @@ public interface TicketServiceSql extends CrudService {
 
 	Future<JsonArray> getTicketsFromListId(List<String> idList);
 	Future<List<Event>> getlistEvents(String ticketId);
+
+	/**
+	 * @param user : used to get user structures
+	 * @param schoolId : id the structure you want to count the tickets
+	 * @return {Future<JsonObject>} number of ticket of the structure
+	 **/
+	Future<JsonObject> countTickets(UserInfos user, JsonObject schoolId);
+
+	/**
+	 * @param user : user from which you want to retrieve tickets
+	 * @return {Future<JsonObject>} tickets of the user's structures
+	 **/
+	Future<JsonArray> getUserTickets(UserInfos user);
+
+	/**
+	 * @param idList : list of structure ids from which you want to retrieve tickets
+	 * @return {Future<JsonObject>} tickets of structures
+	 **/
+	Future<JsonArray> getTicketsFromStructureIds(JsonObject idList);
 }
