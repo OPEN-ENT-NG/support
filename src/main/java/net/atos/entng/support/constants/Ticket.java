@@ -100,4 +100,5 @@ public class Ticket {
     public static final String SLUG = "slug";
 
     public static final String STRUCTURE_IDS = "structure_ids";
+    public static final String STRUCTUREIDS = "structureIds";
 }
