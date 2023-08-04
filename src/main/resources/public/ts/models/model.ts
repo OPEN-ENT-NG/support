@@ -257,6 +257,7 @@ model.build = function() {
 				+ (filters[2]?'&status=2':'')
 				+ (filters[3]?'&status=3':'')
 				+ (filters[4]?'&status=4':'')
+				+ (filters[5]?'&status=5':'')
 				+ (filters.mydemands?'&applicant=ME':'')
 				+ (filters.otherdemands?'&applicant=OTHER':'')
 				+ '&school=' + school

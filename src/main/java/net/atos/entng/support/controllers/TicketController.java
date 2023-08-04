@@ -491,13 +491,20 @@ public class TicketController extends ControllerHelper {
             if (user != null) {
                 Map<String, UserInfos.Function> functions = user.getFunctions();
                 if (functions.containsKey(DefaultFunctions.ADMIN_LOCAL) || functions.containsKey(DefaultFunctions.SUPER_ADMIN)) {
-                    Promise<JsonArray> ticketsPromise = Promise.promise();
-                    ticketServiceSql.listTickets(user, page, statuses, applicants, schoolId, sortBy, order, nbTicketsPerPage, PromiseHelper.handler(ticketsPromise));
-                    // getting the profile for users
-                    ticketsPromise.future()
+                    Promise<JsonArray> promise = Promise.promise();
+                    promise.future()
+                            // getting the profile for users
                             .compose(tickets -> ticketService.getProfileFromTickets(tickets, i18nConfig))
                             .onSuccess(result -> renderJson(request, result))
                             .onFailure(err -> renderError(request, new JsonObject()));
+                    if (Objects.equals(sortBy, Ticket.SCHOOL_ID)) {
+                        ticketService.sortSchoolByName(user.getStructures())
+                                .compose(result -> ticketServiceSql.listTickets(user, page, statuses, applicants, schoolId, sortBy, order, nbTicketsPerPage, result.getJsonArray(Ticket.STRUCTUREIDS)))
+                                .onComplete(promise);
+                    } else {
+                        ticketServiceSql.listTickets(user, page, statuses, applicants, schoolId, sortBy, order, nbTicketsPerPage, null)
+                                .onComplete(promise);
+                    }
                 } else {
                     ticketServiceSql.listMyTickets(user, page, statuses, schoolId, sortBy, order, nbTicketsPerPage, arrayResponseHandler(request));
                 }

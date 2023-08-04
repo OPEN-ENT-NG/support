@@ -193,8 +193,9 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 
 
 	@Override
-	public void listTickets(UserInfos user, Integer page, List<String> statuses, List<String> applicants, String school_id,
-							String sortBy, String order, Integer nbTicketsPerPage, Handler<Either<String, JsonArray>> handler) {
+	public Future<JsonArray> listTickets(UserInfos user, Integer page, List<String> statuses, List<String> applicants, String school_id,
+							String sortBy, String order, Integer nbTicketsPerPage, JsonArray orderedStructures) {
+		Promise<JsonArray> promise = Promise.promise();
 		StringBuilder query = new StringBuilder();
 		query.append("SELECT t.*, u.username AS owner_name, ")
 			.append("i.content").append(bugTrackerType.getLastIssueUpdateFromPostgresqlJson()).append(" AS last_issue_update, ")
@@ -266,8 +267,14 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 
 
 		if(ALLOWED_SORT_BY_COLUMN.contains(sortBy)){
-			query.append(" ORDER BY t.");
-			query.append(sortBy);
+			if (Objects.equals(sortBy, Ticket.SCHOOL_ID)){
+				query.append(" ORDER BY array_position(" +
+						Sql.arrayPrepared(orderedStructures) + ",school_id)");
+				values.addAll(orderedStructures);
+			}else {
+				query.append(" ORDER BY t.");
+				query.append(sortBy);
+			}
 		}
 
 		if(order != null && (order.equals("ASC") || order.equals("DESC"))){
@@ -283,7 +290,8 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 			values.add(nbTicketsPerPage);
 		}
 
-		sql.prepared(query.toString(), values, validResultHandler(handler));
+		sql.prepared(query.toString(), values, validResultHandler(PromiseHelper.handler(promise)));
+		return promise.future();
 	}
 
 	@Override
@@ -941,12 +949,10 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 	public Future<JsonArray> getOrderedTickets(JsonObject orderedStructures) {
 		Promise<JsonArray> promise = Promise.promise();
 		JsonArray structure_ids = orderedStructures.getJsonArray("structureIds");
-		List<String> listIdStructure = structure_ids.getList();
-		String query = "SELECT * FROM support.tickets " +
-				"ORDER BY array_position('{" +
-				Sql.listPrepared(listIdStructure) +
-	"}',school_id) ASC";
-		JsonArray values = new JsonArray(listIdStructure);
+		List<String> listStructureId = structure_ids.getList();
+		String query = "SELECT * FROM support.tickets ORDER BY array_position(" +
+				Sql.arrayPrepared(listStructureId) + ",school_id) ASC";
+		JsonArray values = new JsonArray(listStructureId);
 		sql.prepared(query, values, validResultHandler(PromiseHelper.handler(promise)));
 		return promise.future();
 	}
