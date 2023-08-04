@@ -97,5 +97,4 @@ public class Ticket {
     public static final String LASTNAME = "lastName";
 
     public static final String STRUCTURE_IDS = "structure_ids";
-    public static final String STRUCTUREIDS = "structureIds";
 }
