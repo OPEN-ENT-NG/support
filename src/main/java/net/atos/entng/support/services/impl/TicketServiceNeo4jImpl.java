@@ -87,13 +87,13 @@ public class TicketServiceNeo4jImpl {
         return promise.future();
     }
 
-    public static Future<JsonObject> sortSchoolByName(List<String> schoolIds) {
+    public static Future<JsonObject> sortSchoolByName(List<String> structureIds) {
         Promise<JsonObject> promise = Promise.promise();
         String query = "MATCH (s:Structure) "
-                + " WHERE s.id IN {structure_ids} WITH s ORDER BY s.name RETURN COLLECT(s.id) AS structureIds";
+                + " WHERE s.id IN {structureIds} WITH s ORDER BY s.name RETURN COLLECT(s.id) AS structureIds";
         Neo4j neo4j = Neo4j.getInstance();
-        JsonObject params = new JsonObject().put(Ticket.STRUCTURE_IDS,schoolIds);
-        neo4j.execute(query,params, validUniqueResultHandler(PromiseHelper.handler(promise)));
+        JsonObject params = new JsonObject().put(Ticket.STRUCTUREIDS, structureIds);
+        neo4j.execute(query, params, validUniqueResultHandler(PromiseHelper.handler(promise)));
         return promise.future();
     }
 }

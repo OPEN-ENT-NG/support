@@ -35,5 +35,11 @@ public interface TicketService {
      **/
     Future<JsonObject> listStructureChildren(String structureId);
 
-    Future<JsonObject> sortSchoolByName(List<String> schoolIds);
+    /**
+     * Sort structures by name
+     *
+     * @param structureIds {List<String>} List of structureIds you want to sort
+     * @returns {Future<JsonObject>} JsonObject containing structureIds sorted by name
+     **/
+    Future<JsonObject> sortSchoolByName(List<String> structureIds);
 }

@@ -266,12 +266,12 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 		}
 
 
-		if(ALLOWED_SORT_BY_COLUMN.contains(sortBy)){
-			if (Objects.equals(sortBy, Ticket.SCHOOL_ID)){
+		if (ALLOWED_SORT_BY_COLUMN.contains(sortBy)) {
+			if (Objects.equals(sortBy, Ticket.SCHOOL_ID)) {
 				query.append(" ORDER BY array_position(" +
 						Sql.arrayPrepared(orderedStructures) + ",school_id)");
 				values.addAll(orderedStructures);
-			}else {
+			} else {
 				query.append(" ORDER BY t.");
 				query.append(sortBy);
 			}
