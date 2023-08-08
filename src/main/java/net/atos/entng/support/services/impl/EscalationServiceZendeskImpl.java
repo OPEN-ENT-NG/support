@@ -138,7 +138,7 @@ public class EscalationServiceZendeskImpl implements EscalationService {
 
 		this.zendeskClient = new RemoteClient(vertx, config.getJsonObject("zendesk-remote"));
 		ZendeskIssue.zendeskIssueTemplate.fromJson(config.getJsonObject("zendesk-issue-template"));
-		ZendeskIssue.escalationConf.fromJson(config.getJsonObject("zendesk-escalation-conf"));
+		ZendeskEscalationConf.getInstance().fromJson(config.getJsonObject("zendesk-escalation-conf"));
 
 		Long delayInMinutes = config.getLong("zendesk-refresh-period", config.getLong("refresh-period", 30L));
 		log.info("[Support] Data will be pulled from Zendesk every " + delayInMinutes + " minutes");
@@ -740,7 +740,7 @@ public class EscalationServiceZendeskImpl implements EscalationService {
 						@Override
 						public void handle(CompositeFuture allUploadsResult)
 						{
-							String uploadMessage = I18n.getInstance().translate("support.escalation.zendesk.comment.uploads", new Locale(ZendeskIssue.escalationConf.locale));
+							String uploadMessage = I18n.getInstance().translate("support.escalation.zendesk.comment.uploads", new Locale(ZendeskEscalationConf.getInstance().locale));
 							ZendeskComment zComment = new ZendeskComment(uploadMessage);
 
 							zComment.uploads = new ArrayList<String>();

@@ -37,6 +37,9 @@ public class ZendeskComment extends Comment implements JSONAble
     public List<String> uploads;
     public ZendeskVia via;
 
+    @JSONIgnore
+    private static final ZendeskEscalationConf escalationConf = ZendeskEscalationConf.getInstance();
+
     public ZendeskComment()
     {
         super((String)null);
@@ -64,18 +67,23 @@ public class ZendeskComment extends Comment implements JSONAble
     public JsonObject toJson()
     {
         String originalContent = this.content;
+        Long originalAuthor = this.author_id;
 
         if(this.content == null || "".equals(this.content.trim()))
-            this.content = I18n.getInstance().translate("support.escalated.ticket.empty", new Locale(ZendeskIssue.escalationConf.locale));
+            this.content = I18n.getInstance().translate("support.escalated.ticket.empty", new Locale(escalationConf.locale));
 
             if(this.ownerName != null)
         {
-            String authorHeader = I18n.getInstance().translate("support.escalated.ticket.author", new Locale(ZendeskIssue.escalationConf.locale));
+            String authorHeader = I18n.getInstance().translate("support.escalated.ticket.author", new Locale(escalationConf.locale));
             this.content = authorHeader + " : " + this.ownerName + "\n\n" + this.content;
         }
 
+        if(this.author_id == null)
+            this.author_id = escalationConf.comment_author_user_id;
+
         JsonObject jo = JSONAble.super.toJson();
         this.content = originalContent;
+        this.author_id = originalAuthor;
         return jo;
     }
 }

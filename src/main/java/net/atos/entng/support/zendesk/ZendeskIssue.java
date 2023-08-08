@@ -31,22 +31,9 @@ import net.atos.entng.support.Attachment;
 public class ZendeskIssue extends Issue implements JSONAble
 {
     @JSONIgnore
-    public static final ZendeskEscalationConf escalationConf = new ZendeskEscalationConf();
-    @JSONIgnore
     public static final ZendeskIssue zendeskIssueTemplate = new ZendeskIssue((Long)null);
-
-    // Does not come from Zendesk
-    public static class ZendeskEscalationConf implements JSONAble
-    {
-        public Long user_name_field_id;
-        public Long gestionnaire_name_field_id;
-        public Long user_phone_field_id;
-        public Long ticket_id_field_id;
-        public Long school_name_field_id;
-        public Long school_uai_field_id;
-        @JSONDefault("fr")
-        public String locale;
-    }
+    @JSONIgnore
+    private static final ZendeskEscalationConf escalationConf = ZendeskEscalationConf.getInstance();
 
     private static class Collaborator implements JSONAble
     {
