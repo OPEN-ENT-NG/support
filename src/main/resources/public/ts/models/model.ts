@@ -263,6 +263,9 @@ model.build = function() {
 				+ '&sortBy=' + sortBy
 				+ '&order=' + (order?'DESC':'ASC');
 			http().get('/support/tickets' + queryParams).done(function (tickets) {
+				if(filters.every(status => status == false)){
+					tickets=[];
+				}
 				this.load(tickets);
 				if(typeof callback === 'function'){
 					callback();
