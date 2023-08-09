@@ -782,8 +782,15 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 				else
 				{
 					JsonObject sqlIssue = result.right().getValue();
+					Long id = sqlIssue.getLong("id");
+					if(id == null)
+					{
+						handler.handle(new Either.Left<String, Issue>("No issue found"));
+						return;
+					}
+
 					String content = sqlIssue.getString("content");
-					Issue issue = new Issue(sqlIssue.getLong("id"), content == null ? null : new JsonObject(content));
+					Issue issue = new Issue(id, content == null ? null : new JsonObject(content));
 
 					JsonArray attachments = new JsonArray(sqlIssue.getString("attachments", "[]"));
 					for(int i = 0; i < attachments.size(); ++i)

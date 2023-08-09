@@ -828,7 +828,7 @@ public class TicketController extends ControllerHelper {
             public void handle(Either<String, Issue> result)
             {
                 if(result.isLeft())
-                    renderError(request, new JsonObject().put("error", result.left().getValue()));
+                    renderJson(request, new JsonObject().put("status", "error").put("error", result.left().getValue()).put("message", result.left().getValue()));
                 else
                     renderJson(request, result.right().getValue().toJsonObject());
             }
