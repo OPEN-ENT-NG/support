@@ -1,6 +1,6 @@
 // Enum based on the following article : https://stijndewitt.wordpress.com/2014/01/26/enums-in-javascript/
 
-import {_, http} from "entcore";
+import {_, http, notify} from "entcore";
 
 declare let model: any;
 
@@ -268,7 +268,12 @@ model.build = function() {
 				if(typeof callback === 'function'){
 					callback();
 				}
-			}.bind(this));
+			}.bind(this))
+				.error(function(err){
+				if (!!err && !!err.responseJSON && err.responseJSON.error && !!err.responseJSON.error.i18n){
+					notify.error('support.error.sort.tickets.by.school.name');
+				}
+			});
 		},
 		behaviours: 'support'
 	});
