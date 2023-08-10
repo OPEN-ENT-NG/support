@@ -919,9 +919,21 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 	@Override
 	public Future<JsonArray> getUserTickets(UserInfos user) {
 		Promise<JsonArray> promise = Promise.promise();
-		String query = "SELECT * FROM support.tickets WHERE school_id IN " + Sql.listPrepared(user.getStructures());
-		JsonArray values = new JsonArray(user.getStructures());
-		sql.prepared(query, values, validResultHandler(PromiseHelper.handler(promise)));
+		JsonArray values = new JsonArray();
+		Function adminLocal = user.getFunctions().get(DefaultFunctions.ADMIN_LOCAL);
+		StringBuilder query = new StringBuilder();
+		query.append("SELECT * FROM support.tickets WHERE school_id IN ");
+		if (adminLocal != null) {
+			List<String> scopesList = adminLocal.getScope();
+			if (scopesList != null && !scopesList.isEmpty()) {
+				query.append(Sql.listPrepared(scopesList));
+				values.addAll(new JsonArray(scopesList));
+			}
+		} else {
+			query.append(Sql.listPrepared(user.getStructures()));
+			values.addAll(new JsonArray(user.getStructures()));
+		}
+		sql.prepared(query.toString(), values, validResultHandler(PromiseHelper.handler(promise)));
 
 		return promise.future();
 	}

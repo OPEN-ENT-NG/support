@@ -6,6 +6,7 @@ import net.atos.entng.support.constants.Ticket;
 import org.entcore.common.user.UserInfos;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class UserInfosHelper {
@@ -86,5 +87,11 @@ public class UserInfosHelper {
      public static List<UserInfos.Action> getUserActionsFromJSONArray(JsonArray actions) {
         return ((List<JsonObject>) actions.getList()).stream().map(UserInfosHelper::getUserActionFromJSON).collect(Collectors.toList());
      }
+
+    public static String getAppName(UserInfos user, String appAddress) {
+        return user.getApps().stream()
+                .filter(app -> Objects.equals(app.getAddress(), appAddress))
+                .map(UserInfos.Application::getDisplayName).findFirst().orElse("");
+    }
 
 }

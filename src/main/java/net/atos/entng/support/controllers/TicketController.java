@@ -360,7 +360,7 @@ public class TicketController extends ControllerHelper {
                             createTicketHistoMultiple(ids, I18n.getInstance().translate("support.ticket.histo.mass.modification",
                                     getHost(request), I18n.acceptLanguage(request)), newStatus, user.getUserId());
                             request.response().setStatusCode(200).end();
-                            if(escalationService != null && escalationService.getBugTrackerType().getBugTrackerSyncType()
+                            if (escalationService != null && escalationService.getBugTrackerType().getBugTrackerSyncType()
                                     == BugTrackerSyncType.ASYNC) {
                                 updateIssuesStatus(request, ids);
                             }
@@ -705,9 +705,9 @@ public class TicketController extends ControllerHelper {
                     }
                 });
                 if (doResponse) {
-                    if(escalationResponse.left().getValue() == Ticket.PAYLOADTOOLARGE){
-                        renderError(request, new JsonObject().put(Ticket.ERROR, escalationResponse.left().getValue()),413,Ticket.PAYLOADTOOLARGE);
-                    }else {
+                    if (escalationResponse.left().getValue() == Ticket.PAYLOADTOOLARGE) {
+                        renderError(request, new JsonObject().put(Ticket.ERROR, escalationResponse.left().getValue()), 413, Ticket.PAYLOADTOOLARGE);
+                    } else {
                         renderError(request, new JsonObject().put(Ticket.ERROR, escalationResponse.left().getValue()));
                     }
                 }
@@ -918,14 +918,18 @@ public class TicketController extends ControllerHelper {
     @ApiDoc("Export tickets")
     public void exportTickets(HttpServerRequest request) {
         List<String> ids = request.params().getAll(Ticket.ID);
+        JsonArray tickets = new JsonArray();
         UserUtils.getUserInfos(eb, request, user -> {
             if (user != null) {
                 I18nConfig i18nConfig = new I18nConfig(request);
                 ticketServiceSql.getTicketsFromListId(ids)
-                        .compose(tickets -> ticketService.getProfileFromTickets(tickets,i18nConfig))
-                        .compose(ticketService::getSchoolFromTickets)
+                        .compose(ticketsResults -> {
+                            tickets.addAll(CSVHelper.translateTicketCategory(user, ticketsResults));
+                            return CompositeFuture.all(ticketService.getProfileFromTickets(tickets, i18nConfig),
+                                    ticketService.getSchoolFromTickets(tickets));
+                        })
                         .onSuccess(result -> {
-                            TicketsCSVExport pce = new TicketsCSVExport(result,i18nConfig);
+                            TicketsCSVExport pce = new TicketsCSVExport(tickets, i18nConfig);
                             CSVHelper.sendCSV(request, pce.filename(), pce.generate());
                         })
                         .onFailure(err -> renderError(request, new JsonObject()));
@@ -974,7 +978,7 @@ public class TicketController extends ControllerHelper {
                 else promise.complete(new JsonObject());
             } else {
                 log.debug(String.format("[Support@%s::countTickets] %s",
-                                this.getClass().getSimpleName(), "User not found in session."));
+                        this.getClass().getSimpleName(), "User not found in session."));
                 unauthorized(request);
             }
         });
@@ -990,11 +994,15 @@ public class TicketController extends ControllerHelper {
                 final String structureId = request.params().get(Ticket.STRUCTURE_ID);
                 I18nConfig i18nConfig = new I18nConfig(request);
                 Promise<JsonArray> promise = Promise.promise();
+                JsonArray tickets = new JsonArray();
                 promise.future()
-                        .compose(tickets -> ticketService.getProfileFromTickets(tickets, i18nConfig))
-                        .compose(ticketService::getSchoolFromTickets)
+                        .compose(ticketsResults -> {
+                            tickets.addAll(CSVHelper.translateTicketCategory(user, ticketsResults));
+                            return CompositeFuture.all(ticketService.getProfileFromTickets(tickets, i18nConfig),
+                                    ticketService.getSchoolFromTickets(tickets));
+                        })
                         .onSuccess(result -> {
-                            TicketsCSVExport pce = new TicketsCSVExport(result, i18nConfig);
+                            TicketsCSVExport pce = new TicketsCSVExport(tickets, i18nConfig);
                             CSVHelper.sendCSV(request, pce.filename(), pce.generate());
                         })
                         .onFailure(err -> renderError(request, new JsonObject()));

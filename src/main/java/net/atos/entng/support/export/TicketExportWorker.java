@@ -1,9 +1,6 @@
 package net.atos.entng.support.export;
 
-import io.vertx.core.Context;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.Promise;
+import io.vertx.core.*;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -88,13 +85,17 @@ public class TicketExportWorker extends BusModBase implements Handler<Message<Js
     private Future<ExportFile> createCSVFile(JsonObject params, I18nConfig i18nConfig) {
         Promise<ExportFile> promise = Promise.promise();
         String structureId = params.getString(Ticket.STRUCTURE_ID);
-
+        JsonArray tickets = new JsonArray();
+        UserInfos user = UserInfosHelper.getUserInfosFromJSON(params.getJsonObject(Ticket.USER));
         getStructureIds(structureId, params)
                 .compose(structureIds -> ticketServiceSql.getTicketsFromStructureIds(structureIds))
-                .compose(tickets -> ticketService.getProfileFromTickets(tickets, i18nConfig))
-                .compose(ticketService::getSchoolFromTickets)
+                .compose(ticketsResults -> {
+                    tickets.addAll(CSVHelper.translateTicketCategory(user, ticketsResults));
+                    return CompositeFuture.all(ticketService.getProfileFromTickets(tickets, i18nConfig),
+                            ticketService.getSchoolFromTickets(tickets));
+                })
                 .onSuccess(result -> {
-                    TicketsCSVExport pce = new TicketsCSVExport(result, i18nConfig);
+                    TicketsCSVExport pce = new TicketsCSVExport(tickets, i18nConfig);
                     promise.complete(CSVHelper.getExportFile(pce.filename(), pce.generate()));
                 })
                 .onFailure(fail -> {
