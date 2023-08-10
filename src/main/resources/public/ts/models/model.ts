@@ -270,8 +270,8 @@ model.build = function() {
 				}
 			}.bind(this))
 				.error(function(err){
-				if (!!err && !!err.responseJSON && err.responseJSON.error && !!err.responseJSON.error.i18n){
-					notify.error('support.error.sort.tickets.by.school.name');
+				if (!!err && !!err.responseJSON && !!err.responseJSON.error && !!err.responseJSON.error.i18n){
+					notify.error(err.responseJSON.error.i18n);
 				}
 			});
 		},

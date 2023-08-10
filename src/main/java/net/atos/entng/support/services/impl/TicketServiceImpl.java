@@ -6,6 +6,7 @@ import io.vertx.core.Promise;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import net.atos.entng.support.constants.Ticket;
+import net.atos.entng.support.enums.Error;
 import net.atos.entng.support.model.I18nConfig;
 import net.atos.entng.support.services.TicketService;
 
@@ -103,7 +104,7 @@ public class TicketServiceImpl implements TicketService {
             TicketServiceNeo4jImpl.sortSchoolByName(structureIds)
                     .onSuccess(promise::complete)
                     .onFailure(promise::fail);
-        } else promise.fail("support.error.sort.school.by.name");
+        } else promise.fail(Error.SORT_BY_STRUCTURE.getI18n());
         return promise.future();
     }
 
