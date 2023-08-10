@@ -72,7 +72,7 @@ public class ZendeskComment extends Comment implements JSONAble
         if(this.content == null || "".equals(this.content.trim()))
             this.content = I18n.getInstance().translate("support.escalated.ticket.empty", new Locale(escalationConf.locale));
 
-            if(this.ownerName != null)
+        if(this.ownerName != null)
         {
             String authorHeader = I18n.getInstance().translate("support.escalated.ticket.author", new Locale(escalationConf.locale));
             this.content = authorHeader + " : " + this.ownerName + "\n\n" + this.content;
@@ -80,6 +80,8 @@ public class ZendeskComment extends Comment implements JSONAble
 
         if(this.author_id == null)
             this.author_id = escalationConf.comment_author_user_id;
+
+        this.content = this.content.replace("\n", "<br/>");
 
         JsonObject jo = JSONAble.super.toJson();
         this.content = originalContent;
