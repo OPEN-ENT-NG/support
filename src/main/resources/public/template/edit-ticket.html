@@ -86,15 +86,13 @@
             <article class="reduce-block-eight" ng-if="!comment.isHistory">
                 <a href="/userbook/annuaire#[[comment.owner]]">[[comment.owner_name]]</a>
                 <em><i18n>support.on</i18n> [[formatDate(comment.created)]]</em>
-				<p class="with-newlines" ng-if="!isRichEditorActivated">[[comment.content]]</p>
-				<p class="with-newlines" ng-if="isRichEditorActivated" ng-bind-html="comment.content"></p>
+				<p class="with-newlines" ng-bind-html="comment.content"></p>
             </article>
             <li class="row" ng-if="comment.isHistory">
                 <a href="/userbook/annuaire#[[comment.owner]]">[[comment.owner_name]]</a>
                 <em><i18n>support.on</i18n> [[formatDate(comment.created)]]</em>
 				<br/>
-				<span ng-if="comment.type!=6 && !isRichEditorActivated" class="with-newlines">[[comment.content]].</span>
-				<span ng-if="comment.type!=6 && isRichEditorActivated" class="with-newlines" ng-bind-html="comment.content">.</span>
+				<span ng-if="comment.type!=6" class="with-newlines" ng-bind-html="comment.content">.</span>
 				<span ng-if="comment.type==6" ng-bind-html="comment.content" class="htmlComment"></span>
                 <br/>
                 <i18n>support.ticket.status.histo</i18n>
