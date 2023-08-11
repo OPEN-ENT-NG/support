@@ -257,12 +257,16 @@ model.build = function() {
 				+ (filters[2]?'&status=2':'')
 				+ (filters[3]?'&status=3':'')
 				+ (filters[4]?'&status=4':'')
+				+ (filters[5]?'&status=5':'')
 				+ (filters.mydemands?'&applicant=ME':'')
 				+ (filters.otherdemands?'&applicant=OTHER':'')
 				+ '&school=' + school
 				+ '&sortBy=' + sortBy
 				+ '&order=' + (order?'DESC':'ASC');
 			http().get('/support/tickets' + queryParams).done(function (tickets) {
+				if (filters.every((status: boolean) => !status)) {
+					tickets = [];
+				}
 				this.load(tickets);
 				if(typeof callback === 'function'){
 					callback();
