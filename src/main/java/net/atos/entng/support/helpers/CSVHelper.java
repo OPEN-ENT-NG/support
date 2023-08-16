@@ -29,8 +29,10 @@ public class CSVHelper {
     }
 
     public static JsonArray translateTicketCategory(UserInfos user, JsonArray ticketsResults) {
-        return new JsonArray(ticketsResults.stream().filter(JsonObject.class::isInstance)
-                .map(JsonObject.class::cast).map(ticket -> {
+        return new JsonArray(ticketsResults.stream()
+                .filter(JsonObject.class::isInstance)
+                .map(JsonObject.class::cast)
+                .map(ticket -> {
                     ticket.put(Ticket.CATEGORY, UserInfosHelper.getAppName(user, ticket.getString(Ticket.CATEGORY)));
                     return ticket;
                 })

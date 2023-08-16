@@ -29,6 +29,7 @@ import net.atos.entng.support.helpers.CSVHelper;
 import net.atos.entng.support.helpers.RequestHelper;
 import net.atos.entng.support.helpers.UserInfosHelper;
 import net.atos.entng.support.model.I18nConfig;
+import net.atos.entng.support.model.TicketModel;
 import net.atos.entng.support.services.*;
 
 import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
@@ -1010,7 +1011,14 @@ public class TicketController extends ControllerHelper {
                 if (!Objects.equals(structureId, Ticket.ASTERISK)) ticketService.listStructureChildren(structureId)
                         .compose(ticketServiceSql::getTicketsFromStructureIds)
                         .onComplete(promise);
-                else ticketServiceSql.getUserTickets(user).onComplete(promise);
+                else ticketServiceSql.getUserTickets(user).onComplete(ar -> {
+                    List<TicketModel> ticketModels = ar.result();
+                    JsonArray jsonArray = new JsonArray();
+                    for (TicketModel ticketModel : ticketModels) {
+                        jsonArray.add(ticketModel.toJson());
+                    }
+                    promise.complete(jsonArray);
+                });
             } else {
                 log.debug(String.format("[Support@%s::directExport] %s",
                         this.getClass().getSimpleName(), "User not found in session."));

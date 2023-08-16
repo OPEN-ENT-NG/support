@@ -91,7 +91,9 @@ public class UserInfosHelper {
     public static String getAppName(UserInfos user, String appAddress) {
         return user.getApps().stream()
                 .filter(app -> Objects.equals(app.getAddress(), appAddress))
-                .map(UserInfos.Application::getDisplayName).findFirst().orElse("");
+                .map(UserInfos.Application::getDisplayName)
+                .findFirst()
+                .orElse("");
     }
 
 }

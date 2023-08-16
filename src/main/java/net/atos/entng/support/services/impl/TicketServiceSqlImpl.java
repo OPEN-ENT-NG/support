@@ -43,6 +43,7 @@ import net.atos.entng.support.helpers.DateHelper;
 import net.atos.entng.support.helpers.IModelHelper;
 import net.atos.entng.support.helpers.PromiseHelper;
 import net.atos.entng.support.model.Event;
+import net.atos.entng.support.model.TicketModel;
 import net.atos.entng.support.services.TicketServiceSql;
 
 import org.entcore.common.service.impl.SqlCrudService;
@@ -917,8 +918,8 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 	 * @return {@link Future} of {@link JsonArray}
 	 **/
 	@Override
-	public Future<JsonArray> getUserTickets(UserInfos user) {
-		Promise<JsonArray> promise = Promise.promise();
+	public Future<List<TicketModel>> getUserTickets(UserInfos user) {
+		Promise<List<TicketModel>> promise = Promise.promise();
 		JsonArray values = new JsonArray();
 		Function adminLocal = user.getFunctions().get(DefaultFunctions.ADMIN_LOCAL);
 		StringBuilder query = new StringBuilder();
@@ -933,7 +934,9 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 			query.append(Sql.listPrepared(user.getStructures()));
 			values.addAll(new JsonArray(user.getStructures()));
 		}
-		sql.prepared(query.toString(), values, validResultHandler(PromiseHelper.handler(promise)));
+
+		String errorMessage = String.format("[Support@%s::getUserTickets] Fail to get user tickets", this.getClass().getSimpleName());
+		sql.prepared(query.toString(), values, SqlResult.validResultHandler(IModelHelper.sqlResultToIModel(promise, TicketModel.class, errorMessage)));
 
 		return promise.future();
 	}
