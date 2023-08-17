@@ -9,6 +9,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import net.atos.entng.support.model.TicketModel;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -86,7 +87,7 @@ public class IModelHelper {
      * @param objects List of object
      * @return {@link JsonArray}
      */
-    private static JsonArray listToJsonArray(List<?> objects) {
+    public static JsonArray listToJsonArray(List<?> objects) {
         JsonArray res = new JsonArray();
         objects.stream()
                 .filter(Objects::nonNull)

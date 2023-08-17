@@ -25,9 +25,7 @@ import static net.atos.entng.support.Support.bugTrackerCommDirect;
 import io.vertx.core.*;
 import net.atos.entng.support.enums.Error;
 import net.atos.entng.support.filters.AdminOfTicketsStructure;
-import net.atos.entng.support.helpers.CSVHelper;
-import net.atos.entng.support.helpers.RequestHelper;
-import net.atos.entng.support.helpers.UserInfosHelper;
+import net.atos.entng.support.helpers.*;
 import net.atos.entng.support.model.I18nConfig;
 import net.atos.entng.support.model.TicketModel;
 import net.atos.entng.support.services.*;
@@ -62,7 +60,6 @@ import net.atos.entng.support.enums.EscalationStatus;
 import net.atos.entng.support.export.TicketsCSVExport;
 import net.atos.entng.support.filters.Admin;
 import net.atos.entng.support.filters.OwnerOrLocalAdmin;
-import net.atos.entng.support.helpers.PromiseHelper;
 import net.atos.entng.support.services.impl.TicketServiceNeo4jImpl;
 import org.entcore.common.controller.ControllerHelper;
 import org.entcore.common.events.EventHelper;
@@ -926,8 +923,7 @@ public class TicketController extends ControllerHelper {
                 ticketServiceSql.getTicketsFromListId(ids)
                         .compose(ticketsResults -> {
                             tickets.addAll(CSVHelper.translateTicketCategory(user, ticketsResults));
-                            return CompositeFuture.all(ticketService.getProfileFromTickets(tickets, i18nConfig),
-                                    ticketService.getSchoolFromTickets(tickets));
+                            return ticketService.getSchoolAndProfileFromTicket(tickets,i18nConfig);
                         })
                         .onSuccess(result -> {
                             TicketsCSVExport pce = new TicketsCSVExport(tickets, i18nConfig);
@@ -999,8 +995,7 @@ public class TicketController extends ControllerHelper {
                 promise.future()
                         .compose(ticketsResults -> {
                             tickets.addAll(CSVHelper.translateTicketCategory(user, ticketsResults));
-                            return CompositeFuture.all(ticketService.getProfileFromTickets(tickets, i18nConfig),
-                                    ticketService.getSchoolFromTickets(tickets));
+                            return ticketService.getSchoolAndProfileFromTicket(tickets, i18nConfig);
                         })
                         .onSuccess(result -> {
                             TicketsCSVExport pce = new TicketsCSVExport(tickets, i18nConfig);
@@ -1013,11 +1008,7 @@ public class TicketController extends ControllerHelper {
                         .onComplete(promise);
                 else ticketServiceSql.getUserTickets(user).onComplete(ar -> {
                     List<TicketModel> ticketModels = ar.result();
-                    JsonArray jsonArray = new JsonArray();
-                    for (TicketModel ticketModel : ticketModels) {
-                        jsonArray.add(ticketModel.toJson());
-                    }
-                    promise.complete(jsonArray);
+                    promise.complete(IModelHelper.listToJsonArray(ticketModels));
                 });
             } else {
                 log.debug(String.format("[Support@%s::directExport] %s",

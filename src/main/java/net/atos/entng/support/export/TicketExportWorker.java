@@ -91,8 +91,7 @@ public class TicketExportWorker extends BusModBase implements Handler<Message<Js
                 .compose(structureIds -> ticketServiceSql.getTicketsFromStructureIds(structureIds))
                 .compose(ticketsResults -> {
                     tickets.addAll(CSVHelper.translateTicketCategory(user, ticketsResults));
-                    return CompositeFuture.all(ticketService.getProfileFromTickets(tickets, i18nConfig),
-                            ticketService.getSchoolFromTickets(tickets));
+                    return ticketService.getSchoolAndProfileFromTicket(tickets,i18nConfig);
                 })
                 .onSuccess(result -> {
                     TicketsCSVExport pce = new TicketsCSVExport(tickets, i18nConfig);
