@@ -221,13 +221,9 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 			List<String> scopesList = adminLocal.getScope();
 			if(scopesList != null && !scopesList.isEmpty()) {
 				if (school_id.equals("*")){
-					query.append(" AND ((t.school_id IN (");
-					for (String scope : scopesList) {
-						query.append("?,");
-						values.add(scope);
-					}
-					query.deleteCharAt(query.length() - 1);
-					query.append(")");
+					query.append(" AND t.school_id IN ");
+					query.append(Sql.listPrepared(scopesList));
+					values.addAll(new JsonArray(scopesList));
 				}else if(scopesList.contains(school_id)){
 					query.append(" AND t.school_id IN ");
 					List<String> listIdStructure = structureChildrens.getJsonArray(Ticket.STRUCTUREIDS).stream()
@@ -242,14 +238,12 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 					query.append(" AND t.owner").append(applicantIsMe?"=":"!=").append("?");
 					values.add(user.getUserId());
 				}
-				query.append(")");
 
 				// Include tickets created by current user, and linked to a school where he is not local administrator
 				if (!oneApplicant || applicantIsMe) {
 					query.append(" OR t.owner = ?");
 					values.add(user.getUserId());
 				}
-				query.append(")");
 			}
 		}
 		else if (school_id.equals("*")){
