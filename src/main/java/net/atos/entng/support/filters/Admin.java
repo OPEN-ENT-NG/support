@@ -87,7 +87,7 @@ public class Admin implements ResourcesProvider {
 		else if(isGetBugTrackerAttachment(binding)) {
 			// parameter "id" is a gridfsId
 			query.append("INNER JOIN support.bug_tracker_issues AS i ON t.id = i.ticket_id ")
-				.append("INNER JOIN support.bug_tracker_attachments AS a ON i.id = a.issue_id ")
+				.append("INNER JOIN support.bug_tracker_attachments AS a ON i.id = a.issue_id AND i.bugtracker = a.bugtracker ")
 				.append("WHERE a.gridfs_id = ? ");
 		}
 		else {

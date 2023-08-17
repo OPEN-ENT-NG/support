@@ -1212,7 +1212,7 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 														.put("filename", filename).put("content_type", contentType);
 												uploads.add(attachment);
 												bugTrackerAttachments.add(Sql.parseId(attachmentIdInRedmine))
-														.add(issueId).add(documentId).add(filename).add(size);
+														.add(issueId).add("REDMINE").add(documentId).add(filename).add(size);
 //												insertBugTrackerAttachment(attachmentIdInRedmine, issueId, documentId, filename, size);
 											}
 											if (count.decrementAndGet() <= 0) {
@@ -1263,13 +1263,13 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 	}
 
 	private void insertBugTrackerAttachment(JsonArray values, Handler<Either<String, JsonObject>> handler) {
-		if (values == null || values.size() == 0 || values.size() % 5 != 0) {
+		if (values == null || values.size() == 0 || values.size() % 6 != 0) {
 			handler.handle(new Either.Left<String, JsonObject>("invalid.values"));
 			return;
 		}
 		StringBuilder query = new StringBuilder("SELECT ");
-		for (int i = 0; i < values.size(); i += 5) {
-			query.append(" support.merge_attachment_bydoc(?,?,?,?,?), ");
+		for (int i = 0; i < values.size(); i += 6) {
+			query.append(" support.merge_attachment_bydoc(?,?,?,?,?,?), ");
 		}
 		sql.prepared(query.deleteCharAt(query.length() - 2).toString(), values,
 				SqlResult.validRowsResultHandler(handler));
@@ -1283,7 +1283,7 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 			public void handle(final Long issueId) {
 				if (issueId != null) {
 					String query = "SELECT a.document_id as attachmentId "
-							+ "FROM support.bug_tracker_attachments AS a " + "WHERE a.issue_id = ? ";
+							+ "FROM support.bug_tracker_attachments AS a " + "WHERE a.issue_id = ? AND a.bugtracker = 'REDMINE'";
 					sql.prepared(query, new JsonArray().add(issueId),
 							SqlResult.validResultHandler(new Handler<Either<String, JsonArray>>() {
 								@Override
