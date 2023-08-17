@@ -394,8 +394,8 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 	public void getTicketIdAndSchoolId(final Number issueId, final Handler<Either<String, Ticket>> handler) {
 		String query = "SELECT t.id, t.school_id, t.owner, t.locale, t.status FROM support.tickets AS t"
 				+ " INNER JOIN support.bug_tracker_issues AS i ON t.id = i.ticket_id"
-				+ " WHERE i.id = ?";
-		JsonArray values = new JsonArray().add(issueId);
+				+ " WHERE i.id = ? AND i.bugtracker = ?";
+		JsonArray values = new JsonArray().add(issueId).add(bugTrackerType.name());
 
 		sql.prepared(query.toString(), values, validUniqueResultHandler(toTicketHandler(handler)));
 	}
@@ -557,7 +557,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 			// 3. Insert bug tracker issue in ENT, so that local administrators can see it
 			String insertQuery = "INSERT INTO support.bug_tracker_issues(id, ticket_id, content, bugtracker, owner)"
 					+ " VALUES(?, ?, ?::JSON, ?, ?)"
-					+ " ON CONFLICT (id)"
+					+ " ON CONFLICT ON CONSTRAINT bug_tracker_issues_pkey"
 					+ " DO UPDATE"
 					+ " SET content = excluded.content";
 
@@ -644,16 +644,16 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 		query.append("WITH old_issue AS (")
 			.append(" SELECT content").append(bugTrackerType.getStatusIdFromPostgresqlJson()).append(" AS status_id")
 			.append(" FROM support.bug_tracker_issues")
-			.append(" WHERE id = ?)");
-		values.add(issueId);
+			.append(" WHERE id = ? AND bugtracker = ?)");
+		values.add(issueId).add(bugTrackerType.name());
 
 		query.append(" UPDATE support.bug_tracker_issues")
 			.append(" SET id = ?, content = ?::JSON, modified = timezone('UTC', NOW())")
-			.append(" WHERE id = ?")
+			.append(" WHERE id = ? AND bugtracker = ?")
 			.append(" RETURNING (SELECT status_id FROM old_issue)");
 
 		values.add(content.id.get()).add(content.getContent().toString())
-			.add(issueId);
+			.add(issueId).add(bugTrackerType.name());
 
 		sql.prepared(query.toString(), values, validUniqueResultHandler(new Handler<Either<String, JsonObject>>()
 		{
@@ -707,9 +707,9 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 
 		query.append(" FROM support.bug_tracker_issues AS i")
 			.append(" LEFT JOIN support.bug_tracker_attachments AS a")
-			.append(" ON a.issue_id = i.id");
+			.append(" ON a.issue_id = i.id AND a.bugtracker = i.bugtracker");
 
-		query.append(" WHERE bugtracker = ? ");
+		query.append(" WHERE i.bugtracker = ? ");
 
 		JsonArray values = new JsonArray();
 		values.add(bugTrackerType.name());
@@ -762,9 +762,9 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 			.append(" ELSE json_agg((a.*))")
 			.append(" END AS attachments")
 			.append(" FROM support.bug_tracker_issues AS i")
-			.append(" LEFT JOIN support.bug_tracker_attachments AS a ON i.id = a.issue_id")
+			.append(" LEFT JOIN support.bug_tracker_attachments AS a ON i.id = a.issue_id AND i.bugtracker = a.bugtracker")
 			.append(" WHERE i.ticket_id = ?")
-			.append(" GROUP BY i.id");
+			.append(" GROUP BY i.id, i.bugtracker");
 		JsonArray values = new JsonArray().add(parseId(ticketId));
 
 		sql.prepared(query.toString(), values, validUniqueResultHandler(this.toIssueHandler(handler)));
@@ -871,12 +871,12 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 				String docOrFsId = null;
 				if(attachment.documentId != null)
 				{
-					attachmentsQuery.append("support.merge_attachment_bydoc(?, ?, ?, ?, ?),");
+					attachmentsQuery.append("support.merge_attachment_bydoc(?, ?, ?, ?, ?, ?),");
 					docOrFsId = attachment.documentId;
 				}
 				else if(attachment.fileSystemId != null)
 				{
-					attachmentsQuery.append("support.merge_attachment_bygridfs(?, ?, ?, ?, ?),");
+					attachmentsQuery.append("support.merge_attachment_bygridfs(?, ?, ?, ?, ?, ?),");
 					docOrFsId = attachment.fileSystemId;
 				}
 				else
@@ -884,6 +884,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 
 				attachmentsValues.add(attachmentIdInBugTracker)
 					.add(issueId.get())
+					.add(bugTrackerType.name())
 					.add(docOrFsId)
 					.add(attachment.name)
 					.add(attachment.size);
