@@ -492,23 +492,21 @@ public class TicketController extends ControllerHelper {
             if (user != null) {
                 Map<String, UserInfos.Function> functions = user.getFunctions();
                 if (functions.containsKey(DefaultFunctions.ADMIN_LOCAL) || functions.containsKey(DefaultFunctions.SUPER_ADMIN)) {
-                    Promise<JsonArray> promise = Promise.promise();
-                    promise.future()
-                            // getting the profile for users
-                            .compose(tickets -> ticketService.getProfileFromTickets(tickets, i18nConfig))
-                            .onSuccess(result -> renderJson(request, result))
-                            .onFailure(err -> renderError(request, new JsonObject().put(Ticket.ERROR,Error.valueOf(err.getMessage()).toJson())));
+                    Future<JsonArray> future;
                     if (Objects.equals(sortBy, Ticket.SCHOOL_ID)) {
-                        ticketService.sortSchoolByName(user.getStructures())
+                        future = ticketService.sortSchoolByName(user.getStructures())
                                 .compose(result -> {
-                                    if(result != null && !result.isEmpty()) return ticketServiceSql.listTickets(user, page, statuses, applicants, schoolId, sortBy, order, nbTicketsPerPage, result.getJsonArray(Ticket.STRUCTUREIDS));
+                                    if (result != null && !result.isEmpty())
+                                        return ticketServiceSql.listTickets(user, page, statuses, applicants, schoolId, sortBy, order, nbTicketsPerPage, result.getJsonArray(Ticket.STRUCTUREIDS));
                                     return Future.failedFuture(Error.SORT_BY_STRUCTURE.name());
-                                })
-                                .onComplete(promise);
+                                });
                     } else {
-                        ticketServiceSql.listTickets(user, page, statuses, applicants, schoolId, sortBy, order, nbTicketsPerPage, null)
-                                .onComplete(promise);
+                        future = ticketServiceSql.listTickets(user, page, statuses, applicants, schoolId, sortBy, order, nbTicketsPerPage, null);
                     }
+                    // getting the profile for users
+                    future.compose(tickets -> ticketService.getProfileFromTickets(tickets, i18nConfig))
+                            .onSuccess(result -> renderJson(request, result))
+                            .onFailure(err -> renderError(request, new JsonObject().put(Ticket.ERROR, Error.valueOf(err.getMessage()).toJson())));
                 } else {
                     ticketServiceSql.listMyTickets(user, page, statuses, schoolId, sortBy, order, nbTicketsPerPage, arrayResponseHandler(request));
                 }
