@@ -64,7 +64,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 
 	private final static String UPSERT_USER_QUERY = "SELECT support.merge_users(?,?)";
     protected static final Logger log = LoggerFactory.getLogger(Renders.class);
-	private final List<String> ALLOWED_SORT_BY_COLUMN = new ArrayList<>(Arrays.asList("id","modified","status","category","owner","event_count","subject"));
+	private final List<String> ALLOWED_SORT_BY_COLUMN = new ArrayList<>(Arrays.asList("id","modified","status","category","owner","event_count","subject","school_id"));
 	private final BugTracker bugTrackerType;
 	private final Logger LOGGER = LoggerFactory.getLogger(TicketServiceSqlImpl.class);
 	public TicketServiceSqlImpl(BugTracker bugTracker) {
@@ -193,8 +193,9 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 
 
 	@Override
-	public void listTickets(UserInfos user, Integer page, List<String> statuses, List<String> applicants, String school_id,
-							String sortBy, String order, Integer nbTicketsPerPage, Handler<Either<String, JsonArray>> handler) {
+	public Future<JsonArray> listTickets(UserInfos user, Integer page, List<String> statuses, List<String> applicants, String school_id,
+							String sortBy, String order, Integer nbTicketsPerPage, JsonArray orderedStructures) {
+		Promise<JsonArray> promise = Promise.promise();
 		StringBuilder query = new StringBuilder();
 		query.append("SELECT t.*, u.username AS owner_name, ")
 			.append("i.content").append(bugTrackerType.getLastIssueUpdateFromPostgresqlJson()).append(" AS last_issue_update, ")
@@ -265,9 +266,15 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 		}
 
 
-		if(ALLOWED_SORT_BY_COLUMN.contains(sortBy)){
-			query.append(" ORDER BY t.");
-			query.append(sortBy);
+		if (ALLOWED_SORT_BY_COLUMN.contains(sortBy)) {
+			if (Objects.equals(sortBy, Ticket.SCHOOL_ID)) {
+				query.append(" ORDER BY array_position(" +
+						Sql.arrayPrepared(orderedStructures) + ",school_id)");
+				values.addAll(orderedStructures);
+			} else {
+				query.append(" ORDER BY t.");
+				query.append(sortBy);
+			}
 		}
 
 		if(order != null && (order.equals("ASC") || order.equals("DESC"))){
@@ -283,7 +290,8 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 			values.add(nbTicketsPerPage);
 		}
 
-		sql.prepared(query.toString(), values, validResultHandler(handler));
+		sql.prepared(query.toString(), values, validResultHandler(PromiseHelper.handler(promise)));
+		return promise.future();
 	}
 
 	@Override

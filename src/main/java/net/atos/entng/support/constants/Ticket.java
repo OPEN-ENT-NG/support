@@ -95,4 +95,7 @@ public class Ticket {
     public static final String BIRTHDAY = "birthDay";
     public static final String FIRSTNAME = "firstName";
     public static final String LASTNAME = "lastName";
+
+    public static final String I18N = "i18n";
+    public static final String SLUG = "slug";
 }

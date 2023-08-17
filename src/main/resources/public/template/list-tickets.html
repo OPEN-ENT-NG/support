@@ -37,7 +37,9 @@
 								'order-by': (sort.expression === sortCategoryFunction && sort.reverse === true)}">
                     <i18n>support.ticket.table.category</i18n>
                 </th>
-                <th class="one">
+                <th class="one" ng-click="switchSortBy('school_id')"
+                    ng-class="{'order-by-reversed': (sort.expression === 'school_id' && sort.reverse === false),
+								'order-by': (sort.expression === 'school_id' && sort.reverse === true)}">
                     <i18n>support.ticket.table.school</i18n>
                 </th>
                 <th class="one" ng-click="switchSortBy('owner')"
