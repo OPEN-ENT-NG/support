@@ -86,7 +86,7 @@ public class IModelHelper {
      * @param objects List of object
      * @return {@link JsonArray}
      */
-    private static JsonArray listToJsonArray(List<?> objects) {
+    public static JsonArray listToJsonArray(List<?> objects) {
         JsonArray res = new JsonArray();
         objects.stream()
                 .filter(Objects::nonNull)

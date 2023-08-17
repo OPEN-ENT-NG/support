@@ -24,6 +24,7 @@ import java.util.concurrent.ConcurrentMap;
 
 import io.vertx.core.Future;
 import net.atos.entng.support.model.Event;
+import net.atos.entng.support.model.TicketModel;
 import org.entcore.common.service.CrudService;
 import org.entcore.common.user.UserInfos;
 import fr.wseduc.webutils.Either;
@@ -116,9 +117,9 @@ public interface TicketServiceSql extends CrudService {
 
 	/**
 	 * @param user : user from which you want to retrieve tickets
-	 * @return {Future<JsonObject>} tickets of the user's structures
+	 * @return {Future<List<TicketModel>>} tickets of the user's structures
 	 **/
-	Future<JsonArray> getUserTickets(UserInfos user);
+	Future<List<TicketModel>> getUserTickets(UserInfos user);
 
 	/**
 	 * @param idList : list of structure ids from which you want to retrieve tickets

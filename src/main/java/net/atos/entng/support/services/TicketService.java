@@ -1,5 +1,6 @@
 package net.atos.entng.support.services;
 
+import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -42,4 +43,6 @@ public interface TicketService {
      * @returns {Future<JsonObject>} JsonObject containing structureIds sorted by name
      **/
     Future<JsonObject> sortSchoolByName(List<String> structureIds);
+
+    CompositeFuture getSchoolAndProfileFromTicket(JsonArray tickets, I18nConfig i18nConfig);
 }

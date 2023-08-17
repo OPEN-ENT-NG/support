@@ -1,6 +1,7 @@
 package net.atos.entng.support.services.impl;
 
 import fr.wseduc.webutils.I18n;
+import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonArray;
@@ -108,4 +109,8 @@ public class TicketServiceImpl implements TicketService {
         return promise.future();
     }
 
+
+    public CompositeFuture getSchoolAndProfileFromTicket(JsonArray tickets, I18nConfig i18nConfig) {
+        return CompositeFuture.all(getProfileFromTickets(tickets, i18nConfig), getSchoolFromTickets(tickets));
+    }
 }
