@@ -30,7 +30,7 @@ public class Ticket {
     public static final String CREATION_DATE = "created";
     public static final String MODIFICATION_DATE = "modified";
     public static final String USER_ID = "user_id";
-
+    public static final String DESCRIPTION = "description";
     public static final String SCHOOL = "school";
     public static final String SORT_BY = "sortBy";
     public static final String ORDER = "order";
