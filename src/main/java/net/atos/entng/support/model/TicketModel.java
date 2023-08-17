@@ -22,7 +22,7 @@ public class TicketModel implements IModel<TicketModel> {
         this.id = jsonObject.getInteger(Ticket.ID);
         this.owner = jsonObject.getString(Ticket.OWNER);
         this.subject = jsonObject.getString(Ticket.SUBJECT);
-        this.description = jsonObject.getString("description");
+        this.description = jsonObject.getString(Ticket.DESCRIPTION);
         this.created = jsonObject.getString(Ticket.CREATION_DATE);
         this.modified = jsonObject.getString(Ticket.MODIFICATION_DATE);
         this.category = jsonObject.getString(Ticket.CATEGORY);

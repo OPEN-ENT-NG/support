@@ -9,7 +9,6 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import net.atos.entng.support.model.TicketModel;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
