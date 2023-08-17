@@ -23,6 +23,7 @@ import static net.atos.entng.support.Support.SUPPORT_NAME;
 import static net.atos.entng.support.Support.bugTrackerCommDirect;
 
 import io.vertx.core.*;
+import net.atos.entng.support.enums.Error;
 import net.atos.entng.support.filters.AdminOfTicketsStructure;
 import net.atos.entng.support.helpers.CSVHelper;
 import net.atos.entng.support.helpers.RequestHelper;
@@ -491,13 +492,21 @@ public class TicketController extends ControllerHelper {
             if (user != null) {
                 Map<String, UserInfos.Function> functions = user.getFunctions();
                 if (functions.containsKey(DefaultFunctions.ADMIN_LOCAL) || functions.containsKey(DefaultFunctions.SUPER_ADMIN)) {
-                    Promise<JsonArray> ticketsPromise = Promise.promise();
-                    ticketServiceSql.listTickets(user, page, statuses, applicants, schoolId, sortBy, order, nbTicketsPerPage, PromiseHelper.handler(ticketsPromise));
+                    Future<JsonArray> future;
+                    if (Objects.equals(sortBy, Ticket.SCHOOL_ID)) {
+                        future = ticketService.sortSchoolByName(user.getStructures())
+                                .compose(result -> {
+                                    if (result != null && !result.isEmpty())
+                                        return ticketServiceSql.listTickets(user, page, statuses, applicants, schoolId, sortBy, order, nbTicketsPerPage, result.getJsonArray(Ticket.STRUCTUREIDS));
+                                    return Future.failedFuture(Error.SORT_BY_STRUCTURE.name());
+                                });
+                    } else {
+                        future = ticketServiceSql.listTickets(user, page, statuses, applicants, schoolId, sortBy, order, nbTicketsPerPage, null);
+                    }
                     // getting the profile for users
-                    ticketsPromise.future()
-                            .compose(tickets -> ticketService.getProfileFromTickets(tickets, i18nConfig))
+                    future.compose(tickets -> ticketService.getProfileFromTickets(tickets, i18nConfig))
                             .onSuccess(result -> renderJson(request, result))
-                            .onFailure(err -> renderError(request, new JsonObject()));
+                            .onFailure(err -> renderError(request, new JsonObject().put(Ticket.ERROR, Error.valueOf(err.getMessage()).toJson())));
                 } else {
                     ticketServiceSql.listMyTickets(user, page, statuses, schoolId, sortBy, order, nbTicketsPerPage, arrayResponseHandler(request));
                 }
