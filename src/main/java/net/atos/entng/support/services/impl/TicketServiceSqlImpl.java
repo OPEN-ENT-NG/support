@@ -195,16 +195,16 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 
 	@Override
 	public Future<JsonArray> listTickets(UserInfos user, Integer page, List<String> statuses, List<String> applicants, String school_id,
-							String sortBy, String order, Integer nbTicketsPerPage, JsonArray orderedStructures) {
+										 String sortBy, String order, Integer nbTicketsPerPage, JsonArray orderedStructures, JsonObject structureChildrens) {
 		Promise<JsonArray> promise = Promise.promise();
 		StringBuilder query = new StringBuilder();
 		query.append("SELECT t.*, u.username AS owner_name, ")
-			.append("i.content").append(bugTrackerType.getLastIssueUpdateFromPostgresqlJson()).append(" AS last_issue_update, ")
-            .append(" substring(t.description, 0, 101)  as short_desc,")
-			.append(" COUNT(*) OVER() AS total_results")
-			.append(" FROM support.tickets AS t")
-			.append(" INNER JOIN support.users AS u ON t.owner = u.id")
-			.append(" LEFT JOIN support.bug_tracker_issues AS i ON t.id=i.ticket_id");
+				.append("i.content").append(bugTrackerType.getLastIssueUpdateFromPostgresqlJson()).append(" AS last_issue_update, ")
+				.append(" substring(t.description, 0, 101)  as short_desc,")
+				.append(" COUNT(*) OVER() AS total_results")
+				.append(" FROM support.tickets AS t")
+				.append(" INNER JOIN support.users AS u ON t.owner = u.id")
+				.append(" LEFT JOIN support.bug_tracker_issues AS i ON t.id=i.ticket_id");
 
 		boolean oneApplicant = false;
 		String applicant;
@@ -219,39 +219,41 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 		Function adminLocal = user.getFunctions().get(DefaultFunctions.ADMIN_LOCAL);
 		if (adminLocal != null) {
 			List<String> scopesList = adminLocal.getScope();
-			if(scopesList != null && !scopesList.isEmpty()) {
-				query.append(" WHERE ((t.school_id IN (");
-				for (String scope : scopesList) {
-					query.append("?,");
-					values.add(scope);
+			if (scopesList != null && !scopesList.isEmpty()) {
+				query.append(" AND t.school_id IN ");
+				if (school_id.equals("*")) {
+					query.append(Sql.listPrepared(scopesList));
+					values.addAll(new JsonArray(scopesList));
+				} else if (scopesList.contains(school_id)) {
+					List<String> listIdStructure = structureChildrens.getJsonArray(Ticket.STRUCTUREIDS).stream()
+							.filter(String.class::isInstance)
+							.map(Object::toString)
+							.collect(Collectors.toList());
+					query.append(Sql.listPrepared(listIdStructure));
+					values.addAll(new JsonArray(listIdStructure));
 				}
-				query.deleteCharAt(query.length() - 1);
-				query.append(")");
 
 				if (oneApplicant) {
-					query.append(" AND t.owner").append(applicantIsMe?"=":"!=").append("?");
+					query.append(" AND t.owner").append(applicantIsMe ? "=" : "!=").append("?");
 					values.add(user.getUserId());
 				}
-				query.append(")");
 
 				// Include tickets created by current user, and linked to a school where he is not local administrator
 				if (!oneApplicant || applicantIsMe) {
 					query.append(" OR t.owner = ?");
 					values.add(user.getUserId());
 				}
-				query.append(")");
 			}
-		}
-		else {
-            query.append(" WHERE t.school_id IN ").append(Sql.listPrepared(user.getStructures())).append(" ");
-            values.addAll(new JsonArray(user.getStructures()));
+		} else if (school_id.equals("*")) {
+			query.append(" AND t.school_id IN ").append(Sql.listPrepared(user.getStructures()));
+			values.addAll(new JsonArray(user.getStructures()));
 			if (oneApplicant) {
-				query.append(" AND t.owner").append(applicantIsMe?"=":"!=").append("?");
+				query.append(" AND t.owner").append(applicantIsMe ? "=" : "!=").append("?");
 				values.add(user.getUserId());
 			}
-        }
+		}
 
-		if (statuses.size() > 0 && statuses.size() < 4) {
+		if (statuses.size() > 0 && statuses.size() < 5) {
 			query.append(" AND (t.status IN (");
 			for (String status : statuses) {
 				query.append("?,");
@@ -262,8 +264,13 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 		}
 
 		if (!school_id.equals("*")) {
-			query.append(" AND t.school_id = ?");
-			values.add(school_id);
+			query.append(" AND t.school_id IN ");
+			List<String> listIdStructure = structureChildrens.getJsonArray(Ticket.STRUCTUREIDS).stream()
+					.filter(String.class::isInstance)
+					.map(Object::toString)
+					.collect(Collectors.toList());
+			query.append(Sql.listPrepared(listIdStructure));
+			values.addAll(new JsonArray(listIdStructure));
 		}
 
 
@@ -278,9 +285,9 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 			}
 		}
 
-		if(order != null && (order.equals("ASC") || order.equals("DESC"))){
+		if (order != null && (order.equals("ASC") || order.equals("DESC"))) {
 			query.append(" " + order);
-		}else {
+		} else {
 			String message = String.format("[Support@%s::listTickets] this order is not valid"
 					, this.getClass().getSimpleName());
 			LOGGER.error(String.format(message));
@@ -291,7 +298,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 			values.add(nbTicketsPerPage);
 		}
 
-		sql.prepared(query.toString(), values, validResultHandler(PromiseHelper.handler(promise)));
+		sql.prepared(query.toString().replaceFirst("AND", "WHERE"), values, validResultHandler(PromiseHelper.handler(promise)));
 		return promise.future();
 	}
 
