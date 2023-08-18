@@ -35,7 +35,8 @@ public class UserInfosHelper {
                 .put(Ticket.AUTHORIZEDACTIONS, getUserActionJSONArray(userInfos.getAuthorizedActions()))
                 .put(Ticket.GROUPSIDS, userInfos.getGroupsIds())
                 .put(Ticket.CLASSES, userInfos.getClasses())
-                .put(Ticket.STRUCTURES, userInfos.getStructures());
+                .put(Ticket.STRUCTURES, userInfos.getStructures())
+                .put(Ticket.APPS, getUserAppsJSONArray(userInfos.getApps()));
     }
 
     @SuppressWarnings("unchecked")
@@ -61,6 +62,7 @@ public class UserInfosHelper {
         user.setGroupsIds(infos.getJsonArray(Ticket.GROUPSIDS, new JsonArray()).getList());
         user.setClasses(infos.getJsonArray(Ticket.CLASSES, new JsonArray()).getList());
         user.setStructures(infos.getJsonArray(Ticket.STRUCTURES, new JsonArray()).getList());
+        user.setApps(getUserAppsFromJSONArray(infos.getJsonArray(Ticket.APPS, new JsonArray())));
         return user;
     }
 
@@ -71,8 +73,18 @@ public class UserInfosHelper {
                 .put(Ticket.TYPE, action.getType());
     }
 
+    public static JsonObject getUserAppsJSON(UserInfos.Application application) {
+        return new JsonObject()
+                .put(Ticket.ADDRESS, application.getAddress())
+                .put(Ticket.DISPLAYNAME, application.getDisplayName());
+    }
+
     public static JsonArray getUserActionJSONArray(List<UserInfos.Action> actions) {
         return new JsonArray(actions.stream().map(UserInfosHelper::getUserActionJSON).collect(Collectors.toList()));
+    }
+
+    public static JsonArray getUserAppsJSONArray(List<UserInfos.Application> applications) {
+        return new JsonArray(applications.stream().map(UserInfosHelper::getUserAppsJSON).collect(Collectors.toList()));
     }
 
     public static UserInfos.Action getUserActionFromJSON(JsonObject oAction) {
@@ -83,9 +95,21 @@ public class UserInfosHelper {
         return action;
     }
 
+    public static UserInfos.Application getUserAppsFromJSON(JsonObject oApplication) {
+        UserInfos.Application application = new UserInfos.Application();
+        application.setAddress(oApplication.getString(Ticket.ADDRESS));
+        application.setDisplayName(oApplication.getString(Ticket.DISPLAYNAME));
+        return application;
+    }
+
      @SuppressWarnings("unchecked")
      public static List<UserInfos.Action> getUserActionsFromJSONArray(JsonArray actions) {
         return ((List<JsonObject>) actions.getList()).stream().map(UserInfosHelper::getUserActionFromJSON).collect(Collectors.toList());
+     }
+
+    @SuppressWarnings("unchecked")
+     public static List<UserInfos.Application> getUserAppsFromJSONArray(JsonArray applications) {
+        return ((List<JsonObject>) applications.getList()).stream().map(UserInfosHelper::getUserAppsFromJSON).collect(Collectors.toList());
      }
 
     public static String getAppName(UserInfos user, String appAddress) {
