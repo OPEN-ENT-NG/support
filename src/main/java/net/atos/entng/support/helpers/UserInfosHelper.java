@@ -7,6 +7,7 @@ import org.entcore.common.user.UserInfos;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class UserInfosHelper {
@@ -32,11 +33,11 @@ public class UserInfosHelper {
                 .put(Ticket.LEVEL, userInfos.getLevel())
                 .put(Ticket.TYPE, userInfos.getType())
                 .put(Ticket.LOGIN, userInfos.getLogin())
-                .put(Ticket.AUTHORIZEDACTIONS, getUserActionJSONArray(userInfos.getAuthorizedActions()))
+                .put(Ticket.AUTHORIZEDACTIONS, getObjectJSONArray(userInfos.getAuthorizedActions(),UserInfosHelper::getUserActionJSON))
                 .put(Ticket.GROUPSIDS, userInfos.getGroupsIds())
                 .put(Ticket.CLASSES, userInfos.getClasses())
                 .put(Ticket.STRUCTURES, userInfos.getStructures())
-                .put(Ticket.APPS, getUserAppsJSONArray(userInfos.getApps()));
+                .put(Ticket.APPS, getObjectJSONArray(userInfos.getApps(),UserInfosHelper::getUserAppsJSON));
     }
 
     @SuppressWarnings("unchecked")
@@ -58,11 +59,11 @@ public class UserInfosHelper {
         user.setLevel(infos.getString(Ticket.LEVEL));
         user.setType(infos.getString(Ticket.TYPE));
         user.setLogin(infos.getString(Ticket.LOGIN));
-        user.setAuthorizedActions(getUserActionsFromJSONArray(infos.getJsonArray(Ticket.AUTHORIZEDACTIONS, new JsonArray())));
+        user.setAuthorizedActions(getObjectsFromJsonArray(infos.getJsonArray(Ticket.AUTHORIZEDACTIONS, new JsonArray()), UserInfosHelper::getUserActionFromJSON));
         user.setGroupsIds(infos.getJsonArray(Ticket.GROUPSIDS, new JsonArray()).getList());
         user.setClasses(infos.getJsonArray(Ticket.CLASSES, new JsonArray()).getList());
         user.setStructures(infos.getJsonArray(Ticket.STRUCTURES, new JsonArray()).getList());
-        user.setApps(getUserAppsFromJSONArray(infos.getJsonArray(Ticket.APPS, new JsonArray())));
+        user.setApps(getObjectsFromJsonArray(infos.getJsonArray(Ticket.APPS, new JsonArray()), UserInfosHelper::getUserAppsFromJSON));
         return user;
     }
 
@@ -79,12 +80,9 @@ public class UserInfosHelper {
                 .put(Ticket.DISPLAYNAME, application.getDisplayName());
     }
 
-    public static JsonArray getUserActionJSONArray(List<UserInfos.Action> actions) {
-        return new JsonArray(actions.stream().map(UserInfosHelper::getUserActionJSON).collect(Collectors.toList()));
-    }
+    public static <T> JsonArray getObjectJSONArray(List<T> list, Function<T, JsonObject> mapper) {
+        return new JsonArray(list.stream().map(mapper).collect(Collectors.toList()));
 
-    public static JsonArray getUserAppsJSONArray(List<UserInfos.Application> applications) {
-        return new JsonArray(applications.stream().map(UserInfosHelper::getUserAppsJSON).collect(Collectors.toList()));
     }
 
     public static UserInfos.Action getUserActionFromJSON(JsonObject oAction) {
@@ -102,15 +100,10 @@ public class UserInfosHelper {
         return application;
     }
 
-     @SuppressWarnings("unchecked")
-     public static List<UserInfos.Action> getUserActionsFromJSONArray(JsonArray actions) {
-        return ((List<JsonObject>) actions.getList()).stream().map(UserInfosHelper::getUserActionFromJSON).collect(Collectors.toList());
-     }
-
     @SuppressWarnings("unchecked")
-     public static List<UserInfos.Application> getUserAppsFromJSONArray(JsonArray applications) {
-        return ((List<JsonObject>) applications.getList()).stream().map(UserInfosHelper::getUserAppsFromJSON).collect(Collectors.toList());
-     }
+    public static <T> List<T> getObjectsFromJsonArray(JsonArray jsonArray, Function<JsonObject, T> mapper) {
+        return ((List<JsonObject>) jsonArray.getList()).stream().map(mapper).collect(Collectors.toList());
+    }
 
     public static String getAppName(UserInfos user, String appAddress) {
         return user.getApps().stream()
