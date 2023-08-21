@@ -495,11 +495,12 @@ public class TicketController extends ControllerHelper {
                         future = ticketService.sortSchoolByName(user.getStructures())
                                 .compose(result -> {
                                     if (result != null && !result.isEmpty())
-                                        return ticketServiceSql.listTickets(user, page, statuses, applicants, schoolId, sortBy, order, nbTicketsPerPage, result.getJsonArray(Ticket.STRUCTUREIDS));
+                                        return ticketServiceSql.listTickets(user, page, statuses, applicants, schoolId, sortBy, order, nbTicketsPerPage, result.getJsonArray(Ticket.STRUCTUREIDS), null);
                                     return Future.failedFuture(Error.SORT_BY_STRUCTURE.name());
                                 });
                     } else {
-                        future = ticketServiceSql.listTickets(user, page, statuses, applicants, schoolId, sortBy, order, nbTicketsPerPage, null);
+                        future = ticketService.listStructureChildren(schoolId)
+                                .compose(structureChildren -> ticketServiceSql.listTickets(user, page, statuses, applicants, schoolId, sortBy, order, nbTicketsPerPage, null, structureChildren));
                     }
                     // getting the profile for users
                     future.compose(tickets -> ticketService.getProfileFromTickets(tickets, i18nConfig))
