@@ -39,7 +39,7 @@ public interface TicketServiceSql extends CrudService {
 	public void updateTicket(String id, JsonObject data, UserInfos user,
 			Handler<Either<String, JsonObject>> handler);
 
-	Future<JsonArray> listTickets(UserInfos user, Integer page, List<String> statuses, List<String> applicants, String school_id, String sortBy, String order, Integer nbTicketsPerPage, JsonArray orderedStructures, JsonObject structureChildrens);
+	Future<JsonArray> listTickets(UserInfos user, Integer page, List<String> statuses, List<String> applicants, String school_id, String sortBy, String order, Integer nbTicketsPerPage, JsonArray orderedStructures, JsonObject structureChildren);
 
 	public void listMyTickets(UserInfos user, Integer page, List<String> statuses, String school_id, String sortBy, String order, Integer nbTicketsPerPage, Handler<Either<String, JsonArray>> handler);
 

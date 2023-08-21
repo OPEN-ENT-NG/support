@@ -195,7 +195,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 
 	@Override
 	public Future<JsonArray> listTickets(UserInfos user, Integer page, List<String> statuses, List<String> applicants, String school_id,
-										 String sortBy, String order, Integer nbTicketsPerPage, JsonArray orderedStructures, JsonObject structureChildrens) {
+										 String sortBy, String order, Integer nbTicketsPerPage, JsonArray orderedStructures, JsonObject structureChildren) {
 		Promise<JsonArray> promise = Promise.promise();
 		StringBuilder query = new StringBuilder();
 		query.append("SELECT t.*, u.username AS owner_name, ")
@@ -225,7 +225,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 					query.append(Sql.listPrepared(scopesList));
 					values.addAll(new JsonArray(scopesList));
 				} else if (scopesList.contains(school_id)) {
-					List<String> listIdStructure = structureChildrens.getJsonArray(Ticket.STRUCTUREIDS).stream()
+					List<String> listIdStructure = structureChildren.getJsonArray(Ticket.STRUCTUREIDS).stream()
 							.filter(String.class::isInstance)
 							.map(Object::toString)
 							.collect(Collectors.toList());
@@ -265,7 +265,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 
 		if (!school_id.equals("*")) {
 			query.append(" AND t.school_id IN ");
-			List<String> listIdStructure = structureChildrens.getJsonArray(Ticket.STRUCTUREIDS).stream()
+			List<String> listIdStructure = structureChildren.getJsonArray(Ticket.STRUCTUREIDS).stream()
 					.filter(String.class::isInstance)
 					.map(Object::toString)
 					.collect(Collectors.toList());
