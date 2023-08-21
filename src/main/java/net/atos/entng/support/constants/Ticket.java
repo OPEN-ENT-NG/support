@@ -90,6 +90,8 @@ public class Ticket {
     public static final String GROUPSIDS = "groupsIds";
     public static final String CLASSES = "classes";
     public static final String STRUCTURES = "structures";
+    public static final String APPS = "apps";
+    public static final String ADDRESS = "address";
 
     // Registers
     public static final String BIRTHDAY = "birthDay";
