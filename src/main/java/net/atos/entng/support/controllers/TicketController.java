@@ -500,7 +500,7 @@ public class TicketController extends ControllerHelper {
                                 });
                     } else {
                         future = ticketService.listStructureChildren(schoolId)
-                                .compose(structureChildrens -> ticketServiceSql.listTickets(user, page, statuses, applicants, schoolId, sortBy, order, nbTicketsPerPage, null, structureChildrens));
+                                .compose(structureChildren -> ticketServiceSql.listTickets(user, page, statuses, applicants, schoolId, sortBy, order, nbTicketsPerPage, null, structureChildren));
                     }
                     // getting the profile for users
                     future.compose(tickets -> ticketService.getProfileFromTickets(tickets, i18nConfig))
