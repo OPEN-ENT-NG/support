@@ -168,5 +168,5 @@
     "push-notif.bugtracker-issue-updated.body": "Votre demande n°{0} associée à la demande escaladée n°{1} a été mise à jour",
     "push-notif.ticket-created.body": "{0} a créé la demande de support n°{1}",
     "push-notif.ticket-updated.body": "{0} a mis à jour la demande de support n°{1}",
-    "support.toast.export.worker": "Le fichier demandé est trop lourd pour être téléchargé directement dans le navigateur. Il est en cours de création dans l'espace documentaire."
+    "support.toast.export.worker": "Le fichier demandé est trop lourd pour être téléchargé directement dans le navigateur. Il est en cours de création dans l'espace documentaire. Vous recevrez une notification dans le fil d'actualité lorsqu'il sera disponible."
 }

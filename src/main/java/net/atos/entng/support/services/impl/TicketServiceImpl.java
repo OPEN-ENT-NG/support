@@ -91,9 +91,9 @@ public class TicketServiceImpl implements TicketService {
         return promise.future();
     }
 
-    public Future<JsonObject> listStructureChildren(String schoolId) {
+    public Future<JsonObject> listStructureChildren(List<String> structureIds) {
         Promise<JsonObject> promise = Promise.promise();
-        TicketServiceNeo4jImpl.listStructureChildren(schoolId)
+        TicketServiceNeo4jImpl.listStructureChildren(structureIds)
                 .onSuccess(promise::complete)
                 .onFailure(promise::fail);
         return promise.future();

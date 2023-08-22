@@ -108,9 +108,8 @@ public class TicketExportWorker extends BusModBase implements Handler<Message<Js
 
     private Future<JsonObject> getStructureIds(String structureId, JsonObject params) {
         if (Objects.equals(structureId, Ticket.ASTERISK))
-            return Future.succeededFuture(new JsonObject().put(Ticket.STRUCTUREIDS,
-                    params.getJsonObject(Ticket.USER).getJsonArray(Ticket.STRUCTURES)));
-        return ticketService.listStructureChildren(structureId);
+            return ticketService.listStructureChildren(params.getJsonObject(Ticket.USER).getJsonArray(Ticket.STRUCTURES).getList());
+        return ticketService.listStructureChildren(Collections.singletonList(structureId));
     }
 
     protected Future<JsonObject> exportData(ExportFile exportFile, UserInfos user) {

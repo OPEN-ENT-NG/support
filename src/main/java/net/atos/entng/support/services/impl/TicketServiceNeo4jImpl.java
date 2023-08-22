@@ -73,15 +73,16 @@ public class TicketServiceNeo4jImpl {
 
     /**
      * Get "childrens" structures of a "parent" structure
-     * @param structureId neo4j structure ID
+     * @param structureIds neo4j structure ID
      */
-    public static Future<JsonObject> listStructureChildren(String structureId) {
+    public static Future<JsonObject> listStructureChildren(List<String> structureIds) {
         Promise<JsonObject> promise = Promise.promise();
         Neo4j neo4j = Neo4j.getInstance();
-        final String query = "MATCH (structure:Structure {id: {structureId}}) "
-                + " OPTIONAL MATCH (structure)<-[r:HAS_ATTACHMENT*1..]-(child:Structure) "
-                + " RETURN COLLECT(child.id) + {structureId} AS structureIds";
-        JsonObject params = new JsonObject().put(Ticket.STRUCTURE_ID, structureId);
+        final String query = "MATCH (structure:Structure) " +
+                " WHERE structure.id IN {structureIds} " +
+                " OPTIONAL MATCH (structure)<-[:HAS_ATTACHMENT*1..]-(child:Structure) "+
+                "RETURN COLLECT(DISTINCT child.id) + {structureIds} AS structureIds";
+        JsonObject params = new JsonObject().put(Ticket.STRUCTUREIDS, structureIds);
 
         neo4j.execute(query, params, validUniqueResultHandler(PromiseHelper.handler(promise)));
         return promise.future();
