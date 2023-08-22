@@ -198,6 +198,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 										 String sortBy, String order, Integer nbTicketsPerPage, JsonArray orderedStructures, JsonObject structureChildren) {
 		Promise<JsonArray> promise = Promise.promise();
 		StringBuilder query = new StringBuilder();
+		JsonArray values = new JsonArray();
 		query.append("SELECT t.*, u.username AS owner_name, ")
 				.append("i.content").append(bugTrackerType.getLastIssueUpdateFromPostgresqlJson()).append(" AS last_issue_update, ")
 				.append(" substring(t.description, 0, 101)  as short_desc,")
@@ -205,6 +206,10 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 				.append(" FROM support.tickets AS t")
 				.append(" INNER JOIN support.users AS u ON t.owner = u.id")
 				.append(" LEFT JOIN support.bug_tracker_issues AS i ON t.id=i.ticket_id");
+		if (ALLOWED_SORT_BY_COLUMN.contains(sortBy) && (Objects.equals(sortBy, Ticket.SCHOOL_ID))) {
+				query.append(" JOIN unnest " + Sql.arrayPrepared(orderedStructures) + " WITH ORDINALITY arr(id,ord) ON t.school_id = arr.id ");
+				values.addAll(orderedStructures);
+		}
 
 		boolean oneApplicant = false;
 		String applicant;
@@ -215,7 +220,6 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 			oneApplicant = true;
 		}
 
-		JsonArray values = new JsonArray();
 		Function adminLocal = user.getFunctions().get(DefaultFunctions.ADMIN_LOCAL);
 		if (adminLocal != null) {
 			List<String> scopesList = adminLocal.getScope();
@@ -276,10 +280,8 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 
 		if (ALLOWED_SORT_BY_COLUMN.contains(sortBy)) {
 			if (Objects.equals(sortBy, Ticket.SCHOOL_ID)) {
-				query.append(" ORDER BY array_position(" +
-						Sql.arrayPrepared(orderedStructures) + ",school_id)");
-				values.addAll(orderedStructures);
-			} else {
+				query.append(" ORDER BY arr.ord ");
+			}else{
 				query.append(" ORDER BY t.");
 				query.append(sortBy);
 			}
