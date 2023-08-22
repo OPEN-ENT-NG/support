@@ -942,7 +942,7 @@ export const SupportController: Controller = ng.controller('SupportController',
 					let thresholdDirectExportTickets: number = (<number>values[0]);
 					let countTickets: number = (<ICountTicketsResponse>values[1].data).count;
 					if (countTickets > thresholdDirectExportTickets) {
-						alert(lang.translate('support.toast.export.worker'));
+						notify.info('support.toast.export.worker',6000);
 						ticketService.workerExport($scope.display.filters.school_id);
 					} else {
 						ticketService.directExport($scope.display.filters.school_id);
