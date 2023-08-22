@@ -35,6 +35,7 @@ import static org.entcore.common.http.response.DefaultResponseHandler.arrayRespo
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.stream.Collectors;
 
 import fr.wseduc.bus.BusAddress;
 import fr.wseduc.rs.ApiDoc;
@@ -492,7 +493,14 @@ public class TicketController extends ControllerHelper {
                 if (functions.containsKey(DefaultFunctions.ADMIN_LOCAL) || functions.containsKey(DefaultFunctions.SUPER_ADMIN)) {
                     Future<JsonArray> future;
                     if (Objects.equals(sortBy, Ticket.SCHOOL_ID)) {
-                        future = ticketService.sortSchoolByName(user.getStructures())
+                        future = ticketService.listStructureChildren(user.getStructures())
+                                .compose(result -> {
+                                    List<String> list = result.getJsonArray(Ticket.STRUCTUREIDS, new JsonArray()).stream()
+                                            .filter(String.class::isInstance)
+                                            .map(Object::toString)
+                                            .collect(Collectors.toList());
+                                    return ticketService.sortSchoolByName(list);
+                                })
                                 .compose(result -> {
                                     if (result != null && !result.isEmpty())
                                         return ticketServiceSql.listTickets(user, page, statuses, applicants, schoolId, sortBy, order, nbTicketsPerPage, result.getJsonArray(Ticket.STRUCTUREIDS), null);
