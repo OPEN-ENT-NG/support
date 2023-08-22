@@ -499,7 +499,7 @@ public class TicketController extends ControllerHelper {
                                     return Future.failedFuture(Error.SORT_BY_STRUCTURE.name());
                                 });
                     } else {
-                        future = ticketService.listStructureChildren(schoolId)
+                        future = ticketService.listStructureChildren(Collections.singletonList(schoolId))
                                 .compose(structureChildren -> ticketServiceSql.listTickets(user, page, statuses, applicants, schoolId, sortBy, order, nbTicketsPerPage, null, structureChildren));
                     }
                     // getting the profile for users
@@ -972,7 +972,7 @@ public class TicketController extends ControllerHelper {
                         .onFailure(err -> renderError(request, new JsonObject().put(Ticket.MESSAGE, err.getMessage())));
 
                 if (!Objects.equals(structureId, Ticket.ASTERISK))
-                    ticketService.listStructureChildren(structureId).onComplete(promise);
+                    ticketService.listStructureChildren(Collections.singletonList(structureId)).onComplete(promise);
                 else promise.complete(new JsonObject());
             } else {
                 log.debug(String.format("[Support@%s::countTickets] %s",
@@ -1004,7 +1004,7 @@ public class TicketController extends ControllerHelper {
                         })
                         .onFailure(err -> renderError(request, new JsonObject()));
 
-                if (!Objects.equals(structureId, Ticket.ASTERISK)) ticketService.listStructureChildren(structureId)
+                if (!Objects.equals(structureId, Ticket.ASTERISK)) ticketService.listStructureChildren(Collections.singletonList(structureId))
                         .compose(ticketServiceSql::getTicketsFromStructureIds)
                         .onComplete(promise);
                 else ticketServiceSql.getUserTickets(user).onComplete(ar -> {

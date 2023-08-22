@@ -31,10 +31,10 @@ public interface TicketService {
     /**
      * Get "childrens" structures of a "parent" structure
      *
-     * @param structureId {String} Id structure from which we want to retrieve the children
+     * @param structureIds {List<String>} List of structureIds from which we want to retrieve the children
      * @returns {Future<JsonObject>} JsonObject containing structure "childrens" and the "parent" structure
      **/
-    Future<JsonObject> listStructureChildren(String structureId);
+    Future<JsonObject> listStructureChildren(List<String> structureIds);
 
     /**
      * Sort structures by name
