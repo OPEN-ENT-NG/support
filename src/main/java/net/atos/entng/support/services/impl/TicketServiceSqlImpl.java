@@ -943,7 +943,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 			query.append(Sql.listPrepared(user.getStructures()));
 			values.addAll(new JsonArray(user.getStructures()));
 		}
-
+		query.append(" ORDER BY tickets.id");
 		String errorMessage = String.format("[Support@%s::getUserTickets] Fail to get user tickets", this.getClass().getSimpleName());
 		sql.prepared(query.toString(), values, SqlResult.validResultHandler(IModelHelper.sqlResultToIModel(promise, TicketModel.class, errorMessage)));
 
@@ -962,7 +962,8 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 				.filter(String.class::isInstance)
 				.map(Object::toString)
 				.collect(Collectors.toList());
-		String query = "SELECT * FROM support.tickets WHERE school_id IN " + Sql.listPrepared(listIdStructure);
+		String query = "SELECT * FROM support.tickets WHERE school_id IN " + Sql.listPrepared(listIdStructure)
+				+ " ORDER BY tickets.id";
 		JsonArray values = idList.getJsonArray(Ticket.STRUCTUREIDS);
 		sql.prepared(query, values, validResultHandler(PromiseHelper.handler(promise)));
 		return promise.future();
