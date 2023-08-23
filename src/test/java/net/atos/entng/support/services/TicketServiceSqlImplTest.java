@@ -82,6 +82,7 @@ public class TicketServiceSqlImplTest {
         StringBuilder expectedQuery = new StringBuilder();
         expectedQuery.append("SELECT * FROM support.tickets WHERE school_id IN ");
         expectedQuery.append(Sql.listPrepared(userInfos.getStructures()));
+        expectedQuery.append(" ORDER BY tickets.id");
 
         JsonArray expectedParams = new JsonArray(userInfos.getStructures());
 
