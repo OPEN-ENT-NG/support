@@ -4,6 +4,7 @@ import {ITicketPayload} from "../models/ticket.model";
 import {ICanAccessResponse} from "../models/schoolWorkflow.model";
 import {ICountTicketsResponse} from "../models/countTickets.model";
 import {IWorkerExportResponse} from "../models/workerExport.model";
+import {INbTicketsPerPageResponse} from "../models/nbTicketsPerPage.model";
 
 export interface ITicketService {
     update(ticketId: number, body: ITicketPayload): Promise<AxiosResponse>;
@@ -14,6 +15,7 @@ export interface ITicketService {
     directExport(structureId: string): Promise<void>;
     workerExport(structureId: string): Promise<IWorkerExportResponse>;
     getThresholdDirectExportTickets(): Promise<ICountTicketsResponse>;
+    getNumberTicketsPerPage(): Promise<INbTicketsPerPageResponse>;
 }
 
 export const ticketService: ITicketService = {
@@ -90,7 +92,16 @@ export const ticketService: ITicketService = {
     getThresholdDirectExportTickets: (): Promise<ICountTicketsResponse> =>
         http.get(`/support/config/thresholdDirectExportTickets`)
             .then((res: AxiosResponse) => <ICountTicketsResponse>res.data.threshold)
+    ,
 
+    /**
+     * get the number of tickets displayed per page
+     *
+     * @returns {Promise<INbTicketsPerPageResponse>} nbTicketsPerPage
+     **/
+    getNumberTicketsPerPage: (): Promise<INbTicketsPerPageResponse> =>
+        http.get(`/support/config/numberTicketsPerPage`)
+            .then((res: AxiosResponse) => <INbTicketsPerPageResponse>res.data.nbTicketsPerPage)
 
 
 };

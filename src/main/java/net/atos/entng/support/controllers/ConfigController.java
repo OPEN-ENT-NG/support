@@ -25,4 +25,10 @@ public class ConfigController extends ControllerHelper {
     public void getConfigMaxTickets(final HttpServerRequest request) {
         renderJson(request, new JsonObject().put(Ticket.THRESHOLD, config.getString(Ticket.THRESHOLD_DIRECT_EXPORT_TICKETS)));
     }
+
+    @Get("/config/numberTicketsPerPage")
+    @SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+    public void getNumberTicketsPerPage(final HttpServerRequest request) {
+        renderJson(request, new JsonObject().put(Ticket.NBTICKETSPERPAGE, config.getInteger(Ticket.NBTICKETSPERPAGE, 25)));
+    }
 }
