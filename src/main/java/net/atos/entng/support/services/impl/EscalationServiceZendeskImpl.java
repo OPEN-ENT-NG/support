@@ -886,6 +886,7 @@ public class EscalationServiceZendeskImpl implements EscalationService {
 			public void handle(Throwable t)
 			{
 				log.error("[Support] Error : exception raised by zendesk escalation httpClient", t);
+				pullInProgess.set(false);
 			}
 		});
 
