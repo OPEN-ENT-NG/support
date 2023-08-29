@@ -519,7 +519,7 @@ public class EscalationServiceZendeskImpl implements EscalationService {
 			handler.handle(new Either.Left<String, Void>("support.escalation.zendesk.error.comment.invalid"));
 		else
 		{
-			this.ticketServiceSql.getTicketFromIssueId(issueId.toString(), new Handler<Either<String, Ticket>>()
+			this.ticketServiceSql.getTicketFromIssueId(issueId.toString(), getBugTrackerType().name(), new Handler<Either<String, Ticket>>()
 			{
 				@Override
 				public void handle(Either<String, Ticket> res)

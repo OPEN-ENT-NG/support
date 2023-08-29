@@ -965,12 +965,12 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
      * @param issueId : bug tracker number from which we want the linked ticket
      * @param handler
      */
-    public void getTicketFromIssueId(String issueId, Handler<Either<String, Ticket>> handler) {
+    public void getTicketFromIssueId(String issueId, String bugtracker, Handler<Either<String, Ticket>> handler) {
         String query = "SELECT t.* " +
                 " from support.tickets t" +
                 " inner join support.bug_tracker_issues bti on bti.ticket_id = t.id" +
-                " WHERE bti.id = ? ";
-        JsonArray values = new JsonArray().add(parseId(issueId));
+                " WHERE bti.id = ? AND bti.bugtracker = ?";
+        JsonArray values = new JsonArray().add(parseId(issueId)).add(bugtracker);
         sql.prepared(query, values, validUniqueResultHandler(toTicketHandler(handler)));
     }
 
