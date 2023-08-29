@@ -701,6 +701,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 			  { "attachment_ids": "[931, 932, 933, 934, 935, 937, 936]", "id": 2876 } ]
 		 */
 		StringBuilder query = new StringBuilder("SELECT i.id,")
+			.append(" i.content").append(bugTrackerType.getLastIssueUpdateFromPostgresqlJson()).append(" AS last_update, ")
 			.append(" CASE WHEN COUNT(a.id) = 0 THEN '[]'")
 			.append(" ELSE json_agg(a.id)")
 			.append(" END AS attachment_ids");
@@ -724,7 +725,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 			query.append(")");
 		}
 
-		query.append(" GROUP BY i.id");
+		query.append(" GROUP BY i.id, last_update");
 		sql.prepared(query.toString(), values, validResultHandler(new Handler<Either<String, JsonArray>>()
 		{
 			@Override
@@ -739,6 +740,8 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 					for(int i = 0; i < resArr.size(); ++i)
 					{
 						Issue e = new Issue(new Long(resArr.getJsonObject(i).getNumber("id").longValue()));
+						e.lastUpdate = resArr.getJsonObject(i).getString("last_update");
+
 						JsonArray attIds = new JsonArray(resArr.getJsonObject(i).getString("attachment_ids"));
 						for(int j = 0; j < attIds.size(); ++j)
 							e.attachments.add(new Attachment(new Long(attIds.getNumber(j).longValue()), null));

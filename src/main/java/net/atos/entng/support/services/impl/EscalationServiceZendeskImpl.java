@@ -794,8 +794,15 @@ public class EscalationServiceZendeskImpl implements EscalationService {
 
 	private void pullDataAndUpdateIssues()
 	{
-		// Add one second to avoid duplicating the last comment pulled
-		long pullStart = lastPullEpoch.get() + 1;
+		long currentEpochSeconds = new Date().getTime() / 1000;
+		long pullStart = lastPullEpoch.get();
+
+		// According to Zendesk doc:
+		// "The start_time of the initial export is arbitrary. The time must be more than one minute in the past to avoid missing data.
+		// To prevent race conditions, the ticket and ticket event export endpoints will not return data for the most recent minute."
+		if(pullStart > currentEpochSeconds - 90)
+			pullStart = currentEpochSeconds - 90;
+
 		log.info("[Support] Info: Listing zendesk issues modified since " + pullStart);
 		HttpClientRequest req = zendeskClient.get("/api/v2/incremental/tickets?include=comment_events&start_time=" + pullStart, new Handler<HttpClientResponse>()
 		{
@@ -848,7 +855,10 @@ public class EscalationServiceZendeskImpl implements EscalationService {
 
 										log.info("[Support] Info: Updating " + listResult.size() + " zendesk issues");
 										for(Issue existing : listResult)
-											issuesUpdates.add(updateDatabaseIssue(issuesMap.get(existing.id.get()), existing.attachments, pullStart));
+										{
+											long lastUpdate = parseDateToEpoch(existing.lastUpdate);
+											issuesUpdates.add(updateDatabaseIssue(issuesMap.get(existing.id.get()), existing.attachments, lastUpdate));
+										}
 
 										CompositeFuture.all(issuesUpdates).onSuccess(new Handler<CompositeFuture>()
 										{

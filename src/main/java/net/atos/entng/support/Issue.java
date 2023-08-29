@@ -15,6 +15,7 @@ public class Issue implements IdObject
     public Id<Issue, Long> id;
     public BugTracker bugTracker;
     private JsonObject content;
+    public String lastUpdate;
     public List<Attachment> attachments = new ArrayList<Attachment>();
 
     public Issue(Long id)
