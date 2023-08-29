@@ -655,7 +655,7 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 															final Issue issue = getIssueEvent.right().getValue();
 															final JsonObject issueJson = issue.getContent();
 															// check if this issue had already been received.
-															ticketServiceSql.getTicketFromIssueId(issueId.toString(),
+															ticketServiceSql.getTicketFromIssueId(issueId.toString(), getBugTrackerType().name(),
 																	new Handler<Either<String, Ticket>>() {
 																		public void handle(
 																				final Either<String, Ticket> res) {
