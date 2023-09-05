@@ -482,7 +482,7 @@ export const SupportController: Controller = ng.controller('SupportController',
 
 		// Update ticket
 		$scope.editTicket = function() {
-			$scope.editedTicket = $scope.ticket;
+			$scope.editedTicket = Object.assign(new models.Ticket(), $scope.ticket);
 			template.open('main', 'edit-ticket');
 		};
 
@@ -542,8 +542,19 @@ export const SupportController: Controller = ng.controller('SupportController',
 				}
 			}
 
-			$scope.createProtectedCopies($scope.editedTicket, false, function() {
-				$scope.ticket = $scope.editedTicket;
+			let finalTicket = Object.assign(new models.Ticket(), $scope.editedTicket);
+			// Reopen tickets when writing a new comment
+			if($scope.ticket.status == 3 || $scope.ticket.status == 4)
+			{
+				if($scope.editedTicket.newComment != null && $scope.editedTicket.newComment.trim() != "")
+				{
+					if($scope.editedTicket.status == null || $scope.editedTicket.status == 3 || $scope.editedTicket.status == 4)
+						finalTicket.status = 2;
+				}
+			}
+
+			$scope.createProtectedCopies(finalTicket, false, function() {
+				$scope.ticket = finalTicket;
 
 				$scope.ticket.updateTicket($scope.ticket, function() {
 					if($scope.ticket.newAttachments && $scope.ticket.newAttachments.length > 0) {
