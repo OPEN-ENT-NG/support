@@ -63,6 +63,22 @@ public class ZendeskComment extends Comment implements JSONAble
         this.type = ZendeskCommentType.Comment;
     }
 
+    public boolean isPrivate()
+    {
+        if(Boolean.FALSE.equals(this.Public))
+            return true;
+        else if(this.metadata != null)
+        {
+            JsonArray flags = this.metadata.getJsonArray("flags", new JsonArray());
+
+            for(int i = flags.size(); i-- > 0;)
+                if(flags.getInteger(i) == 17)   // https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_comments/#comment-flags
+                    return true;
+        }
+
+        return false;
+    }
+
     @Override
     public JsonObject toJson()
     {
