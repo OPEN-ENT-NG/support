@@ -491,7 +491,12 @@ public class EscalationServiceZendeskImpl implements EscalationService {
 							}
 							loadCommentsResponse res = new loadCommentsResponse();
 							res.fromJson(new JsonObject(data.toString()));
-							issue.comments = res.comments;
+							List<ZendeskComment> publicComments = new ArrayList<ZendeskComment>(res.comments.size());
+							for(ZendeskComment c : res.comments)
+								if(c.isPrivate() == false)
+									publicComments.add(c);
+
+							issue.comments = publicComments;
 							promise.complete(issue);
 						}
 					}
