@@ -27,6 +27,12 @@ public enum BugTracker {
 			return "->'issue'->>'updated_on'";
 		}
 
+        @Override
+        public String getIssueCreationFromPostgresqlJson()
+		{
+            return null;
+		}
+
 		@Override
 		public String getStatusIdFromPostgresqlJson() {
 			return "#>'{issue,status,id}'";
@@ -42,6 +48,12 @@ public enum BugTracker {
 		@Override
 		public String getLastIssueUpdateFromPostgresqlJson() {
 			return "->'issue'->>'date'";
+		}
+
+        @Override
+        public String getIssueCreationFromPostgresqlJson()
+		{
+            return null;
 		}
 
 		@Override
@@ -61,6 +73,11 @@ public enum BugTracker {
 		{
             return "->>'updated_at'";
 		}
+        @Override
+        public String getIssueCreationFromPostgresqlJson()
+		{
+            return "->>'created_at'";
+		}
 		@Override
         public String getStatusIdFromPostgresqlJson()
 		{
@@ -77,6 +94,11 @@ public enum BugTracker {
 	 * @return SQL expression to extract last update time of bug tracker issue from JSON field stored in postgresql
 	 */
 	public abstract String getLastIssueUpdateFromPostgresqlJson();
+
+	/**
+	 * @return SQL expression to extract creation time of bug tracker issue from JSON field stored in postgresql
+	 */
+	public abstract String getIssueCreationFromPostgresqlJson();
 
 	/**
 	 * @return SQL expression to extract statusId of bug tracker issue from JSON field stored in postgresql

@@ -669,11 +669,23 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 	}
 
 	@Override
-	public void getLastIssuesUpdate(Handler<Either<String, String>> handler) {
+	public void getLastIssuesUpdate(Handler<Either<String, String>> handler)
+	{
+		String updatedExtract = bugTrackerType.getLastIssueUpdateFromPostgresqlJson();
+		String createdExtract = bugTrackerType.getIssueCreationFromPostgresqlJson();
+
 		String query = "SELECT max(content"
-				+ bugTrackerType.getLastIssueUpdateFromPostgresqlJson()
+				+ updatedExtract
 				+ ") AS last_update FROM support.bug_tracker_issues"
 				+ " WHERE bugtracker = '" + bugTrackerType.name() + "'";
+
+		if(createdExtract != null)
+		{
+			// Dans le cas où la routine de mise à jour plante, mais qu'une issue a été créée entre le plantage et le redémarrage du serveur,
+			// ceci évite de se baser sur la date de l'issue récemment créée et de perdre les mises à jour des autres tickets que la toutine
+			// n'a pas pu répliquer.
+			query += " AND content" + updatedExtract + " != content" + createdExtract;
+		}
 
 		sql.raw(query, validResultHandler(new Handler<Either<String, JsonArray>>()
 		{
