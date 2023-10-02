@@ -47,7 +47,9 @@
 								'order-by': (sort.expression === 'owner' && sort.reverse === true)}">
                     <i18n>support.ticket.table.author</i18n>
                 </th>
-                <th class="one">
+                <th class="one" ng-click="switchSortBy('profile')"
+                    ng-class="{'order-by-reversed': (sort.expression === 'profile' && sort.reverse === false),
+								'order-by': (sort.expression === 'profile' && sort.reverse === true)}">
                     <i18n>support.label.profil</i18n>
                 </th>
                 <th class="one" ng-click="switchSortBy('modified')"
