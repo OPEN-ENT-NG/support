@@ -15,6 +15,7 @@
     "support.error.escalation.incomplete": "Erreur : la transmission a été réalisée partiellement. Les commentaires n'ont pas pu être transmis",
     "support.error.sort.school.by.name": "Erreur : les établissements n'ont pas pu être triés par ordre alphabétique",
     "support.error.sort.tickets.by.school.name": "Erreur : les tickets n'ont pas pu être triés par nom d'établissements",
+    "support.error.sort.tickets.by.profile.name": "Erreur : les tickets n'ont pas pu être triés par profiles",
     "support.fail.upload.file": "Erreur : le fichier n'a pas pu être enregisté dans l'espace documentaire",
     "support.escalate.ticket": "Transmettre la demande au support",
     "support.escalated.ticket.category": "Catégorie",

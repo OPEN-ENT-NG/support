@@ -44,7 +44,7 @@ public class ServiceFactory {
     }
 
     public UserService userService() {
-        return new UserServiceDirectoryImpl(getEventBus(vertx));
+        return new UserServiceDirectoryImpl(getEventBus(vertx), neo4j);
     }
 
     public EscalationService escalationService() {

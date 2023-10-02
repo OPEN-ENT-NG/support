@@ -37,12 +37,14 @@ public class Ticket {
     public static final String PAGE = "page";
     public static final String APPLICANT = "applicant";
     public static final String OWNER = "owner";
+    public static final String OWNERIDS = "ownerIds";
     public static final String OTHER = "other";
     public static final String BLANK = "";
     public static final String PARIS_TIMEZONE = "Europe/Paris";
     public static final String SPACE_CHARACTER = " ";
     public static final String USERNAME = "username";
     public static final String EVENT = "event";
+    public static final String EVENT_COUNT = "event_count";
     public static final String EVENT_DATE = "event_date";
     public static final String EVENT_TYPE = "event_type";
     public static final String ALL = "all";
