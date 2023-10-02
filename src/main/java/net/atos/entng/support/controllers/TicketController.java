@@ -19,24 +19,6 @@
 
 package net.atos.entng.support.controllers;
 
-import static net.atos.entng.support.Support.SUPPORT_NAME;
-import static net.atos.entng.support.Support.bugTrackerCommDirect;
-
-import io.vertx.core.*;
-import net.atos.entng.support.enums.Error;
-import net.atos.entng.support.filters.AdminOfTicketsStructure;
-import net.atos.entng.support.helpers.*;
-import net.atos.entng.support.model.I18nConfig;
-import net.atos.entng.support.model.TicketModel;
-import net.atos.entng.support.services.*;
-
-import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
-
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.stream.Collectors;
-
 import fr.wseduc.bus.BusAddress;
 import fr.wseduc.rs.ApiDoc;
 import fr.wseduc.rs.Get;
@@ -47,9 +29,7 @@ import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.request.RequestUtils;
-import io.vertx.core.Handler;
-import io.vertx.core.MultiMap;
-import io.vertx.core.Vertx;
+import io.vertx.core.*;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
@@ -57,10 +37,16 @@ import io.vertx.core.json.JsonObject;
 import net.atos.entng.support.Support;
 import net.atos.entng.support.constants.Ticket;
 import net.atos.entng.support.enums.BugTrackerSyncType;
+import net.atos.entng.support.enums.Error;
 import net.atos.entng.support.enums.EscalationStatus;
 import net.atos.entng.support.export.TicketsCSVExport;
 import net.atos.entng.support.filters.Admin;
+import net.atos.entng.support.filters.AdminOfTicketsStructure;
 import net.atos.entng.support.filters.OwnerOrLocalAdmin;
+import net.atos.entng.support.helpers.*;
+import net.atos.entng.support.model.I18nConfig;
+import net.atos.entng.support.model.TicketModel;
+import net.atos.entng.support.services.*;
 import net.atos.entng.support.services.impl.TicketServiceNeo4jImpl;
 import org.entcore.common.controller.ControllerHelper;
 import org.entcore.common.events.EventHelper;
@@ -74,7 +60,15 @@ import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.vertx.java.core.http.RouteMatcher;
 
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.stream.Collectors;
+
+import static net.atos.entng.support.Support.SUPPORT_NAME;
+import static net.atos.entng.support.Support.bugTrackerCommDirect;
 import static net.atos.entng.support.enums.TicketStatus.NEW;
+import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
 
 
 public class TicketController extends ControllerHelper {
@@ -491,25 +485,8 @@ public class TicketController extends ControllerHelper {
             if (user != null) {
                 Map<String, UserInfos.Function> functions = user.getFunctions();
                 if (functions.containsKey(DefaultFunctions.ADMIN_LOCAL) || functions.containsKey(DefaultFunctions.SUPER_ADMIN)) {
-                    Future<JsonArray> future;
-                    if (Objects.equals(sortBy, Ticket.SCHOOL_ID)) {
-                        future = ticketService.listStructureChildren(user.getStructures())
-                                .compose(result -> {
-                                    List<String> list = result.getJsonArray(Ticket.STRUCTUREIDS, new JsonArray()).stream()
-                                            .filter(String.class::isInstance)
-                                            .map(Object::toString)
-                                            .collect(Collectors.toList());
-                                    return ticketService.sortSchoolByName(list);
-                                })
-                                .compose(result -> {
-                                    if (result != null && !result.isEmpty())
-                                        return ticketServiceSql.listTickets(user, page, statuses, applicants, schoolId, sortBy, order, nbTicketsPerPage, result.getJsonArray(Ticket.STRUCTUREIDS), null);
-                                    return Future.failedFuture(Error.SORT_BY_STRUCTURE.name());
-                                });
-                    } else {
-                        future = ticketService.listStructureChildren(Collections.singletonList(schoolId))
-                                .compose(structureChildren -> ticketServiceSql.listTickets(user, page, statuses, applicants, schoolId, sortBy, order, nbTicketsPerPage, null, structureChildren));
-                    }
+                    Future<JsonArray> future = listTicketOrdered(sortBy, user, page, statuses, applicants,
+                            schoolId, sortBy, order, nbTicketsPerPage);
                     // getting the profile for users
                     future.compose(tickets -> ticketService.getProfileFromTickets(tickets, i18nConfig))
                             .onSuccess(result -> renderJson(request, result))
@@ -523,6 +500,83 @@ public class TicketController extends ControllerHelper {
             }
         });
 
+    }
+
+    private Future<JsonArray> listTicketOrdered(String isSortBy, UserInfos user, Integer page, List<String> statuses, List<String> applicants,
+                                                String schoolId, String sortBy, String order, Integer nbTicketsPerPage) {
+        switch (isSortBy) {
+            case Ticket.SCHOOL_ID:
+                return listTicketStructureOrdered(user, page, statuses, applicants, schoolId, sortBy, order, nbTicketsPerPage);
+            case Ticket.PROFILE:
+                return listTicketProfileOrdered(user, page, statuses, applicants, schoolId, sortBy, order, nbTicketsPerPage);
+            default:
+                return listTicketDefaultOrdered(user, page, statuses, applicants,
+                        schoolId, sortBy, order, nbTicketsPerPage);
+        }
+    }
+
+    private Future<JsonArray> listTicketStructureOrdered(UserInfos user, Integer page, List<String> statuses, List<String> applicants,
+                                                         String schoolId, String sortBy, String order, Integer nbTicketsPerPage) {
+        Promise<JsonArray> promise = Promise.promise();
+        ticketService.listStructureChildren(user.getStructures())
+                .compose(result -> ticketService.sortSchoolByName(getStructureIds(result)))
+                .compose(result -> {
+                    if (result != null && !result.isEmpty())
+                        return ticketServiceSql.listTickets(user, page, statuses, applicants, schoolId, sortBy, order,
+                                nbTicketsPerPage, result.getJsonArray(Ticket.STRUCTUREIDS));
+                    log.error(String.format("[Support@%s::listTicketStructureOrdered] error while retrieving tickets",
+                            this.getClass().getSimpleName()));
+                    return Future.failedFuture(Error.SORT_BY_STRUCTURE.name());
+                })
+                .onSuccess(promise::complete)
+                .onFailure(promise::fail);
+
+        return promise.future();
+    }
+
+    private Future<JsonArray> listTicketProfileOrdered(UserInfos user, Integer page, List<String> statuses, List<String> applicants,
+                                                       String schoolId, String sortBy, String order, Integer nbTicketsPerPage) {
+        Promise<JsonArray> promise = Promise.promise();
+        ticketService.listStructureChildren(user.getStructures())
+                .compose(structureChildren -> ticketServiceSql.listTicketsOwnerIds(getStructureIds(structureChildren)))
+                .compose(userService::getUserIdsProfileOrdered)
+                .compose(owners -> {
+                    if (owners != null && !owners.isEmpty())
+                        return ticketServiceSql.listTickets(user, page, statuses, applicants,
+                                schoolId, sortBy, order, nbTicketsPerPage, new JsonArray(owners
+                                        .stream()
+                                        .filter(JsonObject.class::isInstance)
+                                        .map(JsonObject.class::cast)
+                                        .map(owner -> owner.getString(Ticket.ID))
+                                        .collect(Collectors.toList())));
+                    log.error(String.format("[Support@%s::listTicketProfileOrdered] error while retrieving tickets",
+                            this.getClass().getSimpleName()));
+                    return Future.failedFuture(Error.SORT_BY_STRUCTURE.name());
+                })
+                .onSuccess(promise::complete)
+                .onFailure(promise::fail);
+
+        return promise.future();
+    }
+
+
+    private Future<JsonArray> listTicketDefaultOrdered(UserInfos user, Integer page, List<String> statuses, List<String> applicants,
+                                                       String schoolId, String sortBy, String order, Integer nbTicketsPerPage) {
+        Promise<JsonArray> promise = Promise.promise();
+        ticketService.listStructureChildren(Collections.singletonList(schoolId))
+                .compose(structureChildren -> ticketServiceSql.listTickets(user, page, statuses, applicants,
+                        schoolId, sortBy, order, nbTicketsPerPage, structureChildren))
+                .onSuccess(promise::complete)
+                .onFailure(promise::fail);
+
+        return promise.future();
+    }
+
+    private List<String> getStructureIds(JsonObject structuresResult) {
+        return structuresResult.getJsonArray(Ticket.STRUCTUREIDS, new JsonArray()).stream()
+                .filter(String.class::isInstance)
+                .map(Object::toString)
+                .collect(Collectors.toList());
     }
 
     @Get("/escalation")
@@ -932,7 +986,7 @@ public class TicketController extends ControllerHelper {
                 ticketServiceSql.getTicketsFromListId(ids)
                         .compose(ticketsResults -> {
                             tickets.addAll(CSVHelper.translateTicketCategory(user, ticketsResults));
-                            return ticketService.getSchoolAndProfileFromTicket(tickets,i18nConfig);
+                            return ticketService.getSchoolAndProfileFromTicket(tickets, i18nConfig);
                         })
                         .onSuccess(result -> {
                             TicketsCSVExport pce = new TicketsCSVExport(tickets, i18nConfig);
@@ -1012,9 +1066,10 @@ public class TicketController extends ControllerHelper {
                         })
                         .onFailure(err -> renderError(request, new JsonObject()));
 
-                if (!Objects.equals(structureId, Ticket.ASTERISK)) ticketService.listStructureChildren(Collections.singletonList(structureId))
-                        .compose(ticketServiceSql::getTicketsFromStructureIds)
-                        .onComplete(promise);
+                if (!Objects.equals(structureId, Ticket.ASTERISK))
+                    ticketService.listStructureChildren(Collections.singletonList(structureId))
+                            .compose(ticketServiceSql::getTicketsFromStructureIds)
+                            .onComplete(promise);
                 else ticketServiceSql.getUserTickets(user).onComplete(ar -> {
                     List<TicketModel> ticketModels = ar.result();
                     promise.complete(IModelHelper.listToJsonArray(ticketModels));
