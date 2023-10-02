@@ -4,7 +4,8 @@ import io.vertx.core.json.JsonObject;
 import net.atos.entng.support.constants.Ticket;
 
 public enum Error {
-    SORT_BY_STRUCTURE("support.error.sort.tickets.by.school.name");
+    SORT_BY_STRUCTURE("support.error.sort.tickets.by.school.name"),
+    SORT_BY_PRODILE("support.error.sort.tickets.by.profile.name");
 
     private final String i18n;
 
