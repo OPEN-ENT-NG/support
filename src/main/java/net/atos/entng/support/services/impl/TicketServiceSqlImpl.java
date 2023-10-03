@@ -86,7 +86,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 		// 2. Create ticket
 		ticket.put("owner", user.getUserId());
         ticket.put("locale", locale);
-		String returnedFields = "id, school_id, status, created, modified, escalation_status, escalation_date, substring(description, 0, 101)  as short_desc";
+		String returnedFields = "id, subject, school_id, status, created, modified, escalation_status, escalation_date, substring(description, 0, 101)  as short_desc";
 		s.insert(resourceTable, ticket, returnedFields);
 
 		this.insertAttachments(attachments, user, s, null);
@@ -684,6 +684,8 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 			// Dans le cas où la routine de mise à jour plante, mais qu'une issue a été créée entre le plantage et le redémarrage du serveur,
 			// ceci évite de se baser sur la date de l'issue récemment créée et de perdre les mises à jour des autres tickets que la toutine
 			// n'a pas pu répliquer.
+			// TODO: Stocker explicitement une date de màj côté ENT pour aussi supporter les tickets créés avec plusieurs commentaires
+			// dont la date d'enregistrement ferait que la date updated soit différente de created
 			query += " AND content" + updatedExtract + " != content" + createdExtract;
 		}
 
