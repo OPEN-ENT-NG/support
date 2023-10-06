@@ -563,6 +563,12 @@ export const SupportController: Controller = ng.controller('SupportController',
 				return;
 			}
 
+			if ($scope.ticket.status == $scope.editedTicket.status
+				&& $scope.editedTicket.status == model.ticketStatusEnum.CLOSED
+				&& !!$scope.editedTicket.newComment)
+				$scope.editedTicket.status = model.ticketStatusEnum.OPENED;
+
+
 			// check that the "new" attachments have not already been saved for the current ticket
 			if($scope.ticket.newAttachments && $scope.ticket.newAttachments.length > 0) {
 				const attachmentsIds = $scope.ticket.attachments.pluck('document_id');

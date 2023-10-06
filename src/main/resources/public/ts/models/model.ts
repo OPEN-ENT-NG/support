@@ -8,7 +8,7 @@ model.ticketStatusEnum = {
 	NEW: 1,
 	OPENED: 2,
 	RESOLVED: 3,
-	ClOSED: 4,
+	CLOSED: 4,
 	WAITING: 5,
 	properties: {
 		1: {i18n: "support.ticket.status.new", value: 1},
