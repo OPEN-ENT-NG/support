@@ -28,6 +28,7 @@ import org.entcore.common.utils.Id;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.Future;
 
 import fr.wseduc.webutils.Either;
 
@@ -108,4 +109,7 @@ public interface TicketServiceSql extends CrudService {
     public void updateTicketIssueUpdateDateAndStatus(Long ticketId, String updateDate, Long status, Handler<Either<String, Void>> handler);
 
     public void listEvents(String ticketId, Handler<Either<String, JsonArray>> handler);
+
+	public Future<Long> getLastSynchroEpoch();
+	public Future<Void> setLastSynchroEpoch(Long epoch);
 }
