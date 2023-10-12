@@ -50,6 +50,8 @@ import org.entcore.common.utils.Id;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.Future;
+import io.vertx.core.Promise;
 
 import fr.wseduc.webutils.Either;
 import io.vertx.core.logging.Logger;
@@ -1066,5 +1068,60 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 			}
 		}));
     }
+
+
+	public Future<Long> getLastSynchroEpoch()
+	{
+		Promise<Long> promise = Promise.promise();
+
+		String query = "SELECT last_synchro_epoch AS last_update FROM support.synchro"
+						+ " WHERE bugtracker = '" + bugTrackerType.name() + "'";
+
+		sql.raw(query, validResultHandler(new Handler<Either<String, JsonArray>>()
+		{
+			@Override
+			public void handle(Either<String, JsonArray> res)
+			{
+				if(res.isLeft())
+					promise.fail(res.left().getValue());
+				else
+				{
+					JsonArray r = res.right().getValue();
+					if(r.size() > 0)
+					{
+						JsonObject rr = r.getJsonObject(0);
+						promise.complete(r != null ? rr.getLong("last_update") : null);
+					}
+					else
+						promise.complete(null);
+				}
+			}
+		}));
+
+		return promise.future();
+	}
+	public Future<Void> setLastSynchroEpoch(Long epoch)
+	{
+		Promise<Void> promise = Promise.promise();
+
+		String query = "INSERT INTO support.synchro(bugtracker, last_synchro_epoch) " +
+						"VALUES(?, ?) " +
+						"ON CONFLICT (bugtracker) DO UPDATE SET last_synchro_epoch = EXCLUDED.last_synchro_epoch";
+
+		JsonArray values = new JsonArray().add(bugTrackerType.name()).add(epoch);
+		sql.prepared(query, values, validUniqueResultHandler(new Handler<Either<String, JsonObject>>()
+		{
+			@Override
+			public void handle(Either<String, JsonObject> res)
+			{
+				if(res.isLeft())
+					promise.fail(res.left().getValue());
+				else
+					promise.complete(null);
+			}
+		}));
+
+		return promise.future();
+	}
 
 }

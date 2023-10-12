@@ -146,14 +146,18 @@ public class EscalationServiceZendeskImpl implements EscalationService {
 
 		if(delay != 0)
 		{
-			ticketServiceSql.getLastIssuesUpdate(new Handler<Either<String, String>>()
+			ticketServiceSql.getLastSynchroEpoch().onFailure(new Handler<Throwable>()
 			{
 				@Override
-				public void handle(Either<String, String> event)
+				public void handle(Throwable t)
 				{
-					if (event.isRight())
+					log.error("[Support] Last pull from Zendesk error : " + t.getCause());
+				}
+			}).onSuccess(new Handler<Long>()
+				{
+					public void handle(Long lastSynchroEpoch)
 					{
-						lastPullEpoch.set(parseDateToEpoch(event.right().getValue()));
+						lastPullEpoch.set(lastSynchroEpoch == null ? 0 : lastSynchroEpoch);
 						log.info("[Support] Last pull from Zendesk : " + lastPullEpoch);
 						vertx.setPeriodic(delay, new Handler<Long>()
 						{
@@ -168,10 +172,7 @@ public class EscalationServiceZendeskImpl implements EscalationService {
 							}
 						});
 					}
-					else
-						log.error("[Support] Last pull from Zendesk error : " + event.left().getValue());
-				}
-			});
+				});
 		}
 	}
 
@@ -808,6 +809,7 @@ public class EscalationServiceZendeskImpl implements EscalationService {
 		if(pullStart > currentEpochSeconds - 90)
 			pullStart = currentEpochSeconds - 90;
 
+		final long finalPullStart = pullStart;
 		log.info("[Support] Info: Listing zendesk issues modified since " + pullStart);
 		HttpClientRequest req = zendeskClient.get("/api/v2/incremental/tickets?include=comment_events&start_time=" + pullStart, new Handler<HttpClientResponse>()
 		{
@@ -860,24 +862,38 @@ public class EscalationServiceZendeskImpl implements EscalationService {
 
 										log.info("[Support] Info: Updating " + listResult.size() + " zendesk issues");
 										for(Issue existing : listResult)
-										{
-											long lastUpdate = parseDateToEpoch(existing.lastUpdate);
-											issuesUpdates.add(updateDatabaseIssue(issuesMap.get(existing.id.get()), existing.attachments, lastUpdate));
-										}
+											issuesUpdates.add(updateDatabaseIssue(issuesMap.get(existing.id.get()), existing.attachments, finalPullStart));
 
 										CompositeFuture.all(issuesUpdates).onSuccess(new Handler<CompositeFuture>()
 										{
 											@Override
 											public void handle(CompositeFuture allUploadsResult)
 											{
-												lastPullEpoch.set(izp.end_time.longValue());
-												if(Boolean.TRUE.equals(izp.end_of_stream) == false)
-													pullDataAndUpdateIssues();
-												else
+												Handler<Void> next = new Handler<Void>()
 												{
-													log.info("[Support] Info: All zendesk issues are up to date");
-													pullInProgess.set(false);
-												}
+													@Override
+													public void handle(Void v)
+													{
+														lastPullEpoch.set(izp.end_time.longValue());
+														if(Boolean.TRUE.equals(izp.end_of_stream) == false)
+															pullDataAndUpdateIssues();
+														else
+														{
+															log.info("[Support] Info: All zendesk issues are up to date");
+															pullInProgess.set(false);
+														}
+													}
+												};
+												ticketServiceSql.setLastSynchroEpoch(izp.end_time).onFailure(new Handler<Throwable>()
+												{
+													@Override
+													public void handle(Throwable t)
+													{
+														log.error("[Support] Error: Failed to save the last Zendesk synchro time");
+														// Keep importing anyways
+														next.handle(null);
+													}
+												}).onSuccess(next);
 											}
 										}).onFailure(new Handler<Throwable>()
 										{
