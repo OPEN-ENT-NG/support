@@ -23,7 +23,6 @@ public class ServiceFactory {
     private final MongoDb mongoDb;
     private final JsonObject config;
     private final BugTracker bugTrackerType;
-    private boolean escalationActivated;
 
     public ServiceFactory(Vertx vertx, Storage storage, Neo4j neo4j, Sql sql, MongoDb mongoDb, JsonObject config
             , BugTracker bugTrackerType) {
@@ -49,16 +48,11 @@ public class ServiceFactory {
     }
 
     public EscalationService escalationService() {
-        return escalationActivated
+        return config.getBoolean(Ticket.ACTIVATE_ESCALATION, false)
                 ? EscalationServiceFactory.makeEscalationService(bugTrackerType, vertx, config,
                 this.ticketServiceSql(), this.userService(), storage)
                 : null;
     }
-
-    public Boolean isEscalationActivated() {
-        return escalationActivated = config.getBoolean(Ticket.ACTIVATE_ESCALATION, false);
-    }
-
 
     public Storage getStorage() {
         return storage;
