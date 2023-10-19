@@ -38,7 +38,7 @@ export const SupportController: Controller = ng.controller('SupportController',
 				if($scope.userIsLocalAdmin()) {
 					$scope.registerViewTicketListEvent();
 				} else {
-					$scope.newTicket();
+					$scope.displayTicketList();
 				}
 			}
 		});
