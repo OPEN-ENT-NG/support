@@ -557,7 +557,7 @@ export const SupportController: Controller = ng.controller('SupportController',
 			}
 		};
 
-		$scope.updateTicket = function(){
+		$scope.updateTicket = async function(){
 			$scope.checkUpdateTicket($scope.editedTicket);
 			if(!$scope.editedTicket.processing){
 				return;
@@ -565,8 +565,10 @@ export const SupportController: Controller = ng.controller('SupportController',
 
 			if ($scope.ticket.status == $scope.editedTicket.status
 				&& $scope.editedTicket.status == model.ticketStatusEnum.CLOSED
-				&& !!$scope.editedTicket.newComment)
+				&& !!$scope.editedTicket.newComment
+				&& await $scope.schoolHasSpecificWorkflow(WORKFLOW.REOPEN_TICKET_ON_COMMENT)) {
 				$scope.editedTicket.status = model.ticketStatusEnum.OPENED;
+			}
 
 
 			// check that the "new" attachments have not already been saved for the current ticket

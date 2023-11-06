@@ -20,4 +20,10 @@ public class FakeRight extends ControllerHelper {
     public void autoOpenTicket(HttpServerRequest request) {
         notImplemented(request);
     }
+
+    @Get("/rights/support/reopen/on/comment")
+    @SecuredAction(Ticket.REOPEN_TICKET_ON_COMMENT)
+    public void reopenTicketOnComment(HttpServerRequest request) {
+        notImplemented(request);
+    }
 }
