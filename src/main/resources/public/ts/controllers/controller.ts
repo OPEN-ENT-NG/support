@@ -462,7 +462,6 @@ export const SupportController: Controller = ng.controller('SupportController',
          * ("Non protected" attachments cannot be seen by everybody, whereas "protected" attachments can)
          */
 		$scope.createProtectedCopies = function(pTicket, pIsCreateTicket, pCallback) {
-
 			if(!pTicket.newAttachments || pTicket.newAttachments.length === 0) {
 				if(typeof pCallback === 'function'){
 					pCallback();
@@ -582,6 +581,10 @@ export const SupportController: Controller = ng.controller('SupportController',
 							id: $scope.ticket.newAttachments[i]._id,
 							name: $scope.ticket.newAttachments[i].title
 						});
+					} else {
+						if (!$scope.editedTicket.newAttachments)
+							$scope.editedTicket.newAttachments = [];
+						$scope.editedTicket.newAttachments.push($scope.ticket.newAttachments[i]);
 					}
 				}
 
