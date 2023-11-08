@@ -33,6 +33,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import io.vertx.core.http.*;
+import io.vertx.core.http.impl.headers.HeadersMultiMap;
 import org.entcore.common.bus.WorkspaceHelper;
 import org.entcore.common.bus.WorkspaceHelper.Document;
 import org.entcore.common.neo4j.Neo4j;
@@ -53,11 +55,6 @@ import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
-import io.vertx.core.http.HttpClient;
-import io.vertx.core.http.HttpClientOptions;
-import io.vertx.core.http.HttpClientResponse;
-import io.vertx.core.http.HttpHeaders;
-import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -418,14 +415,17 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 		String url = proxyIsDefined ? ("http://" + redmineHost + ":" + redminePort + REDMINE_UPLOAD_ATTACHMENT_PATH)
 				: REDMINE_UPLOAD_ATTACHMENT_PATH;
 
-		httpClient.post(url, handler).exceptionHandler(new Handler<Throwable>() {
-			@Override
-			public void handle(Throwable t) {
-				log.error("[Support] Error : exception raised by redmine escalation httpClient", t);
-			}
-		}).putHeader(HttpHeaders.HOST, redmineHost).putHeader(HttpHeaders.CONTENT_TYPE, "application/octet-stream")
-				.putHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(data.length()))
-				.putHeader(HEADER_REDMINE_API_KEY, redmineApiKey).write(data).end();
+		httpClient.request(new RequestOptions()
+					.setMethod(HttpMethod.POST)
+					.setURI(url)
+					.setHeaders(new HeadersMultiMap()
+							.add(HttpHeaders.HOST, redmineHost)
+							.add(HttpHeaders.CONTENT_TYPE, "application/octet-stream")
+							.add(HttpHeaders.CONTENT_LENGTH, String.valueOf(data.length()))
+							.add(HEADER_REDMINE_API_KEY, redmineApiKey)))
+				.flatMap(request -> request.send(data))
+				.onFailure(t -> log.error("[Support] Error : exception raised by redmine escalation httpClient", t));
+
 	}
 
 	private void createIssue(final HttpServerRequest request, final JsonObject ticket, final JsonArray attachments,
@@ -517,14 +517,16 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 				Buffer buffer = Buffer.buffer();
 				buffer.appendString(issue.toString());
 
-				httpClient.post(url, handler).exceptionHandler(new Handler<Throwable>() {
-					@Override
-					public void handle(Throwable t) {
-						log.error("[Support] Error : exception raised by redmine escalation httpClient", t);
-					}
-				}).putHeader(HttpHeaders.HOST, redmineHost).putHeader(HttpHeaders.CONTENT_TYPE, "application/json")
-						.putHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(buffer.length()))
-						.putHeader(HEADER_REDMINE_API_KEY, redmineApiKey).write(buffer).end();
+				httpClient.request(new RequestOptions()
+								.setMethod(HttpMethod.POST)
+								.setURI(url)
+								.setHeaders(new HeadersMultiMap()
+										.add(HttpHeaders.HOST, redmineHost)
+										.add(HttpHeaders.CONTENT_TYPE, "application/json")
+										.add(HttpHeaders.CONTENT_LENGTH, String.valueOf(buffer.length()))
+										.add(HEADER_REDMINE_API_KEY, redmineApiKey)))
+						.flatMap(request -> request.send(buffer))
+						.onFailure(t -> log.error("[Support] Error : exception raised by redmine escalation httpClient", t));
 			}
 		});
 
@@ -558,14 +560,16 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 
 		Buffer buffer = Buffer.buffer().appendString(ticket.toString());
 
-		httpClient.put(url, handler).exceptionHandler(new Handler<Throwable>() {
-			@Override
-			public void handle(Throwable t) {
-				log.error("[Support] Error : exception raised by redmine escalation httpClient", t);
-			}
-		}).putHeader(HttpHeaders.HOST, redmineHost).putHeader(HttpHeaders.CONTENT_TYPE, "application/json")
-				.putHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(buffer.length()))
-				.putHeader(HEADER_REDMINE_API_KEY, redmineApiKey).write(buffer).end();
+		httpClient.request(new RequestOptions()
+						.setMethod(HttpMethod.PUT)
+						.setURI(url)
+						.setHeaders(new HeadersMultiMap()
+								.add(HttpHeaders.HOST, redmineHost)
+								.add(HttpHeaders.CONTENT_TYPE, "application/json")
+								.add(HttpHeaders.CONTENT_LENGTH, String.valueOf(buffer.length()))
+								.add(HEADER_REDMINE_API_KEY, redmineApiKey)))
+				.flatMap(request -> request.send(buffer))
+				.onFailure(t -> log.error("[Support] Error : exception raised by redmine escalation httpClient", t));
 	}
 
 	private void pullDataAndUpdateIssues(final String since) {
@@ -840,26 +844,24 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 		url += query.toString();
 		log.info("Url used to list redmine issues : " + url);
 
-		httpClient.get(url, new Handler<HttpClientResponse>() {
-			@Override
-			public void handle(final HttpClientResponse resp) {
-				resp.exceptionHandler(excep -> log.error("client error", excep));
-				resp.bodyHandler(new Handler<Buffer>() {
-					@Override
-					public void handle(Buffer data) {
-						JsonObject response = new JsonObject(data.toString());
-						if (resp.statusCode() == 200) {
-							handler.handle(new Either.Right<String, JsonObject>(response));
-						} else {
-							log.error("Error when listing redmine tickets. Response status is " + resp.statusCode()
-									+ " instead of 200.");
-							handler.handle(new Either.Left<String, JsonObject>(response.toString()));
-						}
+		httpClient.request(new RequestOptions()
+						.setMethod(HttpMethod.GET)
+						.setHeaders(new HeadersMultiMap()
+								.add(HttpHeaders.HOST, redmineHost)
+								.add(HEADER_REDMINE_API_KEY, redmineApiKey)
+								.add(HttpHeaders.CONTENT_TYPE, "application/json")))
+				.flatMap(HttpClientRequest::send)
+				.onSuccess(resp -> resp.bodyHandler(data -> {
+					JsonObject response = new JsonObject(data.toString());
+					if (resp.statusCode() == 200) {
+						handler.handle(new Either.Right<String, JsonObject>(response));
+					} else {
+						log.error("Error when listing redmine tickets. Response status is " + resp.statusCode()
+								+ " instead of 200.");
+						handler.handle(new Either.Left<String, JsonObject>(response.toString()));
 					}
-				});
-			}
-		}).putHeader(HttpHeaders.HOST, redmineHost).putHeader(HEADER_REDMINE_API_KEY, redmineApiKey)
-				.putHeader(HttpHeaders.CONTENT_TYPE, "application/json").end();
+				}))
+				.onFailure(excep -> log.error("client error", excep));
 	}
 
 	private void doDownloadAttachment(final String attachmentUrl, final JsonObject attachment, final Number issueId) {
@@ -1084,14 +1086,15 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 		String path = "/issues/" + issueId + ".json?include=journals,attachments";
 		String url = proxyIsDefined ? ("http://" + redmineHost + ":" + redminePort + path) : path;
 
-		httpClient.get(url, new Handler<HttpClientResponse>() {
-			@Override
-			public void handle(final HttpClientResponse resp) {
-				resp.exceptionHandler(excep -> log.error("client error", excep));
-				resp.bodyHandler(new Handler<Buffer>() {
-					@Override
-					public void handle(Buffer data) {
-						JsonObject response = new JsonObject(data.toString());
+		httpClient.request(new RequestOptions()
+						.setMethod(HttpMethod.GET)
+						.setHeaders(new HeadersMultiMap()
+								.add(HttpHeaders.HOST, redmineHost)
+								.add(HEADER_REDMINE_API_KEY, redmineApiKey)
+								.add(HttpHeaders.CONTENT_TYPE, "application/json")))
+				.flatMap(HttpClientRequest::send)
+				.onSuccess(resp -> resp.bodyHandler(data -> {
+					JsonObject response = new JsonObject(data.toString());
 						if (resp.statusCode() == 200)
 						{
 							Issue issue = new Issue(issueId.longValue(), response);
@@ -1103,18 +1106,15 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 								issue.attachments.add(new GridFSAttachment(att.getLong("id"), att.getString("filename"), null, att.getInteger("filesize")));
 							}
 							handler.handle(new Either.Right<String, Issue>(issue));
-						} else {
-							log.error("Error when getting a redmine ticket. Response status is " + resp.statusCode()
-									+ " instead of 200.");
-							log.error(response.toString());
+					} else {
+						log.error("Error when getting a redmine ticket. Response status is " + resp.statusCode()
+								+ " instead of 200.");
+						log.error(response.toString());
 							handler.handle(new Either.Left<String, Issue>(
-									"support.error.comment.added.to.escalated.ticket.but.synchronization.failed"));
-						}
+								"support.error.comment.added.to.escalated.ticket.but.synchronization.failed"));
 					}
-				});
-			}
-		}).putHeader(HttpHeaders.HOST, redmineHost).putHeader(HEADER_REDMINE_API_KEY, redmineApiKey)
-				.putHeader(HttpHeaders.CONTENT_TYPE, "application/json").end();
+				}))
+				.onFailure(excep -> log.error("client error", excep));
 	}
 
 	/**
@@ -1125,19 +1125,15 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 		String url = proxyIsDefined ? attachmentUrl
 				: attachmentUrl.substring(attachmentUrl.indexOf(redmineHost) + redmineHost.length());
 
-		httpClient.get(url, new Handler<HttpClientResponse>() {
-			@Override
-			public void handle(HttpClientResponse resp) {
-				resp.exceptionHandler(excep -> log.error("client error", excep));
-				resp.bodyHandler(new Handler<Buffer>() {
-					@Override
-					public void handle(Buffer data) {
-						handler.handle(data);
-					}
-				});
-			}
-		}).putHeader(HttpHeaders.HOST, redmineHost).putHeader(HEADER_REDMINE_API_KEY, redmineApiKey)
-				.putHeader(HttpHeaders.CONTENT_TYPE, "application/json").end();
+		httpClient.request(new RequestOptions()
+						.setMethod(HttpMethod.GET)
+						.setHeaders(new HeadersMultiMap()
+								.add(HttpHeaders.HOST, redmineHost)
+								.add(HEADER_REDMINE_API_KEY, redmineApiKey)
+								.add(HttpHeaders.CONTENT_TYPE, "application/json")))
+				.flatMap(HttpClientRequest::send)
+				.onSuccess(resp -> resp.bodyHandler(data -> handler.handle(data)))
+				.onFailure(excep -> log.error("client error", excep));
 	}
 
 	@Override

@@ -39,3 +39,5 @@ rev-manifest.json
 **/view/*.html
 src/main/resources/public/js/behaviours.js
 /package-lock.json
+.env
+dependency-reduced-pom.xml
