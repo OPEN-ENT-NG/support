@@ -53,12 +53,7 @@ public class UserServiceDirectoryImpl implements UserService {
 		JsonObject action = new JsonObject()
 			.put("action", "list-adml")
 			.put("structureId", structure);
-		eb.send(DIRECTORY_ADDRESS, action, new Handler<AsyncResult<Message<JsonArray>>>() {
-			@Override
-			public void handle(AsyncResult<Message<JsonArray>> res) {
-				handler.handle(res.result().body());
-			}
-		});
+		eb.request(DIRECTORY_ADDRESS, action, (Handler<AsyncResult<Message<JsonArray>>>) res -> handler.handle(res.result().body()));
 	}
 
 	@Override

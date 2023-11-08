@@ -57,8 +57,8 @@ public class Support extends BaseServer {
     public static boolean bugTrackerCommDirect;
 
 	@Override
-	public void start() throws Exception {
-		super.start();
+	public void start(Promise<Void> startPromise) throws Exception {
+		super.start(startPromise);
 
 		addController(new DisplayController());
 
