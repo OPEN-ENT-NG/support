@@ -39,6 +39,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.io.UnsupportedEncodingException;
 
+import io.vertx.core.http.*;
 import org.entcore.common.bus.WorkspaceHelper;
 import org.entcore.common.bus.WorkspaceHelper.Document;
 import org.entcore.common.neo4j.Neo4j;
@@ -62,10 +63,6 @@ import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
-import io.vertx.core.http.HttpClientRequest;
-import io.vertx.core.http.HttpClientResponse;
-import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -246,19 +243,13 @@ public class EscalationServiceZendeskImpl implements EscalationService {
 		return CompositeFuture.all(uploads);
 	}
 
-	private Future<Attachment> uploadAttachment(Attachment attachment)
-	{
+	private Future<Attachment> uploadAttachment(Attachment attachment) {
 		Promise<Attachment> uploadPromise = Promise.promise();
 
-		if(attachment == null || attachment.documentId == null)
+		if(attachment == null || attachment.documentId == null) {
 			uploadPromise.fail("support.escalation.zendesk.error.upload.invalid");
-		else
-		{
-			wksHelper.readDocument(attachment.documentId, new Handler<WorkspaceHelper.Document>()
-			{
-				@Override
-				public void handle(final WorkspaceHelper.Document file)
-				{
+		} else {
+			wksHelper.readDocument(attachment.documentId, file -> {
 					try
 					{
 						final String filename = file.getDocument().getString("name");
@@ -269,45 +260,29 @@ public class EscalationServiceZendeskImpl implements EscalationService {
 						// This will be reused when inserting the issue attachment in postgres
 						attachment.contentType = contentType;
 						attachment.size = size.intValue();
-
-						HttpClientRequest req = zendeskClient.post("/api/v2/uploads.json?filename=" + filename, new Handler<HttpClientResponse>()
-						{
-							@Override
-							public void handle(HttpClientResponse response)
-							{
-								response.bodyHandler(new Handler<Buffer>()
-								{
-									@Override
-									public void handle(Buffer data)
-									{
-										if(response.statusCode()  != 201)
-										{
-											log.error("[Support] Error : Attachment upload failed: " + data.toString());
-											uploadPromise.fail("support.escalation.zendesk.error.upload.failure");
-										}
-										else
-										{
-											JsonObject upload = new JsonObject(data.toString()).getJsonObject("upload");
-											attachment.bugTrackerToken = upload.getString("token");
-											attachment.bugTrackerId = upload.getJsonObject("attachment").getLong("id");
-											uploadPromise.complete(attachment);
-										}
-									}
-								});
-							}
-						}).exceptionHandler(new Handler<Throwable>()
-						{
-							@Override
-							public void handle(Throwable t)
-							{
-								log.error("[Support] Error : exception raised by zendesk escalation httpClient", t);
-								uploadPromise.fail("support.escalation.zendesk.error.upload.request");
-							}
+						zendeskClient.request(new RequestOptions()
+							.setMethod(HttpMethod.POST)
+							.setURI("/api/v2/uploads.json?filename=" + filename)
+							.addHeader(HttpHeaders.CONTENT_TYPE, contentType)
+							.addHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(data.length()))
+						).flatMap(req -> req.send(data))
+						.onSuccess(response -> {
+							response.bodyHandler(data1 -> {
+                if(response.statusCode()  != 201) {
+                  log.error("[Support] Error : Attachment upload failed: " + data1.toString());
+                  uploadPromise.fail("support.escalation.zendesk.error.upload.failure");
+                } else {
+                  JsonObject upload = new JsonObject(data1.toString()).getJsonObject("upload");
+                  attachment.bugTrackerToken = upload.getString("token");
+                  attachment.bugTrackerId = upload.getJsonObject("attachment").getLong("id");
+                  uploadPromise.complete(attachment);
+                }
+              });
+						})
+						.onFailure(t -> {
+							log.error("[Support] Error : exception raised by zendesk escalation httpClient", t);
+							uploadPromise.fail("support.escalation.zendesk.error.upload.request");
 						});
-
-						req.putHeader(HttpHeaders.CONTENT_TYPE, contentType);
-						req.putHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(data.length()));
-						req.write(data).end();
 					}
 					catch (Exception e)
 					{
@@ -316,7 +291,7 @@ public class EscalationServiceZendeskImpl implements EscalationService {
 					}
 
 				}
-			});
+			);
 		}
 
 		return uploadPromise.future();
@@ -324,81 +299,58 @@ public class EscalationServiceZendeskImpl implements EscalationService {
 
 	private void createIssue(ZendeskIssue issue, Handler<Either<String, ZendeskIssue>> handler)
 	{
-		HttpClientRequest req = zendeskClient.post("/api/v2/tickets.json", new Handler<HttpClientResponse>()
-		{
-			@Override
-			public void handle(HttpClientResponse response)
+		zendeskClient.request(new RequestOptions()
+			.setMethod(HttpMethod.POST)
+			.setURI("/api/v2/tickets.json")
+			.addHeader(HttpHeaders.CONTENT_TYPE, "application/json"))
+		.flatMap(request -> request.send(new JsonObject().put("ticket", issue.toJson()).encode()))
+		.onSuccess(response -> {
+			response.bodyHandler(new Handler<Buffer>()
 			{
-				response.bodyHandler(new Handler<Buffer>()
+				@Override
+				public void handle(Buffer data)
 				{
-					@Override
-					public void handle(Buffer data)
+					if(response.statusCode()  != 201)
 					{
-						if(response.statusCode()  != 201)
+						log.error("[Support] Error : Zendesk ticket escalation failed: " + data.toString());
+						handler.handle(new Either.Left<String, ZendeskIssue>("support.escalation.zendesk.error.ticket.failure"));
+					}
+					else
+					{
+						JsonObject res = new JsonObject(data.toString());
+						ZendeskIssue zIssue = new ZendeskIssue(res.getJsonObject("ticket"));
+
+            if(issue.comments != null)
 						{
-							log.error("[Support] Error : Zendesk ticket escalation failed: " + data.toString());
-							handler.handle(new Either.Left<String, ZendeskIssue>("support.escalation.zendesk.error.ticket.failure"));
+							Handler<Integer> nextSender = new Handler<Integer>()
+							{
+								@Override
+								public void handle(Integer ix)
+								{
+									Handler<Integer> nextSender = this;
+									if(ix == issue.comments.size())
+										handler.handle(new Either.Right<>(zIssue));
+									else
+									{
+										commentIssue(zIssue.id.get(), zIssue.status, issue.comments.get(ix))
+											.onFailure(t -> handler.handle(new Either.Left<>(t.getMessage())))
+											.onSuccess(v -> nextSender.handle(ix + 1));
+									}
+								}
+							};
+
+							nextSender.handle(0);
 						}
 						else
-						{
-							JsonObject res = new JsonObject(data.toString());
-							ZendeskIssue zIssue = new ZendeskIssue(res.getJsonObject("ticket"));
-
-							List<Future> commentFutures = new ArrayList<Future>(issue.comments.size());
-
-							if(issue.comments != null)
-							{
-								Handler<Integer> nextSender = new Handler<Integer>()
-								{
-									@Override
-									public void handle(Integer ix)
-									{
-										Handler<Integer> nextSender = this;
-										if(ix == issue.comments.size())
-											handler.handle(new Either.Right<String, ZendeskIssue>(zIssue));
-										else
-										{
-											commentIssue(zIssue.id.get(), zIssue.status, issue.comments.get(ix)).onFailure(new Handler<Throwable>()
-											{
-												@Override
-												public void handle(Throwable t)
-												{
-													handler.handle(new Either.Left<String, ZendeskIssue>(t.getMessage()));
-												}
-											}).onSuccess(new Handler<Void>()
-											{
-												@Override
-												public void handle(Void v)
-												{
-													nextSender.handle(ix + 1);
-												}
-											});
-										}
-									}
-								};
-
-								nextSender.handle(0);
-							}
-							else
-								handler.handle(new Either.Right<String, ZendeskIssue>(zIssue));
-						}
+							handler.handle(new Either.Right<>(zIssue));
 					}
-				});
-			}
-		}).exceptionHandler(new Handler<Throwable>()
-		{
-			@Override
-			public void handle(Throwable t)
-			{
-				log.error("[Support] Error : exception raised by zendesk escalation httpClient", t);
-				handler.handle(new Either.Left<String, ZendeskIssue>("support.escalation.zendesk.error.ticket.request"));
-			}
+				}
+			});
+		})
+		.onFailure(t -> {
+			log.error("[Support] Error : exception raised by zendesk escalation httpClient", t);
+			handler.handle(new Either.Left<String, ZendeskIssue>("support.escalation.zendesk.error.ticket.request"));
 		});
-
-		String data = new JsonObject().put("ticket", issue.toJson()).toString();
-		req.putHeader(HttpHeaders.CONTENT_TYPE, "application/json");
-		req.setChunked(true);
-		req.write(data).end();
 	}
 
 	/**
@@ -407,114 +359,71 @@ public class EscalationServiceZendeskImpl implements EscalationService {
 	@Override
 	public void updateTicketFromBugTracker(Message<JsonObject> message, Handler<Either<String, JsonObject>> handler)
 	{
-		handler.handle(new Either.Left<String, JsonObject>("Not implemented in synchronous mode"));
+		handler.handle(new Either.Left<>("Not implemented in synchronous mode"));
 	}
 
 	@Override
-	public void getIssue(final Number issueId, final Handler<Either<String, Issue>> handler)
-	{
-		HttpClientRequest req = zendeskClient.get("/api/v2/tickets/" + issueId.longValue(), new Handler<HttpClientResponse>()
-		{
-			@Override
-			public void handle(HttpClientResponse response)
+	public void getIssue(final Number issueId, final Handler<Either<String, Issue>> handler) {
+		zendeskClient.request(new RequestOptions()
+			.setMethod(HttpMethod.GET)
+			.setURI("/api/v2/tickets/" + issueId.longValue())
+			.addHeader(HttpHeaders.CONTENT_TYPE, "application/json"))
+		.flatMap(HttpClientRequest::send)
+		.onSuccess(response -> response.bodyHandler(data -> {
+			if(response.statusCode() != 200)
 			{
-				response.bodyHandler(new Handler<Buffer>()
-				{
-					@Override
-					public void handle(Buffer data)
-					{
-						if(response.statusCode() != 200)
-						{
-							log.error("[Support] Error : Zendesk ticket find failed: " + data.toString());
-							handler.handle(new Either.Left<String, Issue>("support.escalation.zendesk.error.ticket.find.failure"));
-						}
-						else
-						{
-							JsonObject issueRes = new JsonObject(data.toString()).getJsonObject("ticket");
-							ZendeskIssue zIssue = new ZendeskIssue(issueRes);
-							loadComments(zIssue).onFailure(new Handler<Throwable>()
-							{
-								@Override
-								public void handle(Throwable t)
-								{
-									handler.handle(new Either.Left<String, Issue>(t.getMessage()));
-								}
-							}).onSuccess(new Handler<ZendeskIssue>()
-							{
-								@Override
-								public void handle(ZendeskIssue loaded)
-								{
-									handler.handle(new Either.Right<String, Issue>(loaded));
-								}
-							});
-						}
-					}
-				});
+				log.error("[Support] Error : Zendesk ticket find failed: " + data.toString());
+				handler.handle(new Either.Left<>("support.escalation.zendesk.error.ticket.find.failure"));
+			} else {
+				JsonObject issueRes = new JsonObject(data.toString()).getJsonObject("ticket");
+				ZendeskIssue zIssue = new ZendeskIssue(issueRes);
+				loadComments(zIssue)
+					.onFailure(t -> handler.handle(new Either.Left<>(t.getMessage())))
+					.onSuccess(loaded -> handler.handle(new Either.Right<>(loaded)));
 			}
-		}).exceptionHandler(new Handler<Throwable>()
-		{
-			@Override
-			public void handle(Throwable t)
-			{
-				log.error("[Support] Error : exception raised by zendesk escalation httpClient", t);
-				handler.handle(new Either.Left<String, Issue>("support.escalation.zendesk.error.ticket.find.request"));
-			}
+		}))
+		.onFailure(t -> {
+			log.error("[Support] Error : exception raised by zendesk escalation httpClient", t);
+			handler.handle(new Either.Left<String, Issue>("support.escalation.zendesk.error.ticket.find.request"));
 		});
-
-		req.putHeader(HttpHeaders.CONTENT_TYPE, "application/json");
-		req.end();
 	}
 
-	public Future<ZendeskIssue> loadComments(ZendeskIssue issue)
-	{
+	public Future<ZendeskIssue> loadComments(ZendeskIssue issue) {
 		Promise<ZendeskIssue> promise = Promise.promise();
-		HttpClientRequest reqComments = zendeskClient.get("/api/v2/tickets/" + issue.id.get() + "/comments", new Handler<HttpClientResponse>()
-		{
-			@Override
-			public void handle(HttpClientResponse response)
-			{
-				response.bodyHandler(new Handler<Buffer>()
-				{
-					@Override
-					public void handle(Buffer data)
-					{
-						if(response.statusCode() != 200)
-						{
-							log.error("[Support] Error : Zendesk comments find failed: " + data.toString());
-							promise.fail("support.escalation.zendesk.error.comments.failure");
-						}
-						else
-						{
+		zendeskClient.request(new RequestOptions()
+			.setMethod(HttpMethod.GET)
+			.setURI("/api/v2/tickets/" + issue.id.get() + "/comments")
+			.addHeader(HttpHeaders.CONTENT_TYPE, "application/json"))
+		.flatMap(HttpClientRequest::send)
+		.onSuccess(response -> response.bodyHandler(data -> {
+      if(response.statusCode() != 200)
+      {
+        log.error("[Support] Error : Zendesk comments find failed: " + data.toString());
+        promise.fail("support.escalation.zendesk.error.comments.failure");
+      }
+      else
+      {
 
-							class loadCommentsResponse implements JSONAble
-							{
-								public List<ZendeskComment> comments;
-							}
-							loadCommentsResponse res = new loadCommentsResponse();
-							res.fromJson(new JsonObject(data.toString()));
-							List<ZendeskComment> publicComments = new ArrayList<ZendeskComment>(res.comments.size());
-							for(ZendeskComment c : res.comments)
-								if(c.isPrivate() == false)
-									publicComments.add(c);
+        class loadCommentsResponse implements JSONAble
+        {
+          public List<ZendeskComment> comments;
+        }
+        loadCommentsResponse res = new loadCommentsResponse();
+        res.fromJson(new JsonObject(data.toString()));
+        List<ZendeskComment> publicComments = new ArrayList<>(res.comments.size());
+        for(ZendeskComment c : res.comments)
+          if(!c.isPrivate())
+            publicComments.add(c);
 
-							issue.comments = publicComments;
-							promise.complete(issue);
-						}
-					}
-				});
-			}
-		}).exceptionHandler(new Handler<Throwable>()
-		{
-			@Override
-			public void handle(Throwable t)
-			{
-				log.error("[Support] Error : exception raised by zendesk escalation httpClient", t);
-				promise.fail("support.escalation.zendesk.error.comments.request");
-			}
+        issue.comments = publicComments;
+        promise.complete(issue);
+      }
+    }))
+		.onFailure(t -> {
+			log.error("[Support] Error : exception raised by zendesk escalation httpClient", t);
+			promise.fail("support.escalation.zendesk.error.comments.request");
 		});
 
-		reqComments.putHeader(HttpHeaders.CONTENT_TYPE, "application/json");
-		reqComments.end();
 		return promise.future();
 	}
 
@@ -566,73 +475,59 @@ public class EscalationServiceZendeskImpl implements EscalationService {
 		else
 			zComment = new ZendeskComment(comment);
 
-		HttpClientRequest req = zendeskClient.put("/api/v2/tickets/" + issueId, new Handler<HttpClientResponse>()
-		{
-			@Override
-			public void handle(HttpClientResponse response)
-			{
-				response.bodyHandler(new Handler<Buffer>()
-				{
-					@Override
-					public void handle(Buffer data)
-					{
-						if(response.statusCode()  != 200)
-						{
-							// Not sure we get a json back 100% of the time
-							try
-							{
-								JsonObject jo = new JsonObject(data.toString());
-								String errorCode = jo.getString("error");
-								if("RecordInvalid".equals(errorCode))
-								{
-									createFollowUpIssue(issueId, comment.ownerName, new Handler<Either<String, ZendeskIssue>>()
-									{
-										@Override
-										public void handle(Either<String, ZendeskIssue> res)
-										{
-											if(res.isLeft())
-												promise.fail(res.left().getValue());
-											else
-											{
-												ZendeskIssue followup = res.right().getValue();
-												commentIssue(followup.id.get(), updateStatus, comment)
-													.onFailure(t -> { promise.fail(t); })
-													.onSuccess(r -> { promise.complete(r); });
-											}
-										}
-									});
-									return;
-								}
-							}
-							catch(Exception e)
-							{
-							}
-							log.error("[Support] Error : Zendesk ticket comment failed: " + data.toString());
-							promise.fail("support.escalation.zendesk.error.comment.failure");
-						}
-						else
-							promise.complete(null);
-					}
-				});
-			}
-		}).exceptionHandler(new Handler<Throwable>()
-		{
-			@Override
-			public void handle(Throwable t)
-			{
-				log.error("[Support] Error : exception raised by zendesk escalation httpClient", t);
-				promise.fail("support.escalation.zendesk.error.comment.request");
-			}
-		});
-
 		ZendeskIssue capsule = new ZendeskIssue(issueId.longValue());
 		capsule.status = updateStatus;
 		capsule.comment = zComment;
 
-		String data = new JsonObject().put("ticket", capsule.toJson()).toString();
-		req.putHeader(HttpHeaders.CONTENT_TYPE, "application/json; charset=utf-16");
-		req.setChunked(true); // Without this, comments with too many accents fail despite the 200
-		req.write(data).end();
+		zendeskClient.request(new RequestOptions()
+			.setMethod(HttpMethod.PUT)
+			.setURI("/api/v2/tickets/" + issueId)
+			.addHeader(HttpHeaders.CONTENT_TYPE, "application/json; charset=utf-16"))
+		.flatMap(req -> req.send(new JsonObject().put("ticket", capsule.toJson()).encode()))
+		.onSuccess(response -> {
+			response.bodyHandler(new Handler<Buffer>()
+			{
+				@Override
+				public void handle(Buffer data)
+				{
+					if(response.statusCode()  != 200)
+					{
+						// Not sure we get a json back 100% of the time
+						try
+						{
+							JsonObject jo = new JsonObject(data.toString());
+							String errorCode = jo.getString("error");
+							if("RecordInvalid".equals(errorCode))
+							{
+								createFollowUpIssue(issueId, comment.ownerName, res -> {
+                  if(res.isLeft())
+                    promise.fail(res.left().getValue());
+                  else
+                  {
+                    ZendeskIssue followup = res.right().getValue();
+                    commentIssue(followup.id.get(), updateStatus, comment)
+                      .onFailure(promise::fail)
+                      .onSuccess(promise::complete);
+                  }
+                });
+								return;
+							}
+						}
+						catch(Exception e)
+						{
+						}
+						log.error("[Support] Error : Zendesk ticket comment failed: " + data.toString());
+						promise.fail("support.escalation.zendesk.error.comment.failure");
+					}
+					else
+						promise.complete(null);
+				}
+			});
+		})
+		.onFailure(t -> {
+			log.error("[Support] Error : exception raised by zendesk escalation httpClient", t);
+			promise.fail("support.escalation.zendesk.error.comment.request");
+		});
 		return promise.future();
 	}
 
@@ -811,118 +706,111 @@ public class EscalationServiceZendeskImpl implements EscalationService {
 
 		final long finalPullStart = pullStart;
 		log.info("[Support] Info: Listing zendesk issues modified since " + pullStart);
-		HttpClientRequest req = zendeskClient.get("/api/v2/incremental/tickets?include=comment_events&start_time=" + pullStart, new Handler<HttpClientResponse>()
-		{
-			@Override
-			public void handle(HttpClientResponse response)
+		zendeskClient.request(new RequestOptions()
+			.setMethod(HttpMethod.GET)
+			.setURI("/api/v2/incremental/tickets?include=comment_events&start_time=" + pullStart)
+			.addHeader(HttpHeaders.ACCEPT, "application/json"))
+		.flatMap(HttpClientRequest::send)
+		.onSuccess(response -> {
+			response.bodyHandler(new Handler<Buffer>()
 			{
-				response.bodyHandler(new Handler<Buffer>()
+				@Override
+				public void handle(Buffer data)
 				{
-					@Override
-					public void handle(Buffer data)
+					if(response.statusCode()  != 200)
 					{
-						if(response.statusCode()  != 200)
-						{
-							log.error("[Support] Error : Zendesk pull failed: " + data.toString());
-							log.info("[Support] Info: No zendesk issues to update");
-							pullInProgess.set(false);
-						}
-						else
-						{
-							IncrementalZendeskPull izp = new IncrementalZendeskPull(new JsonObject(data.toString()));
-
-							if(izp.tickets.size() == 0)
-							{
-								pullInProgess.set(false);
-								return;
-							}
-
-							Long[] issueIds = new Long[izp.count.intValue()];
-							Map<Long, ZendeskIssue> issuesMap = new HashMap<Long, ZendeskIssue>();
-							for(int i = izp.tickets.size(); i-- > 0;)
-							{
-								issueIds[i] = izp.tickets.get(i).id.get();
-								issuesMap.put(issueIds[i], izp.tickets.get(i));
-							}
-
-							ticketServiceSql.listExistingIssues(issueIds, new Handler<Either<String, List<Issue>>>()
-							{
-								@Override
-								public void handle(Either<String, List<Issue>> listRes)
-								{
-									if(listRes.isLeft())
-									{
-										log.error("[Support] Error: Zendesk find existing issues failed: " + listRes.left().getValue());
-										pullInProgess.set(false);
-									}
-									else
-									{
-										List<Issue> listResult = listRes.right().getValue();
-										List<Future> issuesUpdates = new ArrayList<Future>(listResult.size());
-
-										log.info("[Support] Info: Updating " + listResult.size() + " zendesk issues");
-										for(Issue existing : listResult)
-											issuesUpdates.add(updateDatabaseIssue(issuesMap.get(existing.id.get()), existing.attachments, finalPullStart));
-
-										CompositeFuture.all(issuesUpdates).onSuccess(new Handler<CompositeFuture>()
-										{
-											@Override
-											public void handle(CompositeFuture allUploadsResult)
-											{
-												Handler<Void> next = new Handler<Void>()
-												{
-													@Override
-													public void handle(Void v)
-													{
-														lastPullEpoch.set(izp.end_time.longValue());
-														if(Boolean.TRUE.equals(izp.end_of_stream) == false)
-															pullDataAndUpdateIssues();
-														else
-														{
-															log.info("[Support] Info: All zendesk issues are up to date");
-															pullInProgess.set(false);
-														}
-													}
-												};
-												ticketServiceSql.setLastSynchroEpoch(izp.end_time).onFailure(new Handler<Throwable>()
-												{
-													@Override
-													public void handle(Throwable t)
-													{
-														log.error("[Support] Error: Failed to save the last Zendesk synchro time");
-														// Keep importing anyways
-														next.handle(null);
-													}
-												}).onSuccess(next);
-											}
-										}).onFailure(new Handler<Throwable>()
-										{
-											@Override
-											public void handle(Throwable t)
-											{
-												log.error("[Support] Error: failed to update zendesk issues: ", t);
-												pullInProgess.set(false);
-											}
-										});
-									}
-								}
-							});
-						}
+						log.error("[Support] Error : Zendesk pull failed: " + data.toString());
+						log.info("[Support] Info: No zendesk issues to update");
+						pullInProgess.set(false);
 					}
-				});
-			}
-		}).exceptionHandler(new Handler<Throwable>()
-		{
-			@Override
-			public void handle(Throwable t)
-			{
-				log.error("[Support] Error : exception raised by zendesk escalation httpClient", t);
-				pullInProgess.set(false);
-			}
-		});
+					else
+					{
+						IncrementalZendeskPull izp = new IncrementalZendeskPull(new JsonObject(data.toString()));
 
-		req.putHeader(HttpHeaders.ACCEPT, "application/json");
-		req.end();
+						if(izp.tickets.size() == 0)
+						{
+							pullInProgess.set(false);
+							return;
+						}
+
+						Long[] issueIds = new Long[izp.count.intValue()];
+						Map<Long, ZendeskIssue> issuesMap = new HashMap<Long, ZendeskIssue>();
+						for(int i = izp.tickets.size(); i-- > 0;)
+						{
+							issueIds[i] = izp.tickets.get(i).id.get();
+							issuesMap.put(issueIds[i], izp.tickets.get(i));
+						}
+
+						ticketServiceSql.listExistingIssues(issueIds, new Handler<Either<String, List<Issue>>>()
+						{
+							@Override
+							public void handle(Either<String, List<Issue>> listRes)
+							{
+								if(listRes.isLeft())
+								{
+									log.error("[Support] Error: Zendesk find existing issues failed: " + listRes.left().getValue());
+									pullInProgess.set(false);
+								}
+								else
+								{
+									List<Issue> listResult = listRes.right().getValue();
+									List<Future> issuesUpdates = new ArrayList<Future>(listResult.size());
+
+									log.info("[Support] Info: Updating " + listResult.size() + " zendesk issues");
+									for(Issue existing : listResult)
+										issuesUpdates.add(updateDatabaseIssue(issuesMap.get(existing.id.get()), existing.attachments, finalPullStart));
+
+									CompositeFuture.all(issuesUpdates).onSuccess(new Handler<CompositeFuture>()
+									{
+										@Override
+										public void handle(CompositeFuture allUploadsResult)
+										{
+											Handler<Void> next = new Handler<Void>()
+											{
+												@Override
+												public void handle(Void v)
+												{
+													lastPullEpoch.set(izp.end_time.longValue());
+													if(Boolean.TRUE.equals(izp.end_of_stream) == false)
+														pullDataAndUpdateIssues();
+													else
+													{
+														log.info("[Support] Info: All zendesk issues are up to date");
+														pullInProgess.set(false);
+													}
+												}
+											};
+											ticketServiceSql.setLastSynchroEpoch(izp.end_time).onFailure(new Handler<Throwable>()
+											{
+												@Override
+												public void handle(Throwable t)
+												{
+													log.error("[Support] Error: Failed to save the last Zendesk synchro time");
+													// Keep importing anyways
+													next.handle(null);
+												}
+											}).onSuccess(next);
+										}
+									}).onFailure(new Handler<Throwable>()
+									{
+										@Override
+										public void handle(Throwable t)
+										{
+											log.error("[Support] Error: failed to update zendesk issues: ", t);
+											pullInProgess.set(false);
+										}
+									});
+								}
+							}
+						});
+					}
+				}
+			});
+		})
+		.onFailure(t -> {
+			log.error("[Support] Error : exception raised by zendesk escalation httpClient", t);
+			pullInProgess.set(false);
+		});
 	}
 
 	private Future<Void> updateDatabaseIssue(ZendeskIssue issue, List<Attachment> existingAttachments, long lastUpdate)
@@ -1011,72 +899,58 @@ public class EscalationServiceZendeskImpl implements EscalationService {
 	private Future<Attachment> downloadAttachment(final ZendeskAttachment attachment, Id<Issue, Long> issueId)
 	{
 		Promise<Attachment> downloadPromise = Promise.promise();
-
-		HttpClientRequest req = zendeskClient.get(attachment.content_url, new Handler<HttpClientResponse>()
-		{
-			@Override
-			public void handle(HttpClientResponse resp)
+		zendeskClient.request(new RequestOptions()
+			.setMethod(HttpMethod.GET)
+			.setURI(attachment.content_url))
+		.flatMap(HttpClientRequest::send)
+		.onFailure(t -> {
+			log.error("[Support] Error : exception raised by zendesk escalation httpClient", t);
+			downloadPromise.fail("support.escalation.zendesk.error.attachment.request");
+		})
+		.onSuccess(resp -> {
+			resp.exceptionHandler(t -> {
+        log.error("[Support] Error : exception raised by zendesk escalation httpClient", t);
+        downloadPromise.fail("support.escalation.zendesk.error.attachment.request");
+      });
+			resp.bodyHandler(new Handler<Buffer>()
 			{
-				resp.exceptionHandler(new Handler<Throwable>()
+				@Override
+				public void handle(Buffer data)
 				{
-					@Override
-					public void handle(Throwable t)
+					if(resp.statusCode() >= 400)
+						downloadPromise.fail("support.escalation.zendesk.error.attachment.download");
+					else if(resp.statusCode() >= 300)
 					{
-						log.error("[Support] Error : exception raised by zendesk escalation httpClient", t);
-						downloadPromise.fail("support.escalation.zendesk.error.attachment.request");
+						zendeskClient.request(new RequestOptions()
+							.setMethod(HttpMethod.GET)
+							.setAbsoluteURI(resp.getHeader(HttpHeaders.LOCATION)))
+						.flatMap(HttpClientRequest::send)
+						.onFailure(t -> {
+							log.error("[Support] Error : exception raised by zendesk escalation httpClient", t);
+							downloadPromise.fail("support.escalation.zendesk.error.attachment.request");
+						})
+						.onSuccess(resp -> {
+							resp.exceptionHandler(t -> {
+                log.error("[Support] Error : exception raised by zendesk escalation httpClient", t);
+                downloadPromise.fail("support.escalation.zendesk.error.attachment.request");
+              });
+							resp.bodyHandler(redirectData -> {
+                if((resp.statusCode() >= 200 && resp.statusCode() < 300) == false)
+                  downloadPromise.fail("support.escalation.zendesk.error.attachment.redirect");
+                else
+                {
+                  storeAttachment(attachment, issueId, redirectData, downloadPromise);
+                }
+              });
+						});
 					}
-				});
-				resp.bodyHandler(new Handler<Buffer>()
-				{
-					@Override
-					public void handle(Buffer data)
-					{
-						if(resp.statusCode() >= 400)
-							downloadPromise.fail("support.escalation.zendesk.error.attachment.download");
-						else if(resp.statusCode() >= 300)
-						{
-							HttpClientRequest redirectReq = zendeskClient.getAbs(resp.getHeader(HttpHeaders.LOCATION), new Handler<HttpClientResponse>()
-							{
-								@Override
-								public void handle(HttpClientResponse resp)
-								{
-									resp.exceptionHandler(new Handler<Throwable>()
-									{
-										@Override
-										public void handle(Throwable t)
-										{
-											log.error("[Support] Error : exception raised by zendesk escalation httpClient", t);
-											downloadPromise.fail("support.escalation.zendesk.error.attachment.request");
-										}
-									});
-									resp.bodyHandler(new Handler<Buffer>()
-									{
-										@Override
-										public void handle(Buffer redirectData)
-										{
-											if((resp.statusCode() >= 200 && resp.statusCode() < 300) == false)
-												downloadPromise.fail("support.escalation.zendesk.error.attachment.redirect");
-											else
-											{
-												storeAttachment(attachment, issueId, redirectData, downloadPromise);
-											}
-										}
-									});
-								}
-
-							});
-							redirectReq.end();
-						}
-						else if(resp.statusCode() >= 200)
-							storeAttachment(attachment, issueId, data, downloadPromise);
-						else
-							downloadPromise.fail("support.escalation.zendesk.error.attachment.status");
-					}
-				});
-			}
+					else if(resp.statusCode() >= 200)
+						storeAttachment(attachment, issueId, data, downloadPromise);
+					else
+						downloadPromise.fail("support.escalation.zendesk.error.attachment.status");
+				}
+			});
 		});
-
-		req.end();
 		return downloadPromise.future();
 	}
 

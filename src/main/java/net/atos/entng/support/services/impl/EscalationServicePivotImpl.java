@@ -634,7 +634,7 @@ public class EscalationServicePivotImpl implements EscalationService
                             }
                         }
 
-                        eb.send(TRACKER_ADDRESS, new JsonObject().put("action", "create").put("issue", data), handlerToAsyncHandler(handler));
+                        eb.request(TRACKER_ADDRESS, new JsonObject().put("action", "create").put("issue", data), handlerToAsyncHandler(handler));
                     }
                     else{
                         log.error("couldn't get information of any responsible of the ticket");

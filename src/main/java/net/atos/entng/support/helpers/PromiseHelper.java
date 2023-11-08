@@ -2,7 +2,7 @@ package net.atos.entng.support.helpers;
 
 import fr.wseduc.webutils.Either;
 import io.vertx.core.*;
-import io.vertx.core.impl.CompositeFutureImpl;
+import io.vertx.core.impl.future.CompositeFutureImpl;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
