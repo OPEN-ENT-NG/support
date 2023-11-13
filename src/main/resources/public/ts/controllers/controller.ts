@@ -186,6 +186,7 @@ export const SupportController: Controller = ng.controller('SupportController',
 			$scope.nbPages = 1;
 			$scope.nbResultsTot = 1;
 			$scope.nbTicketsPerPage = undefined; // Defined in TicketServiceSqlImpl.java and updated here accordingly
+			$scope.nbTicketsPerPageIsDefined = !!$scope.nbTicketsPerPage
 		};
 
 		// Sort
@@ -216,7 +217,7 @@ export const SupportController: Controller = ng.controller('SupportController',
 
 		$scope.registerViewTicketListEvent = function() {
 			model.tickets.one('sync', function() {
-				if ($scope.nbTicketsPerPage === undefined) { // init nbTicketsPerPage according to the number of results (given by config)
+				if (!$scope.nbTicketsPerPageIsDefined) { // init nbTicketsPerPage according to the number of results (given by config)
 					$scope.nbTicketsPerPage = $scope.tickets.all.length;
 				}
 				$scope.updatePagination();
