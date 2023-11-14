@@ -314,6 +314,10 @@ export const SupportController: Controller = ng.controller('SupportController',
 		$scope.preSelectNewTicketStatus = async (): Promise<void> => {
 			if (!$scope.userIsLocalAdmin($scope.ticket) && $scope.ticket.status == model.ticketStatusEnum.WAITING) {
 				$scope.editedTicket.status = model.ticketStatusEnum.OPENED
+			} else if ($scope.ticket.status == $scope.editedTicket.status
+				&& $scope.editedTicket.status == model.ticketStatusEnum.CLOSED
+				&& await $scope.schoolHasSpecificWorkflow(WORKFLOW.REOPEN_TICKET_ON_COMMENT)) {
+				$scope.editedTicket.status = model.ticketStatusEnum.OPENED;
 			}
 		}
 
@@ -561,14 +565,6 @@ export const SupportController: Controller = ng.controller('SupportController',
 			if(!$scope.editedTicket.processing){
 				return;
 			}
-
-			if ($scope.ticket.status == $scope.editedTicket.status
-				&& $scope.editedTicket.status == model.ticketStatusEnum.CLOSED
-				&& !!$scope.editedTicket.newComment
-				&& await $scope.schoolHasSpecificWorkflow(WORKFLOW.REOPEN_TICKET_ON_COMMENT)) {
-				$scope.editedTicket.status = model.ticketStatusEnum.OPENED;
-			}
-
 
 			// check that the "new" attachments have not already been saved for the current ticket
 			if($scope.ticket.newAttachments && $scope.ticket.newAttachments.length > 0) {
