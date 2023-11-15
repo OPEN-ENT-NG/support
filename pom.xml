@@ -20,6 +20,14 @@
         <url>https://github.com/OPEN-ENT-NG/support</url>
     </scm>
 
+    <repositories>
+        <repository>
+            <id>ode</id>
+            <name>ODE Repository</name>
+            <url>https://maven.opendigitaleducation.com/nexus/content/groups/public</url>
+        </repository>
+    </repositories>
+
     <properties>
         <entCoreVersion>5.0-b2school-SNAPSHOT</entCoreVersion>
         <junitVersion>4.10</junitVersion>
