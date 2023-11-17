@@ -8,7 +8,7 @@
     "test": "npm run coverage"
   },
   "dependencies": {
-    "entcore": "~4.8.0-dev",
+    "entcore": "~4.8.0-develop-pedago",
     "awesome-typescript-loader": "3.2.1",
     "axios": "0.16.2",
     "core-js": "2.4.1",
@@ -27,11 +27,11 @@
     "json-loader": "^0.5.7"
   },
   "devDependencies": {
-    "@types/angular": "^1.6.55",
+    "@types/angular": "1.8.3",
     "@types/core-js": "0.9.42",
     "@types/jest": "^22.2.0",
     "@types/jquery": "^2.0.34",
-    "angular-mocks": "^1.8.2",
+    "angular-mocks": "1.8.3",
     "axios-mock-adapter": "^1.19.0",
     "gulp-append-prepend": "^1.0.9",
     "gulp-replace": "^1.0.0",
