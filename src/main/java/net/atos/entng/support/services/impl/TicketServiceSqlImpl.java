@@ -250,12 +250,6 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
                     query.append(" AND t.owner").append(applicantIsMe ? "=" : "!=").append("?");
                     values.add(user.getUserId());
                 }
-
-                // Include tickets created by current user, and linked to a school where he is not local administrator
-                if (!oneApplicant || applicantIsMe) {
-                    query.append(" OR t.owner = ?");
-                    values.add(user.getUserId());
-                }
             }
         } else if (school_id.equals("*")) {
             query.append(" AND t.school_id IN ").append(Sql.listPrepared(user.getStructures()));
@@ -267,7 +261,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
         }
 
 
-        if (statuses.size() > 0 && statuses.size() < 5) {
+        if (statuses.size() > 0) {
             query.append(" AND (t.status IN (");
             for (String status : statuses) {
                 query.append("?,");
@@ -378,7 +372,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
                 .append(" WHERE t.owner = ?");
         JsonArray values = new JsonArray().add(user.getUserId());
 
-        if (statuses.size() > 0 && statuses.size() < 4) {
+        if (statuses.size() > 0) {
             query.append(" AND t.status IN (");
             for (String status : statuses) {
                 query.append("?,");
