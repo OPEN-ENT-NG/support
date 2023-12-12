@@ -105,4 +105,6 @@ public class Ticket {
 
     public static final String I18N = "i18n";
     public static final String SLUG = "slug";
+
+    public static final String NBTICKETSPERPAGE = "nbTicketsPerPage";
 }

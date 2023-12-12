@@ -24,6 +24,7 @@ import {ITicketPayload, Ticket} from "../models/ticket.model";
 import {WORKFLOW} from "../core/enum/workflow.enum";
 import {copy} from "angular";
 import {ICountTicketsResponse} from "../models/countTickets.model";
+import {INbTicketsPerPageResponse} from "../models/nbTicketsPerPage.model";
 
 declare let model: any;
 
@@ -214,10 +215,12 @@ export const SupportController: Controller = ng.controller('SupportController',
 			$scope.goPage(1, true);
 		};
 
-		$scope.registerViewTicketListEvent = function() {
-			model.tickets.one('sync', function() {
+		$scope.registerViewTicketListEvent = function () {
+			model.tickets.one('sync', async function () {
 				if ($scope.nbTicketsPerPage === undefined) { // init nbTicketsPerPage according to the number of results (given by config)
-					$scope.nbTicketsPerPage = $scope.tickets.all.length;
+					await ticketService.getNumberTicketsPerPage()
+						.then((value: INbTicketsPerPageResponse) => $scope.nbTicketsPerPage = value)
+						.catch($scope.nbTicketsPerPage = $scope.tickets.all.length)
 				}
 				$scope.updatePagination();
 				window.location.hash = '';
