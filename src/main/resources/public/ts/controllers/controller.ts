@@ -164,6 +164,9 @@ export const SupportController: Controller = ng.controller('SupportController',
 						$scope.display.filters.all = $scope.display.filters[filter] && $scope.display.filters.all;
 					}
 				}
+				if($scope.display.filters.every((status: boolean) => status)){
+					$scope.display.filters.all = true;
+				}
 			};
 
 			$scope.changeDemands = async (filterKey: DEMANDS) => {
