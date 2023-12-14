@@ -28,6 +28,7 @@ import net.atos.entng.support.services.EscalationService;
 import net.atos.entng.support.services.TicketServiceSql;
 import net.atos.entng.support.services.UserService;
 import net.atos.entng.support.services.impl.EscalationServiceRedmineImpl;
+import net.atos.entng.support.services.impl.EscalationServiceWordlineImpl;
 import net.atos.entng.support.services.impl.EscalationServicePivotImpl;
 import net.atos.entng.support.services.impl.EscalationServiceZendeskImpl;
 
