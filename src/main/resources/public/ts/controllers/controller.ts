@@ -445,6 +445,16 @@ export const SupportController: Controller = ng.controller('SupportController',
 			$scope.createProtectedCopies($scope.ticket, true, function() {
 				$scope.ticket.id=null;
 				$scope.ticket.processing = false;
+
+				const e400Callback = function (result) {
+					if (result && result.error) {
+						notify.error(result.error);
+					} else {
+						notify.error('support.error.create.ticket');
+					}
+					$scope.newTicket();
+				};
+
 				$scope.ticket.createTicket($scope.ticket, function() {
 					// adding profile after creation
 					model.getProfile($scope.me.userId, function(result) {
@@ -456,8 +466,7 @@ export const SupportController: Controller = ng.controller('SupportController',
 						$scope.escalateTicketNow(thisTicket);
 						$scope.goPage(1, true);
 					});
-
-				});
+				}, e400Callback);
 				$scope.ticket = undefined;
 			});
 		}.bind(this);

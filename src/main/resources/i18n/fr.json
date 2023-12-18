@@ -11,6 +11,7 @@
     "support.comment.status.modification.successful":"Les statuts ont été modifiés.",
     "support.error.comment.added.to.escalated.ticket.but.synchronization.failed": "Erreur : le commentaire a été ajouté à la demande transmise, mais l'ENT n'a pas pu être synchronisé",
     "support.error.comment.has.not.been.added.to.escalated.ticket": "Erreur : le commentaire n'a pas pu être ajoutée à la demande transmise",
+    "support.error.create.ticket": "Erreur : Le ticket n'a pas pu être créé",
     "support.error.escalation.conflict": "Erreur : transmission impossible. Rafraîchissez la page et relancez la transmission",
     "support.error.escalation.incomplete": "Erreur : la transmission a été réalisée partiellement. Les commentaires n'ont pas pu être transmis",
     "support.error.sort.school.by.name": "Erreur : les établissements n'ont pas pu être triés par ordre alphabétique",
