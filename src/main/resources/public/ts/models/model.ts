@@ -82,14 +82,20 @@ model.isBugTrackerCommDirect = function(callback){
 };
 
 
-models.Ticket.prototype.createTicket = function(data, callback) {
-	http().postJson('/support/ticket', data).done(function(result){
-		this.updateData(result);
-		model.tickets.push(this);
-		if(typeof callback === 'function'){
-			callback();
-		}
-	}.bind(this));
+models.Ticket.prototype.createTicket = function(data, callback, badRequestCallback) {
+	http().postJson('/support/ticket', data)
+		.done(function(result): void {
+			this.updateData(result);
+			model.tickets.push(this);
+			if (typeof callback === 'function') {
+				callback();
+			}
+		}.bind(this))
+		.e400(function(): void {
+			if (typeof badRequestCallback === 'function') {
+				badRequestCallback();
+			}
+		}.bind(this));
 };
 
 models.Ticket.prototype.updateTicket = function(data, callback) {
