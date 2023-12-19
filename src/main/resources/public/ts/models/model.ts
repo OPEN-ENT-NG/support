@@ -84,15 +84,15 @@ model.isBugTrackerCommDirect = function(callback){
 
 models.Ticket.prototype.createTicket = function(data, callback, badRequestCallback) {
 	http().postJson('/support/ticket', data)
-		.done(function(result){
+		.done(function(result): void {
 			this.updateData(result);
 			model.tickets.push(this);
-			if(typeof callback === 'function'){
+			if (typeof callback === 'function') {
 				callback();
 			}
 		}.bind(this))
-		.e400(function(){
-			if(typeof badRequestCallback === 'function'){
+		.e400(function(): void {
+			if (typeof badRequestCallback === 'function') {
 				badRequestCallback();
 			}
 		}.bind(this));
