@@ -430,6 +430,15 @@ export const SupportController: Controller = ng.controller('SupportController',
 				.value();
 		};
 
+		const e400Callback = function (result, str: string = 'support.error.create.ticket') {
+			if (result && result.error) {
+				notify.error(result.error);
+			} else {
+				notify.error(str);
+			}
+			$scope.newTicket();
+		};
+
 		$scope.createTicket = function(){
 			$scope.ticket.event_count = 1;
 			$scope.ticket.processing = true;
@@ -445,16 +454,6 @@ export const SupportController: Controller = ng.controller('SupportController',
 			$scope.createProtectedCopies($scope.ticket, true, function() {
 				$scope.ticket.id=null;
 				$scope.ticket.processing = false;
-
-				const e400Callback = function (result) {
-					if (result && result.error) {
-						notify.error(result.error);
-					} else {
-						notify.error('support.error.create.ticket');
-					}
-					$scope.newTicket();
-				};
-
 				$scope.ticket.createTicket($scope.ticket, function() {
 					// adding profile after creation
 					model.getProfile($scope.me.userId, function(result) {
@@ -675,18 +674,13 @@ export const SupportController: Controller = ng.controller('SupportController',
 			const e500Callback = function () {
 				notify.error('support.ticket.escalation.failed');
 			};
-			const e400Callback = function (result) {
-				if (result && result.error) {
-					notify.error(result.error);
-				} else {
-					notify.error('support.error.escalation.conflict');
-				}
-			};
 			const e413Callback = function () {
 				notify.error(lang.translate('support.escalation.error.attachment.too.large') + " 10mb");
 			};
 
-			$scope.ticket.escalateTicket(successCallback, e500Callback, e400Callback, e413Callback);
+			$scope.ticket.escalateTicket(successCallback, e500Callback, function (result) {
+				e400Callback(result, 'support.error.escalation.conflict');
+			}, e413Callback);
 			$scope.ticket.status = 2;
 		};
 
