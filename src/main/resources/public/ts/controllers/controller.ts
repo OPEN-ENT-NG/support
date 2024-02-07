@@ -13,17 +13,24 @@ import {
 } from "entcore";
 import { models } from "../models/model";
 import {safeApply} from "../utils/safeApply";
-import {IAttachmentService} from "../services/attachment.service";
+import {IAttachmentService} from "../services";
 import {Attachment} from "../models/Attachment";
 import service = workspace.v2.service;
 import {AxiosError, AxiosResponse} from "axios";
 import {attachment} from "entcore/types/src/ts/editor/options";
+import {DEMANDS} from "../core/enum/demands.enum";
+import {ITicketService} from "../services";
+import {ITicketPayload, Ticket} from "../models/ticket.model";
+import {WORKFLOW} from "../core/enum/workflow.enum";
+import {copy} from "angular";
+import {ICountTicketsResponse} from "../models/countTickets.model";
+import {INbTicketsPerPageResponse} from "../models/nbTicketsPerPage.model";
 
 declare let model: any;
 
 export const SupportController: Controller = ng.controller('SupportController',
-	['$scope', 'route', 'orderByFilter', '$timeout', 'AttachmentService',
-		function ($scope, route, orderByFilter, $timeout, attachmentService: IAttachmentService) {
+	['$scope', 'route', 'orderByFilter', '$timeout', 'AttachmentService', 'TicketService',
+		function ($scope, route, orderByFilter, $timeout, attachmentService: IAttachmentService, ticketService: ITicketService) {
 		route({
 			displayTicket: function (params) {
 				$scope.searchTicketNumber(params.ticketId);
@@ -43,12 +50,16 @@ export const SupportController: Controller = ng.controller('SupportController',
 			$scope.template = template;
 			$scope.me = model.me;
 
+			$scope.myDemandsLabel = lang.translate('support.ticket.status.my.demands')
+			$scope.otherDemandsLabel = lang.translate('support.ticket.status.other.demands')
+
 			$scope.removeAttachmentLightbox = {attachment: null, isOpen: false};
 			$scope.addAttachmentLightbox = {attachment: null, isOpen: false};
 
 			$scope.tickets = model.tickets;
 			$scope.events = model.events;
 
+			$scope.allToggled = false;
 			// but-tracker management : direct communication between user and bt ?
 			model.isBugTrackerCommDirect(function(result){
 				if(result && typeof result.isBugTrackerCommDirect === 'boolean') {
@@ -138,26 +149,35 @@ export const SupportController: Controller = ng.controller('SupportController',
 			$scope.display.filters.ticket_id ="";
 
 			$scope.switchAll = function(){
-				for(var filter in $scope.display.filters){
-					if (filter !== "school_id" && filter !== "ticket_id") {
+				for (let filter in $scope.display.filters) {
+					if (filter !== "school_id" && filter !== "ticket_id" && filter != DEMANDS.MYDEMANDS && filter != DEMANDS.OTHERDEMANDS) {
 						$scope.display.filters[filter] = $scope.display.filters.all;
 					}
-				}
-				if($scope.userIsLocalAdmin()) {
-					// no need to update if the checkbox isn't visible.
-					$scope.display.filters.mydemands = $scope.display.filters.all;
 				}
 				$scope.goPage(1, true);
 			};
 
 			$scope.checkAll = function(){
 				$scope.display.filters.all = true;
-				for(var filter in $scope.display.filters){
-					$scope.display.filters.all = $scope.display.filters[filter] &&
-						$scope.display.filters.mydemands &&
-						$scope.display.filters.all;
+				for (let filter in $scope.display.filters) {
+					if (filter !== DEMANDS.MYDEMANDS && filter != DEMANDS.OTHERDEMANDS){
+						$scope.display.filters.all = $scope.display.filters[filter] && $scope.display.filters.all;
+					}
+				}
+				if($scope.display.filters.every((status: boolean) => status)){
+					$scope.display.filters.all = true;
 				}
 			};
+
+			$scope.changeDemands = async (filterKey: DEMANDS) => {
+				$scope.display.filters[filterKey] = !$scope.display.filters[filterKey];
+				let unCheckedDemandsKeys: string[] = Object.keys(DEMANDS).filter((demandSingleKey: string) => !$scope.display.filters[DEMANDS[demandSingleKey]]);
+				if (unCheckedDemandsKeys.length == Object.keys(DEMANDS).length) {
+					unCheckedDemandsKeys.filter((unCheckedDemandSingleKey: string) => DEMANDS[unCheckedDemandSingleKey] != filterKey)
+						.forEach((unCheckedDemandSingleKey: string) => $scope.display.filters[DEMANDS[unCheckedDemandSingleKey]] = true);
+				}
+				$scope.goPage(1, true);
+			}
 
 			$scope.onStatusChange = function () {
 				$scope.checkAll();
@@ -198,10 +218,12 @@ export const SupportController: Controller = ng.controller('SupportController',
 			$scope.goPage(1, true);
 		};
 
-		$scope.registerViewTicketListEvent = function() {
-			model.tickets.one('sync', function() {
+		$scope.registerViewTicketListEvent = function () {
+			model.tickets.one('sync', async function () {
 				if ($scope.nbTicketsPerPage === undefined) { // init nbTicketsPerPage according to the number of results (given by config)
-					$scope.nbTicketsPerPage = $scope.tickets.all.length;
+					await ticketService.getNumberTicketsPerPage()
+						.then((value: INbTicketsPerPageResponse) => $scope.nbTicketsPerPage = value)
+						.catch($scope.nbTicketsPerPage = $scope.tickets.all.length)
 				}
 				$scope.updatePagination();
 				window.location.hash = '';
@@ -248,27 +270,44 @@ export const SupportController: Controller = ng.controller('SupportController',
 			}
 		};
 
-		$scope.openTicket = function(id) {
-			if(!$scope.ticket || ($scope.ticket && $scope.ticket.id !== id))
-				$scope.ticket = _.find(model.tickets.all, function(ticket){
+		$scope.schoolHasSpecificWorkflow = async (workflowWanted: string): Promise<boolean> => {
+			try {
+				return await ticketService.schoolWorkflow(model.me.userId, workflowWanted, $scope.ticket.school_id)
+			} catch (e) {
+				notify.error(lang.translate('support.ticket.status.error'))
+				return false;
+			}
+		}
+
+		$scope.changeStatusAfterOpenTicket = async (): Promise<void> => {
+			if ($scope.userIsLocalAdmin($scope.ticket) && $scope.ticket.status == model.ticketStatusEnum.NEW
+				&& await $scope.schoolHasSpecificWorkflow(WORKFLOW.AUTO_OPEN)) {
+				await $scope.changeStatus(model.ticketStatusEnum.OPENED);
+			}
+		}
+
+		$scope.openTicket = async (id: string): Promise<void> => {
+			if (!$scope.ticket || ($scope.ticket && $scope.ticket.id !== id))
+				$scope.ticket = _.find(model.tickets.all, function (ticket) {
 					return ticket.id === id;
 				});
-			if(!$scope.ticket) {
-				if($scope.searchInput){
+			if (!$scope.ticket) {
+				if ($scope.searchInput) {
 					$scope.notFoundSearchInput = true;
 					$scope.searchInput = false;
-				}else{
+				} else {
 					$scope.notFound = true;
 				}
 				$scope.$apply();
 				return;
 			}
+			await $scope.changeStatusAfterOpenTicket();
 			template.open('main', 'view-ticket');
 			$scope.ticket.getAttachments();
-			$scope.ticket.getComments(function() {
+			$scope.ticket.getComments(function () {
 				$scope.initHisto(id.toString());
 			});
-			model.getProfile($scope.ticket.owner, function(result) {
+			model.getProfile($scope.ticket.owner, function (result) {
 				$scope.ticket.profile = result.profile;
 			});
 			$scope.ticket.getBugTrackerIssue();
@@ -277,6 +316,26 @@ export const SupportController: Controller = ng.controller('SupportController',
 		$scope.viewTicket = function(ticketId) {
 			window.location.hash = '/ticket/' + ticketId;
 		};
+
+		$scope.preSelectNewTicketStatus = async (): Promise<void> => {
+			if (!$scope.userIsLocalAdmin($scope.ticket) && $scope.ticket.status == model.ticketStatusEnum.WAITING) {
+				$scope.editedTicket.status = model.ticketStatusEnum.OPENED
+			} else if ($scope.ticket.status == $scope.editedTicket.status
+				&& $scope.editedTicket.status == model.ticketStatusEnum.CLOSED
+				&& await $scope.schoolHasSpecificWorkflow(WORKFLOW.REOPEN_TICKET_ON_COMMENT)) {
+				$scope.editedTicket.status = model.ticketStatusEnum.OPENED;
+			}
+		}
+
+		$scope.changeStatus = async (statusEnum: number): Promise<void> => {
+			try {
+				await ticketService.update($scope.ticket.id, <ITicketPayload>{status: model.ticketStatusEnum.properties[statusEnum].value});
+				$scope.ticket.status = model.ticketStatusEnum.properties[statusEnum].value;
+				safeApply($scope);
+			} catch (e) {
+				notify.error(lang.translate('support.ticket.status.error'));
+			}
+		}
 
 		// called when opening ticket and updating
 		$scope.initHisto = function(ticketId) {
@@ -371,6 +430,15 @@ export const SupportController: Controller = ng.controller('SupportController',
 				.value();
 		};
 
+		const e400Callback = function (result, str: string = 'support.error.create.ticket') {
+			if (result && result.error) {
+				notify.error(result.error);
+			} else {
+				notify.error(str);
+			}
+			$scope.newTicket();
+		};
+
 		$scope.createTicket = function(){
 			$scope.ticket.event_count = 1;
 			$scope.ticket.processing = true;
@@ -394,11 +462,10 @@ export const SupportController: Controller = ng.controller('SupportController',
 						notify.info('support.ticket.has.been.created');
 						template.open('main', 'list-tickets');
 						template.open('filters', 'filters');
-						$scope.goPage(1, true);
 						$scope.escalateTicketNow(thisTicket);
+						$scope.goPage(1, true);
 					});
-
-				});
+				}, e400Callback);
 				$scope.ticket = undefined;
 			});
 		}.bind(this);
@@ -413,7 +480,6 @@ export const SupportController: Controller = ng.controller('SupportController',
          * ("Non protected" attachments cannot be seen by everybody, whereas "protected" attachments can)
          */
 		$scope.createProtectedCopies = function(pTicket, pIsCreateTicket, pCallback) {
-
 			if(!pTicket.newAttachments || pTicket.newAttachments.length === 0) {
 				if(typeof pCallback === 'function'){
 					pCallback();
@@ -482,7 +548,8 @@ export const SupportController: Controller = ng.controller('SupportController',
 
 		// Update ticket
 		$scope.editTicket = function() {
-			$scope.editedTicket = Object.assign(new models.Ticket(), $scope.ticket);
+			$scope.editedTicket = copy($scope.ticket);
+			$scope.preSelectNewTicketStatus();
 			template.open('main', 'edit-ticket');
 		};
 
@@ -507,7 +574,7 @@ export const SupportController: Controller = ng.controller('SupportController',
 			}
 		};
 
-		$scope.updateTicket = function(){
+		$scope.updateTicket = async function(){
 			$scope.checkUpdateTicket($scope.editedTicket);
 			if(!$scope.editedTicket.processing){
 				return;
@@ -524,6 +591,10 @@ export const SupportController: Controller = ng.controller('SupportController',
 							id: $scope.ticket.newAttachments[i]._id,
 							name: $scope.ticket.newAttachments[i].title
 						});
+					} else {
+						if (!$scope.editedTicket.newAttachments)
+							$scope.editedTicket.newAttachments = [];
+						$scope.editedTicket.newAttachments.push($scope.ticket.newAttachments[i]);
 					}
 				}
 
@@ -615,15 +686,13 @@ export const SupportController: Controller = ng.controller('SupportController',
 			const e500Callback = function () {
 				notify.error('support.ticket.escalation.failed');
 			};
-			const e400Callback = function (result) {
-				if (result && result.error) {
-					notify.error(result.error);
-				} else {
-					notify.error('support.error.escalation.conflict');
-				}
+			const e413Callback = function () {
+				notify.error(lang.translate('support.escalation.error.attachment.too.large') + " 10mb");
 			};
 
-			$scope.ticket.escalateTicket(successCallback, e500Callback, e400Callback);
+			$scope.ticket.escalateTicket(successCallback, e500Callback, function (result) {
+				e400Callback(result, 'support.error.escalation.conflict');
+			}, e413Callback);
 			$scope.ticket.status = 2;
 		};
 
@@ -882,7 +951,51 @@ export const SupportController: Controller = ng.controller('SupportController',
 					$scope.$apply();
 				});
 			}
+			let scope = angular.element(document.getElementById("listTickets")).scope();
+			scope.allToggled = false;
+			safeApply($scope);
 		};
+
+		$scope.disableCreateTicket = (): boolean => {
+			return $scope.ticket && (!$scope.ticket.category || !$scope.ticket.subject || !$scope.ticket.description)
+		}
+
+		$scope.exportSelectionCSV = (): void => {
+			ticketService.exportSelectionCSV(model.getItemsIds($scope.tickets.selection()));
+		}
+
+		$scope.exportAllTickets = async (): Promise<void> => {
+			Promise.all([ticketService.getThresholdDirectExportTickets(), ticketService.countTickets($scope.display.filters.school_id)])
+				.then((values: any[]) => {
+					let thresholdDirectExportTickets: number = (<number>values[0]);
+					let countTickets: number = (<ICountTicketsResponse>values[1].data).count;
+					if (countTickets > thresholdDirectExportTickets) {
+						notify.info('support.toast.export.worker',6000);
+						ticketService.workerExport($scope.display.filters.school_id);
+					} else {
+						ticketService.directExport($scope.display.filters.school_id);
+					}
+				})
+				.catch(err => {
+						notify.error("support.ticket.export.error");
+						console.error(err);
+					}
+				)
+		}
+
+		$scope.toggleAll = (isToggled: boolean) : void => {
+			$scope.tickets.all.forEach((ticket : Ticket) => ticket.selected = isToggled);
+		}
+
+		$scope.goToMainPage = function() {
+			window.location.hash = '/list-tickets/';
+			$scope.notFound = false;
+			$scope.display.histo = false;
+			$scope.ticket = new models.Ticket();
+			template.open('main', 'list-tickets');
+			template.open('filters', 'filters');
+			model.tickets.sync($scope.currentPage, $scope.display.filters, $scope.display.filters.school_id, $scope.sort.expression, $scope.sort.reverse);
+		}
 
 		this.initialize();
 	}]);

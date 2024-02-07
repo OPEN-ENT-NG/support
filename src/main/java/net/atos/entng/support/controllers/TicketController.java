@@ -19,51 +19,7 @@
 
 package net.atos.entng.support.controllers;
 
-import static net.atos.entng.support.Support.SUPPORT_NAME;
-import static net.atos.entng.support.Support.bugTrackerCommDirect;
-import static net.atos.entng.support.enums.TicketStatus.*;
-import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
-
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-
 import fr.wseduc.bus.BusAddress;
-import net.atos.entng.support.Support;
-import net.atos.entng.support.Ticket;
-import net.atos.entng.support.Issue;
-import net.atos.entng.support.Attachment;
-import net.atos.entng.support.Comment;
-import net.atos.entng.support.constants.JiraTicket;
-import net.atos.entng.support.enums.BugTrackerSyncType;
-import net.atos.entng.support.enums.EscalationStatus;
-import net.atos.entng.support.enums.TicketHisto;
-import net.atos.entng.support.filters.Admin;
-import net.atos.entng.support.filters.OwnerOrLocalAdmin;
-import net.atos.entng.support.services.EscalationService;
-import net.atos.entng.support.services.TicketServiceSql;
-import net.atos.entng.support.services.UserService;
-
-import net.atos.entng.support.services.impl.TicketServiceNeo4jImpl;
-import org.entcore.common.controller.ControllerHelper;
-import org.entcore.common.events.EventHelper;
-import org.entcore.common.events.EventStore;
-import org.entcore.common.events.EventStoreFactory;
-import org.entcore.common.http.filter.ResourceFilter;
-import org.entcore.common.storage.Storage;
-import org.entcore.common.user.DefaultFunctions;
-import org.entcore.common.user.UserInfos;
-import org.entcore.common.user.UserUtils;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
-import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.eventbus.Message;
-import org.vertx.java.core.http.RouteMatcher;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-import io.vertx.core.MultiMap;
-
-
 import fr.wseduc.rs.ApiDoc;
 import fr.wseduc.rs.Get;
 import fr.wseduc.rs.Post;
@@ -73,6 +29,51 @@ import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.request.RequestUtils;
+import io.vertx.core.*;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import net.atos.entng.support.Support;
+import net.atos.entng.support.Ticket;
+import net.atos.entng.support.Issue;
+import net.atos.entng.support.Attachment;
+import net.atos.entng.support.Comment;
+import net.atos.entng.support.enums.TicketHisto;
+import net.atos.entng.support.constants.JiraTicket;
+import net.atos.entng.support.enums.BugTrackerSyncType;
+import net.atos.entng.support.enums.Error;
+import net.atos.entng.support.enums.EscalationStatus;
+import net.atos.entng.support.export.TicketsCSVExport;
+import net.atos.entng.support.filters.Admin;
+import net.atos.entng.support.filters.AdminOfTicketsStructure;
+import net.atos.entng.support.filters.OwnerOrLocalAdmin;
+import net.atos.entng.support.helpers.*;
+import net.atos.entng.support.model.I18nConfig;
+import net.atos.entng.support.model.TicketModel;
+import net.atos.entng.support.services.*;
+import net.atos.entng.support.services.impl.TicketServiceNeo4jImpl;
+import org.entcore.common.controller.ControllerHelper;
+import org.entcore.common.events.EventHelper;
+import org.entcore.common.events.EventStore;
+import org.entcore.common.events.EventStoreFactory;
+import org.entcore.common.http.filter.AdminFilter;
+import org.entcore.common.http.filter.ResourceFilter;
+import org.entcore.common.storage.Storage;
+import org.entcore.common.user.DefaultFunctions;
+import org.entcore.common.user.UserInfos;
+import org.entcore.common.user.UserUtils;
+import org.vertx.java.core.http.RouteMatcher;
+
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.stream.Collectors;
+
+import static net.atos.entng.support.Support.SUPPORT_NAME;
+import static net.atos.entng.support.Support.bugTrackerCommDirect;
+import static net.atos.entng.support.enums.TicketStatus.NEW;
+import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
 
 
 public class TicketController extends ControllerHelper {
@@ -83,16 +84,18 @@ public class TicketController extends ControllerHelper {
     private static final int SUBJECT_LENGTH_IN_NOTIFICATION = 50;
 
     private final TicketServiceSql ticketServiceSql;
+    private final TicketService ticketService;
     private final UserService userService;
     private final EscalationService escalationService;
     private final Storage storage;
     private final EventHelper eventHelper;
 
-    public TicketController(TicketServiceSql ts, EscalationService es, UserService us, Storage storage) {
-        ticketServiceSql = ts;
-        userService = us;
-        escalationService = es;
-        this.storage = storage;
+    public TicketController(ServiceFactory serviceFactory) {
+        ticketServiceSql = serviceFactory.ticketServiceSql();
+        this.ticketService = serviceFactory.ticketService();
+        userService = serviceFactory.userService();
+        escalationService = serviceFactory.escalationService();
+        this.storage = serviceFactory.getStorage();
         final EventStore eventStore = EventStoreFactory.getFactory().getEventStore(Support.class.getSimpleName());
         this.eventHelper = new EventHelper(eventStore);
     }
@@ -153,7 +156,7 @@ public class TicketController extends ControllerHelper {
                         List<Attachment> attachments = response.attachments;
                         boolean commentSentToBugtracker = false;
                         // we only historize if no comment has been added. If there is a comment, it will appear in the history
-                        if( ticket.getString("newComment") == null || "".equals(ticket.getString("newComment")) ) {
+                        if (ticket.getString("newComment") == null || "".equals(ticket.getString("newComment"))) {
                             ticketServiceSql.createTicketHisto(ticketId, I18n.getInstance().translate("support.ticket.histo.modification",
                                     getHost(request), I18n.acceptLanguage(request)),
                                     ticket.getInteger("status"), user.getUserId(), TicketHisto.UPDATED, res -> {
@@ -172,7 +175,7 @@ public class TicketController extends ControllerHelper {
                         }
                         notifyTicketUpdated(request, ticketId, user, response);
                         if (escalationService != null && attachments != null && attachments.size() > 0) {
-                            if(escalationService.getBugTrackerType().getBugTrackerSyncType()
+                            if (escalationService.getBugTrackerType().getBugTrackerSyncType()
                                     == BugTrackerSyncType.ASYNC && !commentSentToBugtracker) {
                                 sendTicketUpdateToIssue(request, ticketId, ticket, user, false);
                                 renderJson(request, response.toJsonObject(), 200);
@@ -220,10 +223,11 @@ public class TicketController extends ControllerHelper {
 
     /**
      * Send ticket updates to bugtracker
-     * @param request Original request
+     *
+     * @param request  Original request
      * @param ticketId Id of the ticket updated
-     * @param ticket Content of ticket updated
-     * @param user User updating ticket
+     * @param ticket   Content of ticket updated
+     * @param user     User updating ticket
      */
     private void sendTicketUpdateToIssue(final HttpServerRequest request, final String ticketId, final JsonObject ticket,
                                          final UserInfos user, boolean answerRequest) {
@@ -234,7 +238,7 @@ public class TicketController extends ControllerHelper {
                 if(ticket != null && ticket.containsKey("newComment")) {
                     comment.content = ticket.getString("newComment");
                 }
-                if(escalationService.getBugTrackerType().getBugTrackerSyncType()
+                if (escalationService.getBugTrackerType().getBugTrackerSyncType()
                         == BugTrackerSyncType.SYNC) {
                     sendIssueComment(user, comment, issue.id.toString(), request, answerRequest);
                 } else {
@@ -432,8 +436,8 @@ public class TicketController extends ControllerHelper {
                                 .put("body", I18n.getInstance()
                                         .translate(
                                                 "push-notif." + notificationName + ".body",
-                                                request!= null ? getHost(request) : I18n.DEFAULT_DOMAIN,
-                                                request!= null ? I18n.acceptLanguage(request) : "fr",
+                                                request != null ? getHost(request) : I18n.DEFAULT_DOMAIN,
+                                                request != null ? I18n.acceptLanguage(request) : "fr",
                                                 user.getUsername(),
                                                 ticketId
                                         ));
@@ -453,52 +457,18 @@ public class TicketController extends ControllerHelper {
     @ApiDoc("If current user is local admin, get all tickets. Otherwise, get my tickets")
     @SecuredAction(value = "", type = ActionType.AUTHENTICATED)
     public void getTicket(final HttpServerRequest request) {
-        final Integer id = Integer.valueOf(request.params().get("id"));
+        final Integer id = Integer.valueOf(request.params().get(JiraTicket.ID));
         UserUtils.getUserInfos(eb, request, user -> {
             if (user != null) {
                 Map<String, UserInfos.Function> functions = user.getFunctions();
                 if (functions.containsKey(DefaultFunctions.ADMIN_LOCAL) || functions.containsKey(DefaultFunctions.SUPER_ADMIN)) {
-                    ticketServiceSql.getTicket(user, id, event -> {
-                        // getting the profile for users
-                        if( event.isRight()){
-                            final JsonArray jsonListTickets = event.right().getValue();
-                            final JsonArray listUserIds = new JsonArray();
-                            // get list of unique user ids
-                            for (Object ticket : jsonListTickets) {
-                                if (!(ticket instanceof JsonObject)) continue;
-                                String userId = ((JsonObject) ticket).getString("owner");
-                                if( !listUserIds.contains(userId)){
-                                    listUserIds.add(userId);
-                                }
-                            }
-                            // get profiles from neo4j
-                            TicketServiceNeo4jImpl ticketServiceNeo4j = new TicketServiceNeo4jImpl();
-                            ticketServiceNeo4j.getUsersFromList(listUserIds, event1 -> {
-                                if( event1.isRight()){
-                                    JsonArray listUsers = event1.right().getValue();
-                                    // list of users got from neo4j
-                                    for( Object user1 : listUsers ) {
-                                        if (!(user1 instanceof JsonObject)) continue;
-                                        JsonObject jUser = (JsonObject) user1;
-                                        // traduction profil
-                                        String profil = jUser.getJsonArray("n.profiles").getString(0);
-                                        profil = I18n.getInstance().translate(profil, getHost(request), I18n.acceptLanguage(request));
-                                        // iterator on tickets, to see if the ids match
-                                        for( Object ticket : jsonListTickets) {
-                                            if (!(ticket instanceof JsonObject)) continue;
-                                            JsonObject jTicket = (JsonObject)ticket;
-                                            if( jTicket.getString("owner").equals(jUser.getString("n.id"))) {
-                                                jTicket.put("profile", profil);
-                                            }
-                                        }
-                                    }
-                                    renderJson(request, jsonListTickets);
-                                }
-                            });
-                        }
-                    });
+                    Promise<JsonArray> ticketsPromise = Promise.promise();
+                    ticketServiceSql.getTicket(user, id, PromiseHelper.handler(ticketsPromise));
+                    ticketsPromise.future()
+                            .onSuccess(result -> renderJson(request, result))
+                            .onFailure(err -> renderError(request, new JsonObject()));
                 } else {
-                    ticketServiceSql.getMyTicket(user,id, arrayResponseHandler(request));
+                    ticketServiceSql.getMyTicket(user, id, arrayResponseHandler(request));
                 }
             } else {
                 log.debug("User not found in session.");
@@ -514,59 +484,28 @@ public class TicketController extends ControllerHelper {
     @SecuredAction("support.ticket.list")
     public void listTickets(final HttpServerRequest request) {
         MultiMap params = request.params();
-        Integer page = Integer.valueOf(params.get("page"));
-        List<String> statuses = params.getAll("status");
-        List<String> applicants = params.getAll("applicant");
-        String school_id = params.get("school");
-        String sortBy = params.get("sortBy");
-        String order = params.get("order");
+        Integer page = Integer.valueOf(params.get(JiraTicket.PAGE));
+        List<String> statuses = params.getAll(JiraTicket.STATUS);
+        List<String> applicants = params.getAll(JiraTicket.APPLICANT);
+        String schoolId = params.get(JiraTicket.SCHOOL);
+        String sortBy = params.get(JiraTicket.SORT_BY);
+        String order = params.get(JiraTicket.ORDER);
         Integer nbTicketsPerPage = config.getInteger("nbTicketsPerPage", 25);
+
+        I18nConfig i18nConfig = new I18nConfig(request);
 
         UserUtils.getUserInfos(eb, request, user -> {
             if (user != null) {
                 Map<String, UserInfos.Function> functions = user.getFunctions();
                 if (functions.containsKey(DefaultFunctions.ADMIN_LOCAL) || functions.containsKey(DefaultFunctions.SUPER_ADMIN)) {
-                    ticketServiceSql.listTickets(user, page, statuses, applicants, school_id, sortBy, order, nbTicketsPerPage, event -> {
-                        // getting the profile for users
-                        if( event.isRight()){
-                            final JsonArray jsonListTickets = event.right().getValue();
-                            final JsonArray listUserIds = new JsonArray();
-                            // get list of unique user ids
-                            for (Object ticket : jsonListTickets) {
-                                if (!(ticket instanceof JsonObject)) continue;
-                                String userId = ((JsonObject) ticket).getString("owner");
-                                if( !listUserIds.contains(userId)){
-                                    listUserIds.add(userId);
-                                }
-                            }
-                            // get profiles from neo4j
-                            TicketServiceNeo4jImpl ticketServiceNeo4j = new TicketServiceNeo4jImpl();
-                            ticketServiceNeo4j.getUsersFromList(listUserIds, event1 -> {
-                                if( event1.isRight()){
-                                    JsonArray listUsers = event1.right().getValue();
-                                    // list of users got from neo4j
-                                    for( Object user1 : listUsers ) {
-                                        if (!(user1 instanceof JsonObject)) continue;
-                                        JsonObject jUser = (JsonObject) user1;
-                                        // traduction profil
-                                        String profil = jUser.getJsonArray("n.profiles").getString(0);
-                                        profil = I18n.getInstance().translate(profil, getHost(request), I18n.acceptLanguage(request));
-                                        // iterator on tickets, to see if the ids match
-                                        for( Object ticket : jsonListTickets) {
-                                            if (!(ticket instanceof JsonObject)) continue;
-                                            JsonObject jTicket = (JsonObject)ticket;
-                                            if( jTicket.getString("owner").equals(jUser.getString("n.id"))) {
-                                                jTicket.put("profile", profil);
-                                            }
-                                        }
-                                    }
-                                    renderJson(request, jsonListTickets);
-                                }
-                            });
-                        }
-                    });
+                    Future<JsonArray> future = listTicketOrdered(sortBy, user, page, statuses, applicants,
+                            schoolId, sortBy, order, nbTicketsPerPage);
+                    // getting the profile for users
+                    future.compose(tickets -> ticketService.getProfileFromTickets(tickets, i18nConfig))
+                            .onSuccess(result -> renderJson(request, result))
+                            .onFailure(err -> renderError(request, new JsonObject().put(JiraTicket.ERROR, Error.valueOf(err.getMessage()).toJson())));
                 } else {
-                    ticketServiceSql.listMyTickets(user, page, statuses, school_id, sortBy, order, nbTicketsPerPage, arrayResponseHandler(request));
+                    ticketServiceSql.listMyTickets(user, page, statuses, schoolId, sortBy, order, nbTicketsPerPage, arrayResponseHandler(request));
                 }
             } else {
                 log.debug("User not found in session.");
@@ -574,6 +513,83 @@ public class TicketController extends ControllerHelper {
             }
         });
 
+    }
+
+    private Future<JsonArray> listTicketOrdered(String isSortBy, UserInfos user, Integer page, List<String> statuses, List<String> applicants,
+                                                String schoolId, String sortBy, String order, Integer nbTicketsPerPage) {
+        switch (isSortBy) {
+            case JiraTicket.SCHOOL_ID:
+                return listTicketStructureOrdered(user, page, statuses, applicants, schoolId, sortBy, order, nbTicketsPerPage);
+            case JiraTicket.PROFILE:
+                return listTicketProfileOrdered(user, page, statuses, applicants, schoolId, sortBy, order, nbTicketsPerPage);
+            default:
+                return listTicketDefaultOrdered(user, page, statuses, applicants,
+                        schoolId, sortBy, order, nbTicketsPerPage);
+        }
+    }
+
+    private Future<JsonArray> listTicketStructureOrdered(UserInfos user, Integer page, List<String> statuses, List<String> applicants,
+                                                         String schoolId, String sortBy, String order, Integer nbTicketsPerPage) {
+        Promise<JsonArray> promise = Promise.promise();
+        ticketService.listStructureChildren(user.getStructures())
+                .compose(result -> ticketService.sortSchoolByName(getStructureIds(result)))
+                .compose(result -> {
+                    if (result != null && !result.isEmpty())
+                        return ticketServiceSql.listTickets(user, page, statuses, applicants, schoolId, sortBy, order,
+                                nbTicketsPerPage, result.getJsonArray(JiraTicket.STRUCTUREIDS));
+                    log.error(String.format("[Support@%s::listTicketStructureOrdered] error while retrieving tickets",
+                            this.getClass().getSimpleName()));
+                    return Future.failedFuture(Error.SORT_BY_STRUCTURE.name());
+                })
+                .onSuccess(promise::complete)
+                .onFailure(promise::fail);
+
+        return promise.future();
+    }
+
+    private Future<JsonArray> listTicketProfileOrdered(UserInfos user, Integer page, List<String> statuses, List<String> applicants,
+                                                       String schoolId, String sortBy, String order, Integer nbTicketsPerPage) {
+        Promise<JsonArray> promise = Promise.promise();
+        ticketService.listStructureChildren(user.getStructures())
+                .compose(structureChildren -> ticketServiceSql.listTicketsOwnerIds(getStructureIds(structureChildren)))
+                .compose(userService::getUserIdsProfileOrdered)
+                .compose(owners -> {
+                    if (owners != null && !owners.isEmpty())
+                        return ticketServiceSql.listTickets(user, page, statuses, applicants,
+                                schoolId, sortBy, order, nbTicketsPerPage, new JsonArray(owners
+                                        .stream()
+                                        .filter(JsonObject.class::isInstance)
+                                        .map(JsonObject.class::cast)
+                                        .map(owner -> owner.getString(JiraTicket.ID))
+                                        .collect(Collectors.toList())));
+                    log.error(String.format("[Support@%s::listTicketProfileOrdered] error while retrieving tickets",
+                            this.getClass().getSimpleName()));
+                    return Future.failedFuture(Error.SORT_BY_STRUCTURE.name());
+                })
+                .onSuccess(promise::complete)
+                .onFailure(promise::fail);
+
+        return promise.future();
+    }
+
+
+    private Future<JsonArray> listTicketDefaultOrdered(UserInfos user, Integer page, List<String> statuses, List<String> applicants,
+                                                       String schoolId, String sortBy, String order, Integer nbTicketsPerPage) {
+        Promise<JsonArray> promise = Promise.promise();
+        ticketService.listStructureChildren(Collections.singletonList(schoolId))
+                .compose(structureChildren -> ticketServiceSql.listTickets(user, page, statuses, applicants,
+                        schoolId, sortBy, order, nbTicketsPerPage, structureChildren))
+                .onSuccess(promise::complete)
+                .onFailure(promise::fail);
+
+        return promise.future();
+    }
+
+    private List<String> getStructureIds(JsonObject structuresResult) {
+        return structuresResult.getJsonArray(JiraTicket.STRUCTUREIDS, new JsonArray()).stream()
+                .filter(String.class::isInstance)
+                .map(Object::toString)
+                .collect(Collectors.toList());
     }
 
     @Get("/escalation")
@@ -596,12 +612,12 @@ public class TicketController extends ControllerHelper {
     @ApiDoc("Update ticket with information from bugtracker")
     public void updateTicketFromBugTracker(final Message<JsonObject> message) {
         escalationService.updateTicketFromBugTracker(message, event -> {
-            if(event.isLeft()) {
+            if (event.isLeft()) {
                 log.error("Support : error when updating ticket from bugtracker " + event.left().getValue());
-                message.reply(new JsonObject().put("status", "KO").put("message",event.left().getValue()));
+                message.reply(new JsonObject().put("status", "KO").put("message", event.left().getValue()));
             } else {
                 JsonObject response = event.right().getValue();
-                if(response.containsKey("user") && response.containsKey("ticket")) {
+                if (response.containsKey("user") && response.containsKey("ticket")) {
                     JsonObject userJson = response.getJsonObject("user");
                     UserInfos user = new UserInfos();
                     user.setUserId(userJson.getString("userid"));
@@ -634,7 +650,7 @@ public class TicketController extends ControllerHelper {
         JsonArray jsonUserId = new JsonArray();
         jsonUserId.add(userId);
         ticketServiceNeo4j.getUsersFromList(jsonUserId, event -> {
-            if( event.isRight() && event.right().getValue().size() > 0){
+            if (event.isRight() && event.right().getValue().size() > 0) {
                 JsonObject jUser = event.right().getValue().getJsonObject(0);
                 // traduction profil
                 String profil = jUser.getJsonArray("n.profiles").getString(0);
@@ -666,7 +682,7 @@ public class TicketController extends ControllerHelper {
 
         UserUtils.getUserInfos(eb, request, user -> {
             if (user != null) {
-                if(updateEscalation) {
+                if (updateEscalation) {
                     ticketServiceSql.getTicketForEscalationService(ticketId,
                             getTicketForEscalationHandler(request, ticketId, user, false));
                 } else {
@@ -675,7 +691,7 @@ public class TicketController extends ControllerHelper {
                 }
             } else {
                 log.debug("User not found in session.");
-                if(!updateEscalation) {
+                if (!updateEscalation) {
                     unauthorized(request);
                 }
             }
@@ -691,13 +707,13 @@ public class TicketController extends ControllerHelper {
                 if (ticket == null || ticket.id == null) {
                     log.error("Ticket " + ticketId + " cannot be escalated : its status should be new or opened"
                             + ", and its escalation status should be not_done or in_progress");
-                    if(doResponse) {
+                    if (doResponse) {
                         badRequest(request, "support.error.escalation.conflict");
                     }
                     return;
                 }
 
-                if(doResponse) {
+                if (doResponse) {
                     ticketServiceSql.createTicketHisto(
                             ticket.id.toString(),
                             I18n.getInstance().translate(
@@ -721,7 +737,7 @@ public class TicketController extends ControllerHelper {
 
             } else {
                 log.error("Error when calling service getTicketWithEscalation. " + getTicketResponse.left().getValue());
-                if(doResponse) {
+                if (doResponse) {
                     renderError(request, new JsonObject().put("error",
                             "support.escalation.error.data.cannot.be.retrieved.from.database"));
                 }
@@ -750,8 +766,12 @@ public class TicketController extends ControllerHelper {
                         log.error("Error when updating escalation status to failed");
                     }
                 });
-                if(doResponse) {
-                    renderError(request, new JsonObject().put("error", escalationResponse.left().getValue()));
+                if (doResponse) {
+                    if (escalationResponse.left().getValue() == JiraTicket.PAYLOADTOOLARGE) {
+                        renderError(request, new JsonObject().put(JiraTicket.ERROR, escalationResponse.left().getValue()), 413, JiraTicket.PAYLOADTOOLARGE);
+                    } else {
+                        renderError(request, new JsonObject().put(JiraTicket.ERROR, escalationResponse.left().getValue()));
+                    }
                 }
             }
         };
@@ -779,7 +799,7 @@ public class TicketController extends ControllerHelper {
                         });
             } else {
                 // Can't get issue from bug tracker in asynchronous mode
-                if(escalationService.getBugTrackerType().getBugTrackerSyncType()
+                if (escalationService.getBugTrackerType().getBugTrackerSyncType()
                         == BugTrackerSyncType.SYNC) {
                     log.error("Error when trying to get bug tracker issue");
                     // Update escalation status to successful
@@ -806,7 +826,7 @@ public class TicketController extends ControllerHelper {
 
                             "support.ticket.escalation.successful",
                             getHost(request), I18n.acceptLanguage(request));
-                    if(doResponse) {
+                    if (doResponse) {
                         renderJson(request, new JsonObject().put("issue",
                                 new JsonObject().put(JiraTicket.ID, issue.id)
                                         .put(JiraTicket.STATUS, new JsonObject().put(JiraTicket.NAME, EscalationStatus.SUCCESSFUL))));
@@ -901,6 +921,7 @@ public class TicketController extends ControllerHelper {
         }
     }
 
+
     @Get("/events/:id")
     @ApiDoc("Get historization of a ticket")
     @SecuredAction(value = "", type = ActionType.RESOURCE)
@@ -909,13 +930,14 @@ public class TicketController extends ControllerHelper {
         final String ticketId = request.params().get("id");
         UserUtils.getUserInfos(eb, request, user -> {
             if (user != null) {
-                ticketServiceSql.listEvents(ticketId, arrayResponseHandler(request));
+                ticketServiceSql.getlistEvents(ticketId)
+                        .onSuccess(result -> renderJson(request, RequestHelper.addAllValue(new JsonObject(), result).getJsonArray(JiraTicket.ALL)))
+                        .onFailure(err -> renderError(request, new JsonObject().put(JiraTicket.MESSAGE, err.getMessage())));
             } else {
-                log.debug("User not found in session.");
+                log.debug("User not found in session");
                 unauthorized(request);
             }
         });
-
     }
 
 
@@ -972,6 +994,142 @@ public class TicketController extends ControllerHelper {
                 });*/
             } else if(answerRequest == true) {
                 renderError(request, new JsonObject().put("error", event.left().getValue()));
+            }
+        });
+    }
+
+    @Get("/tickets/export")
+    @SecuredAction(value = "", type = ActionType.RESOURCE)
+    @ResourceFilter(AdminOfTicketsStructure.class)
+    @ApiDoc("Export tickets")
+    public void exportTickets(HttpServerRequest request) {
+        List<String> ids = request.params().getAll(JiraTicket.ID);
+        JsonArray tickets = new JsonArray();
+        UserUtils.getUserInfos(eb, request, user -> {
+            if (user != null) {
+                I18nConfig i18nConfig = new I18nConfig(request);
+                ticketServiceSql.getTicketsFromListId(ids)
+                        .compose(ticketsResults -> {
+                            tickets.addAll(CSVHelper.translateTicketCategory(user, ticketsResults));
+                            return ticketService.getSchoolAndProfileFromTicket(tickets, i18nConfig);
+                        })
+                        .onSuccess(result -> {
+                            TicketsCSVExport pce = new TicketsCSVExport(tickets, i18nConfig);
+                            CSVHelper.sendCSV(request, pce.filename(), pce.generate());
+                        })
+                        .onFailure(err -> renderError(request, new JsonObject()));
+            } else {
+                log.debug("User not found in session.");
+                unauthorized(request);
+            }
+        });
+    }
+
+    @Get("/check/user/:id/workflow/:workflow/structure/:structureId/auto/open")
+    @ApiDoc("Returns if the user and the structure have a certain workflow")
+    @SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+    public void getWorkflow(HttpServerRequest request) {
+        final String userId = request.params().get(JiraTicket.ID);
+        final String workflowWanted = request.params().get(JiraTicket.WORKFLOW);
+        final String structureId = request.params().get(JiraTicket.STRUCTURE_ID);
+        UserUtils.getUserInfos(eb, request, user -> {
+            if (user != null) {
+                ticketService.getSchoolWorkflowRightFromUserId(userId, workflowWanted, structureId)
+                        .onSuccess(result -> renderJson(request, result))
+                        .onFailure(err -> renderError(request, new JsonObject().put(JiraTicket.MESSAGE, err.getMessage())));
+            } else {
+                log.debug("[Support@%s::getWorkflow] User not found in session.");
+                unauthorized(request);
+            }
+        });
+    }
+
+    @Get("structures/:structureId/tickets/count")
+    @ApiDoc("Return the number of tickets of a structure")
+    @SecuredAction(value = "", type = ActionType.RESOURCE)
+    @ResourceFilter(AdminFilter.class)
+    public void countTickets(HttpServerRequest request) {
+        final String structureId = request.params().get(JiraTicket.STRUCTURE_ID);
+        UserUtils.getUserInfos(eb, request, user -> {
+            if (user != null) {
+                Promise<JsonObject> promise = Promise.promise();
+                promise.future()
+                        .compose(result -> ticketServiceSql.countTickets(user, result))
+                        .onSuccess(result -> renderJson(request, result))
+                        .onFailure(err -> renderError(request, new JsonObject().put(JiraTicket.MESSAGE, err.getMessage())));
+
+                if (!Objects.equals(structureId, JiraTicket.ASTERISK))
+                    ticketService.listStructureChildren(Collections.singletonList(structureId)).onComplete(promise);
+                else promise.complete(new JsonObject());
+            } else {
+                log.debug(String.format("[Support@%s::countTickets] %s",
+                        this.getClass().getSimpleName(), "User not found in session."));
+                unauthorized(request);
+            }
+        });
+    }
+
+    @Get("/tickets/export/direct/:structureId")
+    @ApiDoc("Generate export CSV and directly download it")
+    @SecuredAction(value = "", type = ActionType.RESOURCE)
+    @ResourceFilter(AdminFilter.class)
+    public void directExport(HttpServerRequest request) {
+        UserUtils.getUserInfos(eb, request, user -> {
+            if (user != null) {
+                final String structureId = request.params().get(JiraTicket.STRUCTURE_ID);
+                I18nConfig i18nConfig = new I18nConfig(request);
+                Promise<JsonArray> promise = Promise.promise();
+                JsonArray tickets = new JsonArray();
+                promise.future()
+                        .compose(ticketsResults -> {
+                            tickets.addAll(CSVHelper.translateTicketCategory(user, ticketsResults));
+                            return ticketService.getSchoolAndProfileFromTicket(tickets, i18nConfig);
+                        })
+                        .onSuccess(result -> {
+                            TicketsCSVExport pce = new TicketsCSVExport(tickets, i18nConfig);
+                            CSVHelper.sendCSV(request, pce.filename(), pce.generate());
+                        })
+                        .onFailure(err -> renderError(request, new JsonObject()));
+
+                if (!Objects.equals(structureId, JiraTicket.ASTERISK))
+                    ticketService.listStructureChildren(Collections.singletonList(structureId))
+                            .compose(ticketServiceSql::getTicketsFromStructureIds)
+                            .onComplete(promise);
+                else ticketServiceSql.getUserTickets(user).onComplete(ar -> {
+                    List<TicketModel> ticketModels = ar.result();
+                    promise.complete(IModelHelper.listToJsonArray(ticketModels));
+                });
+            } else {
+                log.debug(String.format("[Support@%s::directExport] %s",
+                        this.getClass().getSimpleName(), "User not found in session."));
+                unauthorized(request);
+            }
+        });
+    }
+
+    @Get("/tickets/export/worker/:structureId")
+    @ApiDoc("Generate export CSV and download it in workspace")
+    @SecuredAction(value = "", type = ActionType.RESOURCE)
+    @ResourceFilter(AdminFilter.class)
+    public void workerExport(HttpServerRequest request) {
+        UserUtils.getUserInfos(eb, request, user -> {
+            if (user != null) {
+                final String structureId = request.params().get(JiraTicket.STRUCTURE_ID);
+                I18nConfig i18nConfig = new I18nConfig(request);
+
+                JsonObject params = new JsonObject()
+                        .put(JiraTicket.STRUCTURE_ID, structureId)
+                        .put(JiraTicket.USER, UserInfosHelper.toJSON(user))
+                        .put(JiraTicket.LOCALE, i18nConfig.getLang())
+                        .put(JiraTicket.DOMAIN, i18nConfig.getDomain());
+                Support.launchExportTicketsWorker(eb, params)
+                        .onSuccess(result -> renderJson(request, result))
+                        .onFailure(err -> log.error(String.format("[Support@%s::workerExport] %s",
+                                this.getClass().getSimpleName(), err)));
+            } else {
+                log.debug(String.format("[Support@%s::workerExport] %s",
+                        this.getClass().getSimpleName(), "User not found in session."));
+                unauthorized(request);
             }
         });
     }

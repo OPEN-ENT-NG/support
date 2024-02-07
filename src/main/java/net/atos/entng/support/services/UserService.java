@@ -19,11 +19,22 @@
 
 package net.atos.entng.support.services;
 
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 
+import java.util.List;
+
 public interface UserService {
 
-	public void getLocalAdministrators(String structure, Handler<JsonArray> handler);
+    public void getLocalAdministrators(String structure, Handler<JsonArray> handler);
+
+    /**
+     * get user ids list ordered by profile name
+     *
+     * @param ownerIds ownerIds to order
+     * @return {Future<JsonArray>} list of userIds ordered
+     */
+    public Future<JsonArray> getUserIdsProfileOrdered(List<String> ownerIds);
 
 }

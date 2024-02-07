@@ -1,6 +1,6 @@
 // Enum based on the following article : https://stijndewitt.wordpress.com/2014/01/26/enums-in-javascript/
 
-import {_, http} from "entcore";
+import {_, http, notify} from "entcore";
 
 declare let model: any;
 
@@ -8,12 +8,14 @@ model.ticketStatusEnum = {
 	NEW: 1,
 	OPENED: 2,
 	RESOLVED: 3,
-	ClOSED: 4,
+	CLOSED: 4,
+	WAITING: 5,
 	properties: {
 		1: {i18n: "support.ticket.status.new", value: 1},
 		2: {i18n: "support.ticket.status.opened", value: 2},
 		3: {i18n: "support.ticket.status.resolved", value: 3},
-		4: {i18n: "support.ticket.status.closed", value: 4}
+		4: {i18n: "support.ticket.status.closed", value: 4},
+		5: {i18n: "support.ticket.status.waiting", value: 5}
 	}
 };
 
@@ -80,14 +82,20 @@ model.isBugTrackerCommDirect = function(callback){
 };
 
 
-models.Ticket.prototype.createTicket = function(data, callback) {
-	http().postJson('/support/ticket', data).done(function(result){
-		this.updateData(result);
-		model.tickets.push(this);
-		if(typeof callback === 'function'){
-			callback();
-		}
-	}.bind(this));
+models.Ticket.prototype.createTicket = function(data, callback, badRequestCallback) {
+	http().postJson('/support/ticket', data)
+		.done(function(result): void {
+			this.updateData(result);
+			model.tickets.push(this);
+			if (typeof callback === 'function') {
+				callback();
+			}
+		}.bind(this))
+		.e400(function(): void {
+			if (typeof badRequestCallback === 'function') {
+				badRequestCallback();
+			}
+		}.bind(this));
 };
 
 models.Ticket.prototype.updateTicket = function(data, callback) {
@@ -100,7 +108,7 @@ models.Ticket.prototype.updateTicket = function(data, callback) {
 	}.bind(this));
 };
 
-models.Ticket.prototype.escalateTicket = function(callback, errorCallback, badRequestCallback) {
+models.Ticket.prototype.escalateTicket = function(callback, errorCallback, badRequestCallback, fileTooLargeCallback) {
 	http().postJson('/support/ticket/' + this.id + '/escalate', null, {requestName: 'escalation-request' })
 		.done(function(result){
 				this.last_issue_update = result.issue.updated_on;
@@ -120,6 +128,12 @@ models.Ticket.prototype.escalateTicket = function(callback, errorCallback, badRe
 				}
 			}.bind(this)
 		)
+		.e413(function(){
+				this.escalation_status = model.escalationStatuses.FAILED;
+				this.trigger('change');
+				fileTooLargeCallback();
+			}.bind(this)
+		)
 		.e400(function(){
 			this.escalation_status = model.escalationStatuses.NOT_DONE;
 			this.trigger('change');
@@ -137,7 +151,8 @@ models.Ticket.prototype.toJSON = function() {
 		school_id: this.school_id,
 		status: undefined,
 		newComment: undefined,
-		attachments: undefined
+		attachments: undefined,
+		selected: undefined
 	};
 	if(this.status !== undefined) {
 		json.status = this.status;
@@ -255,17 +270,26 @@ model.build = function() {
 				+ (filters[2]?'&status=2':'')
 				+ (filters[3]?'&status=3':'')
 				+ (filters[4]?'&status=4':'')
+				+ (filters[5]?'&status=5':'')
 				+ (filters.mydemands?'&applicant=ME':'')
 				+ (filters.otherdemands?'&applicant=OTHER':'')
 				+ '&school=' + school
 				+ '&sortBy=' + sortBy
 				+ '&order=' + (order?'DESC':'ASC');
 			http().get('/support/tickets' + queryParams).done(function (tickets) {
+				if (filters.every((status: boolean) => !status)) {
+					tickets = [];
+				}
 				this.load(tickets);
 				if(typeof callback === 'function'){
 					callback();
 				}
-			}.bind(this));
+			}.bind(this))
+				.error(function(err){
+				if (!!err && !!err.responseJSON && !!err.responseJSON.error && !!err.responseJSON.error.i18n){
+					notify.error(err.responseJSON.error.i18n);
+				}
+			});
 		},
 		behaviours: 'support'
 	});

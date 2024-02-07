@@ -32,9 +32,9 @@ import net.atos.entng.support.services.impl.EscalationServicePivotImpl;
 import net.atos.entng.support.services.impl.EscalationServiceZendeskImpl;
 
 
-class EscalationServiceFactory {
+public class EscalationServiceFactory {
 
-	static EscalationService makeEscalationService(final BugTracker bugTracker,
+	public static EscalationService makeEscalationService(final BugTracker bugTracker,
 														  final Vertx vertx, final JsonObject config, final TicketServiceSql ts, final UserService us,
 														  Storage storage) {
 		switch (bugTracker) {
