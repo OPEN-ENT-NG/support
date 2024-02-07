@@ -11,7 +11,8 @@ public enum TicketStatusJira {
     NEW(JiraTicket.NEW, 1),
     OPEN(JiraTicket.OPEN, 2),
     RESOLVED(JiraTicket.RESOLVED, 3),
-    CLOSED(JiraTicket.CLOSED, 4);
+    CLOSED(JiraTicket.CLOSED, 4),
+    WAITING(JiraTicket.CLOSED, 5);
 
     private final Integer status;
     private final String name;

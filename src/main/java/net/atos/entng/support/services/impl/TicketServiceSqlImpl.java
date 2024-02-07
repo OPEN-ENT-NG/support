@@ -30,18 +30,26 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import fr.wseduc.webutils.http.Renders;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import net.atos.entng.support.constants.JiraTicket;
 import net.atos.entng.support.enums.BugTracker;
 import net.atos.entng.support.enums.EscalationStatus;
 import net.atos.entng.support.enums.TicketStatus;
 import net.atos.entng.support.enums.TicketHisto;
 import net.atos.entng.support.helpers.DateHelper;
+import net.atos.entng.support.helpers.IModelHelper;
+import net.atos.entng.support.helpers.PromiseHelper;
+import net.atos.entng.support.model.Event;
+import net.atos.entng.support.model.TicketModel;
 import net.atos.entng.support.services.TicketServiceSql;
 
 import org.entcore.common.service.impl.SqlCrudService;
 import org.entcore.common.sql.Sql;
+import org.entcore.common.sql.SqlResult;
 import org.entcore.common.sql.SqlStatementsBuilder;
 import org.entcore.common.user.DefaultFunctions;
 import org.entcore.common.user.UserInfos;
@@ -66,27 +74,29 @@ import net.atos.entng.support.Comment;
 
 public class TicketServiceSqlImpl extends SqlCrudService implements TicketServiceSql {
 
-	private final static String UPSERT_USER_QUERY = "SELECT support.merge_users(?,?)";
     protected static final Logger log = LoggerFactory.getLogger(Renders.class);
-	private final List<String> ALLOWED_SORT_BY_COLUMN = new ArrayList<>(Arrays.asList("id","modified","status","category","owner","event_count","subject"));
-	private final BugTracker bugTrackerType;
-	private final Logger LOGGER = LoggerFactory.getLogger(TicketServiceSqlImpl.class);
-	public TicketServiceSqlImpl(BugTracker bugTracker) {
-		super("support", "tickets");
-		bugTrackerType = bugTracker;
-	}
+    private final static String UPSERT_USER_QUERY = "SELECT support.merge_users(?,?)";
+    private final List<String> ALLOWED_SORT_BY_COLUMN = new ArrayList<>(Arrays.asList(JiraTicket.ID, JiraTicket.MODIFICATION_DATE, JiraTicket.STATUS,
+            JiraTicket.CATEGORY, JiraTicket.OWNER, JiraTicket.EVENT_COUNT, JiraTicket.SUBJECT, JiraTicket.SCHOOL_ID, JiraTicket.PROFILE));
+    private final BugTracker bugTrackerType;
+    private final Logger LOGGER = LoggerFactory.getLogger(TicketServiceSqlImpl.class);
+
+    public TicketServiceSqlImpl(BugTracker bugTracker) {
+        super("support", "tickets");
+        bugTrackerType = bugTracker;
+    }
 
 	@Override
 	public void createTicket(JsonObject ticket, JsonArray attachments, UserInfos user, String locale,
 			Handler<Either<String, Ticket>> handler) {
 
-		SqlStatementsBuilder s = new SqlStatementsBuilder();
+        SqlStatementsBuilder s = new SqlStatementsBuilder();
 
-		// 1. Upsert user
-		s.prepared(UPSERT_USER_QUERY, new JsonArray().add(user.getUserId()).add(user.getUsername()));
+        // 1. Upsert user
+        s.prepared(UPSERT_USER_QUERY, new JsonArray().add(user.getUserId()).add(user.getUsername()));
 
-		// 2. Create ticket
-		ticket.put("owner", user.getUserId());
+        // 2. Create ticket
+        ticket.put("owner", user.getUserId());
         ticket.put("locale", locale);
 		String returnedFields = "id, subject, school_id, status, created, modified, escalation_status, escalation_date, substring(description, 0, 101)  as short_desc";
 		s.insert(resourceTable, ticket, returnedFields);
@@ -194,18 +204,34 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 
 	}
 
+	@Override
+	public Future<JsonArray> listTickets(UserInfos user, Integer page, List<String> statuses, List<String> applicants, String school_id,
+																			 String sortBy, String order, Integer nbTicketsPerPage, JsonArray orderedIds) {
+		return listTickets(user, page, statuses, applicants, school_id,
+											 sortBy, order, nbTicketsPerPage, orderedIds, null);
+	}
 
 	@Override
-	public void listTickets(UserInfos user, Integer page, List<String> statuses, List<String> applicants, String school_id,
-							String sortBy, String order, Integer nbTicketsPerPage, Handler<Either<String, JsonArray>> handler) {
+	public Future<JsonArray> listTickets(UserInfos user, Integer page, List<String> statuses, List<String> applicants, String school_id,
+																			 String sortBy, String order, Integer nbTicketsPerPage, JsonObject structureChildren) {
+		return listTickets(user, page, statuses, applicants, school_id,
+											 sortBy, order, nbTicketsPerPage, null, structureChildren);
+	}
+
+	@Override
+	public Future<JsonArray> listTickets(UserInfos user, Integer page, List<String> statuses, List<String> applicants, String school_id,
+																			 String sortBy, String order, Integer nbTicketsPerPage, JsonArray orderedIds, JsonObject structureChildren) {
+		Promise<JsonArray> promise = Promise.promise();
 		StringBuilder query = new StringBuilder();
+		JsonArray values = new JsonArray();
 		query.append("SELECT t.*, u.username AS owner_name, ")
-			.append("i.content").append(bugTrackerType.getLastIssueUpdateFromPostgresqlJson()).append(" AS last_issue_update, ")
-            .append(" substring(t.description, 0, 101)  as short_desc,")
-			.append(" COUNT(*) OVER() AS total_results")
-			.append(" FROM support.tickets AS t")
-			.append(" INNER JOIN support.users AS u ON t.owner = u.id")
-			.append(" LEFT JOIN support.bug_tracker_issues AS i ON t.id=i.ticket_id");
+						.append("i.content").append(bugTrackerType.getLastIssueUpdateFromPostgresqlJson()).append(" AS last_issue_update, ")
+						.append(" substring(t.description, 0, 101)  as short_desc,")
+						.append(" COUNT(*) OVER() AS total_results")
+						.append(" FROM support.tickets AS t")
+						.append(" INNER JOIN support.users AS u ON t.owner = u.id")
+						.append(" LEFT JOIN support.bug_tracker_issues AS i ON t.id=i.ticket_id");
+		joinIdsOrdered(sortBy, orderedIds, query, values);
 
 		boolean oneApplicant = false;
 		String applicant;
@@ -216,43 +242,39 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 			oneApplicant = true;
 		}
 
-		JsonArray values = new JsonArray();
 		Function adminLocal = user.getFunctions().get(DefaultFunctions.ADMIN_LOCAL);
 		if (adminLocal != null) {
 			List<String> scopesList = adminLocal.getScope();
-			if(scopesList != null && !scopesList.isEmpty()) {
-				query.append(" WHERE ((t.school_id IN (");
-				for (String scope : scopesList) {
-					query.append("?,");
-					values.add(scope);
+			if (scopesList != null && !scopesList.isEmpty()) {
+				query.append(" AND t.school_id IN ");
+				if (school_id.equals("*")) {
+					query.append(Sql.listPrepared(scopesList));
+					values.addAll(new JsonArray(scopesList));
+				} else if (scopesList.contains(school_id)) {
+					List<String> listIdStructure = structureChildren.getJsonArray(JiraTicket.STRUCTUREIDS).stream()
+									.filter(String.class::isInstance)
+									.map(Object::toString)
+									.collect(Collectors.toList());
+					query.append(Sql.listPrepared(listIdStructure));
+					values.addAll(new JsonArray(listIdStructure));
 				}
-				query.deleteCharAt(query.length() - 1);
-				query.append(")");
 
 				if (oneApplicant) {
-					query.append(" AND t.owner").append(applicantIsMe?"=":"!=").append("?");
+					query.append(" AND t.owner").append(applicantIsMe ? "=" : "!=").append("?");
 					values.add(user.getUserId());
 				}
-				query.append(")");
-
-				// Include tickets created by current user, and linked to a school where he is not local administrator
-				if (!oneApplicant || applicantIsMe) {
-					query.append(" OR t.owner = ?");
-					values.add(user.getUserId());
-				}
-				query.append(")");
 			}
-		}
-		else {
-            query.append(" WHERE t.school_id IN ").append(Sql.listPrepared(user.getStructures())).append(" ");
-            values.addAll(new JsonArray(user.getStructures()));
+		} else if (school_id.equals("*")) {
+			query.append(" AND t.school_id IN ").append(Sql.listPrepared(user.getStructures()));
+			values.addAll(new JsonArray(user.getStructures()));
 			if (oneApplicant) {
-				query.append(" AND t.owner").append(applicantIsMe?"=":"!=").append("?");
+				query.append(" AND t.owner").append(applicantIsMe ? "=" : "!=").append("?");
 				values.add(user.getUserId());
 			}
-        }
+		}
 
-		if (statuses.size() > 0 && statuses.size() < 4) {
+
+		if (statuses.size() > 0) {
 			query.append(" AND (t.status IN (");
 			for (String status : statuses) {
 				query.append("?,");
@@ -263,21 +285,22 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 		}
 
 		if (!school_id.equals("*")) {
-			query.append(" AND t.school_id = ?");
-			values.add(school_id);
+			query.append(" AND t.school_id IN ");
+			List<String> listIdStructure = structureChildren.getJsonArray(JiraTicket.STRUCTUREIDS).stream()
+							.filter(String.class::isInstance)
+							.map(Object::toString)
+							.collect(Collectors.toList());
+			query.append(Sql.listPrepared(listIdStructure));
+			values.addAll(new JsonArray(listIdStructure));
 		}
 
+		orderByIds(sortBy, query);
 
-		if(ALLOWED_SORT_BY_COLUMN.contains(sortBy)){
-			query.append(" ORDER BY t.");
-			query.append(sortBy);
-		}
-
-		if(order != null && (order.equals("ASC") || order.equals("DESC"))){
+		if (order != null && (order.equals("ASC") || order.equals("DESC"))) {
 			query.append(" " + order);
-		}else {
+		} else {
 			String message = String.format("[Support@%s::listTickets] this order is not valid"
-					, this.getClass().getSimpleName());
+							, this.getClass().getSimpleName());
 			LOGGER.error(String.format(message));
 		}
 
@@ -286,7 +309,30 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 			values.add(nbTicketsPerPage);
 		}
 
-		sql.prepared(query.toString(), values, validResultHandler(handler));
+		sql.prepared(query.toString().replaceFirst("AND", "WHERE"), values, validResultHandler(PromiseHelper.handler(promise)));
+		return promise.future();
+	}
+
+	private void joinIdsOrdered(String sortBy, JsonArray orderedIds, StringBuilder query, JsonArray params) {
+		if (ALLOWED_SORT_BY_COLUMN.contains(sortBy))
+			switch (sortBy) {
+				case JiraTicket.SCHOOL_ID:
+					query.append(" JOIN unnest " + Sql.arrayPrepared(orderedIds) + " WITH ORDINALITY arr(id,ord) ON t.school_id = arr.id ");
+					params.addAll(orderedIds);
+					break;
+				case JiraTicket.PROFILE:
+					query.append(" JOIN unnest " + Sql.arrayPrepared(orderedIds) + " WITH ORDINALITY arr(id,ord) ON t.owner = arr.id ");
+					params.addAll(orderedIds);
+					break;
+			}
+	}
+
+	private void orderByIds(String sortBy, StringBuilder query) {
+		if (ALLOWED_SORT_BY_COLUMN.contains(sortBy)) {
+			if (Objects.equals(sortBy, JiraTicket.SCHOOL_ID) || Objects.equals(sortBy, JiraTicket.PROFILE))
+				query.append(" ORDER BY arr.ord ");
+			else query.append(String.format(" ORDER BY t.%s", sortBy));
+		}
 	}
 
 	@Override
@@ -340,7 +386,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 				.append(" WHERE t.owner = ?");
 		JsonArray values = new JsonArray().add(user.getUserId());
 
-		if (statuses.size() > 0 && statuses.size() < 4) {
+		if (statuses.size() > 0) {
 			query.append(" AND t.status IN (");
 			for (String status : statuses) {
 				query.append("?,");
@@ -405,7 +451,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 	/**
 	 * If escalation status is "not_done" or "failed", and ticket status is new or opened,
 	 * update escalation status to "in_progress" and return the ticket with its attachments' ids and its comments.
-	 *
+	 * <p>
 	 * Else (escalation is not allowed) return null.
 	 */
 	@Override
@@ -438,6 +484,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 	/**
 	 * When no rows are selected, json_agg returns a JSON array whose objects' fields have null values.
 	 * We use CASE to return an empty array instead.
+	 *
 	 * @return query to select ticket, attachments' ids and comments
 	 */
 	private String escalateTicketInfoQuery( String fromTable, String whereClause )  {
@@ -461,8 +508,9 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 
 	/**
 	 * Get ticket in format usable in escalation service
+	 *
 	 * @param ticketId Id of the ticket to get
-	 * @param handler Handler that will process the response
+	 * @param handler  Handler that will process the response
 	 */
 	public void getTicketForEscalationService( String ticketId, Handler<Either<String, Ticket>> handler) {
 		StringBuilder query = new StringBuilder();
@@ -582,7 +630,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 	}
 
 	/**
-	 * 	@inheritDoc
+	 * @inheritDoc
 	 */
 	@Override
 	public void endSuccessfulEscalation(String ticketId, Issue issue, Number issueId,
@@ -708,7 +756,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 	}
 
 	/**
-	 * 	@inheritDoc
+	 * @inheritDoc
 	 */
 	@Override
 	public void listExistingIssues(Number[] issueIds, Handler<Either<String, List<Issue>>> handler) {
@@ -918,6 +966,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 
     /**
      * Increase the event_count field of ticket table. It means an update has been done.
+     *
      * @param ticketId
      * @param handler
      */
@@ -944,8 +993,9 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 
     /**
      * Updating mass modification of tickets status
+     *
      * @param newStatus : new status of tickets
-     * @param idList : list of the ids that will be modified
+     * @param idList    : list of the ids that will be modified
      * @param handler
      */
     public void updateTicketStatus(Integer newStatus, List<Integer> idList, Handler<Either<String, JsonObject>> handler) {
@@ -967,20 +1017,26 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
         sql.prepared(query.toString(), values, validUniqueResultHandler(handler));
     }
 
+
     /**
+     * Aim to convert listEvents in Future behaviour
      *
      * @param ticketId : ticket id from which we want to list the history
      */
-    public void listEvents(String ticketId, Handler<Either<String, JsonArray>> handler) {
-        String query = "SELECT username, event, status, event_date, user_id, event_type FROM support.tickets_histo th " +
-                    " left outer join support.users u on u.id = th.user_id " +
-                    " WHERE ticket_id = ? ";
+    @Override
+    public Future<List<Event>> getlistEvents(String ticketId) {
+        Promise<List<Event>> promise = Promise.promise();
+        String query = "SELECT username, event, th.status, event_date, user_id, event_type, t.school_id FROM support.tickets_histo th " +
+                " left outer join support.users u on u.id = th.user_id " +
+                " left outer join support.tickets t on th.ticket_id = t.id" +
+                " WHERE ticket_id = ? ";
         JsonArray values = new JsonArray().add(parseId(ticketId));
-        sql.prepared(query, values, validResultHandler(handler));
+        String errorMessage = String.format("[Support@%s::listEvent] Fail to list event", this.getClass().getSimpleName());
+        sql.prepared(query, values, SqlResult.validResultHandler(IModelHelper.sqlResultToIModel(promise, Event.class, errorMessage)));
+        return promise.future();
     }
 
     /**
-     *
      * @param issueId : bug tracker number from which we want the linked ticket
      * @param handler
      */
@@ -995,6 +1051,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 
     /**
      * Updates the ticket table, sets the issueUpdateDate field to the last update date managed
+     *
      * @param ticketId
      * @param updateDate
      */
@@ -1032,17 +1089,16 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
     }
 
     /**
-     *
-     * @param ticketId : id of the ticket historized
-     * @param event : description of the event
-     * @param status : status after the event
-     * @param userid : user that made de creation / modification
+     * @param ticketId  : id of the ticket historized
+     * @param event     : description of the event
+     * @param status    : status after the event
+     * @param userid    : user that made de creation / modification
      * @param eventType : 1 : new ticket /
-     *                    2 : ticket updated /
-     *                    3 : new comment /
-     *                    4 : ticket escalated to bug-tracker /
-     *                    5 : new comment from bug-tracker /
-     *                    6 : bug-tracker updated.
+     *                  2 : ticket updated /
+     *                  3 : new comment /
+     *                  4 : ticket escalated to bug-tracker /
+     *                  5 : new comment from bug-tracker /
+     *                  6 : bug-tracker updated.
      * @param handler
      */
     public void createTicketHisto(String ticketId, String event, int status, String userid, TicketHisto histoType, Handler<Either<String, Void>> handler) {
@@ -1123,5 +1179,130 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 
 		return promise.future();
 	}
+
+    /**
+     * @param idList : list of ticket ids I want to retrieve
+     * @return {@link Future} of {@link JsonArray}
+     **/
+    @Override
+    public Future<JsonArray> getTicketsFromListId(List<String> idList) {
+        Promise<JsonArray> promise = Promise.promise();
+        String query = "SELECT * FROM support.tickets" +
+                " WHERE id IN " + Sql.listPrepared(idList);
+        JsonArray values = new JsonArray(idList);
+        sql.prepared(query, values, validResultHandler(PromiseHelper.handler(promise)));
+        return promise.future();
+    }
+
+    /**
+     * @param user     : used to get user structures
+     * @param schoolId : id the structure you want to count
+     * @return {@link Future} of {@link JsonObject}
+     **/
+    @Override
+    public Future<JsonObject> countTickets(UserInfos user, JsonObject schoolId) {
+        Promise<JsonObject> promise = Promise.promise();
+
+        StringBuilder query = new StringBuilder();
+        query.append("SELECT COUNT(*) FROM support.tickets WHERE school_id IN ");
+        JsonArray values = new JsonArray();
+
+        JsonArray structureIds = schoolId.getJsonArray(JiraTicket.STRUCTUREIDS);
+
+        if (structureIds == null) {
+            query.append(Sql.listPrepared(user.getStructures()));
+            values.addAll(new JsonArray(user.getStructures()));
+        } else {
+            List<String> listIdStructure = structureIds.stream()
+                    .filter(String.class::isInstance)
+                    .map(Object::toString)
+                    .collect(Collectors.toList());
+            query.append(Sql.listPrepared(listIdStructure));
+            values.addAll(new JsonArray(listIdStructure));
+        }
+
+        sql.prepared(query.toString(), values, validUniqueResultHandler(PromiseHelper.handler(promise)));
+
+        return promise.future();
+    }
+
+    /**
+     * @param user : used to get user structures
+     * @return {@link Future} of {@link JsonArray}
+     **/
+    @Override
+    public Future<List<TicketModel>> getUserTickets(UserInfos user) {
+        Promise<List<TicketModel>> promise = Promise.promise();
+        JsonArray values = new JsonArray();
+        Function adminLocal = user.getFunctions().get(DefaultFunctions.ADMIN_LOCAL);
+        StringBuilder query = new StringBuilder();
+        query.append("SELECT * FROM support.tickets WHERE school_id IN ");
+        if (adminLocal != null) {
+            List<String> scopesList = adminLocal.getScope();
+            if (scopesList != null && !scopesList.isEmpty()) {
+                query.append(Sql.listPrepared(scopesList));
+                values.addAll(new JsonArray(scopesList));
+            }
+        } else {
+            query.append(Sql.listPrepared(user.getStructures()));
+            values.addAll(new JsonArray(user.getStructures()));
+        }
+        query.append(" ORDER BY tickets.id");
+        String errorMessage = String.format("[Support@%s::getUserTickets] Fail to get user tickets", this.getClass().getSimpleName());
+        sql.prepared(query.toString(), values, SqlResult.validResultHandler(IModelHelper.sqlResultToIModel(promise, TicketModel.class, errorMessage)));
+
+        return promise.future();
+    }
+
+    /**
+     * @param idList : list of structure ids I want to retrieve
+     * @return {@link Future} of {@link JsonArray}
+     **/
+    @Override
+    public Future<JsonArray> getTicketsFromStructureIds(JsonObject idList) {
+        Promise<JsonArray> promise = Promise.promise();
+        StringBuilder query = new StringBuilder();
+        List<String> listIdStructure = idList.getJsonArray(JiraTicket.STRUCTUREIDS)
+                .stream()
+                .filter(String.class::isInstance)
+                .map(Object::toString)
+                .collect(Collectors.toList());
+        if (listIdStructure != null && !listIdStructure.isEmpty()) {
+            query.append("SELECT * FROM support.tickets WHERE school_id IN " + Sql.listPrepared(listIdStructure)
+                    + " ORDER BY tickets.id");
+        }
+        JsonArray values = idList.getJsonArray(JiraTicket.STRUCTUREIDS);
+        sql.prepared(query.toString(), values, validResultHandler(PromiseHelper.handler(promise)));
+        return promise.future();
+    }
+
+    @Override
+    public Future<List<String>> listTicketsOwnerIds(List<String> structureIds) {
+        Promise<JsonArray> promiseRequest = Promise.promise();
+        Promise<List<String>> promise = Promise.promise();
+        StringBuilder query = new StringBuilder();
+        if (structureIds != null && !structureIds.isEmpty())
+            query.append("SELECT DISTINCT owner FROM support.tickets WHERE school_id IN ")
+                    .append(Sql.listPrepared(structureIds));
+
+        JsonArray params = structureIds != null ? new JsonArray(structureIds) : new JsonArray();
+
+        sql.prepared(query.toString(), params, validResultHandler(PromiseHelper.handler(promiseRequest,
+                "Fail to get owners from tickets")));
+
+        promiseRequest.future()
+                .onFailure(promise::fail)
+                .onSuccess(tickets ->
+                        promise.complete(
+                                tickets.stream()
+                                        .filter(JsonObject.class::isInstance)
+                                        .map(JsonObject.class::cast)
+                                        .map(ticket -> ticket.getString(JiraTicket.OWNER))
+                                        .collect(Collectors.toList())
+                        )
+                );
+
+        return promise.future();
+    }
 
 }

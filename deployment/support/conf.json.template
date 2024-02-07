@@ -1,5 +1,5 @@
     {
-      "name": "net.atos~support~1.15.14",
+      "name": "net.atos~support~1.18-SNAPSHOT",
       "config": {
         "main" : "net.atos.entng.support.Support",
         "port" : 8027,
@@ -30,12 +30,14 @@
         "escalation-httpclient-maxpoolsize" : 16,
         "escalation-httpclient-keepalive" : false,
         "escalation-httpclient-tryusecompression" : true,
+        "threshold-direct-export-tickets": "$supportThresholdDirectExportTickets",
         <% if (SupportBugTrackername != null && "PIVOT".equals(SupportBugTrackername)) { %>
          "user-iws-id" : "$SupportUserIwsId",
          "user-iws-name" : "$SupportUserIwsName",
          "status_iws":{
                "STATUS_NEW":"Ouvert",
                "STATUS_OPENED":"En cours",
+               "STATUS_WAITING":"En attente de réponse utilisateur",
                "STATUS_RESOLVED":"Résolu",
                "STATUS_CLOSED":"Fermé"
           },

@@ -86,6 +86,8 @@ public class EscalationServicePivotImpl implements EscalationService
 
     private static final int SUBJECT_LENGTH_IN_NOTIFICATION = 50;
 
+    private static final int MAX_SIZE_ATTACHMENT_JIRA = 10000000;
+
     private final UserInfos userIws;
 
     private final EscalationPivotHelper helper;
@@ -160,19 +162,27 @@ public class EscalationServicePivotImpl implements EscalationService
                 final String attachmentId = (String) o;
 
                 wksHelper.readDocument(attachmentId, file -> {
+                    final int attachmentSize = file.getDocument().getJsonObject(JiraTicket.METADATA).getInteger(JiraTicket.SIZE);
                     try {
-                        final String filename = file.getDocument().getString("name");
-                        final String encodedData = Base64.getMimeEncoder().encodeToString( file.getData().getBytes() );
+                        if (attachmentSize > 0 && attachmentSize < MAX_SIZE_ATTACHMENT_JIRA) {
+                            final String filename = file.getDocument().getString(JiraTicket.NAME);
+                            final String encodedData = Base64.getMimeEncoder().encodeToString( file.getData().getBytes() );
 
-                        JsonObject attachment = new JsonObject().put(ATTACHMENT_NAME_FIELD, filename)
-                                .put(ATTACHMENT_CONTENT_FIELD, encodedData);
-                        attachments.add(attachment);
+                            JsonObject attachment = new JsonObject().put(ATTACHMENT_NAME_FIELD, filename)
+                                    .put(ATTACHMENT_CONTENT_FIELD, encodedData);
+                            attachments.add(attachment);
 
-                        // Create issue only if all attachments have been retrieved successfully
-                        if (successfulDocs.incrementAndGet() == attachmentsIds.size()) {
-                            EscalationServicePivotImpl.this.getDataAndCreateIssue( ticket, attachments,
-                                    finalComments, issue, escalationUser, handler);
+                            // Create issue only if all attachments have been retrieved successfully
+                            if (successfulDocs.incrementAndGet() == attachmentsIds.size()) {
+                                EscalationServicePivotImpl.this.getDataAndCreateIssue( ticket, attachments,
+                                        finalComments, issue, escalationUser, handler);
+                            }
+                        } else {
+                            log.error(String.format("[Support@%s::doTicketEscalation] %s",
+                                    this.getClass().getSimpleName(), "Payload too large, metadata size : " + file.getDocument().getJsonObject(JiraTicket.METADATA, new JsonObject()).getInteger(JiraTicket.SIZE,0)));
+                            handler.handle(new Either.Left<>(JiraTicket.PAYLOADTOOLARGE));
                         }
+
                     } catch (Exception e) {
                         log.error("Error when processing response from readDocument", e);
                     }

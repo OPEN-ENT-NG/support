@@ -25,11 +25,14 @@ import java.util.concurrent.ConcurrentMap;
 import org.entcore.common.service.CrudService;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.utils.Id;
+
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.Future;
 
+import net.atos.entng.support.model.Event;
+import net.atos.entng.support.model.TicketModel;
 import fr.wseduc.webutils.Either;
 
 import net.atos.entng.support.Ticket;
@@ -43,7 +46,31 @@ public interface TicketServiceSql extends CrudService {
 
 	public void updateTicket(String id, JsonObject data, UserInfos user, Handler<Either<String, Ticket>> handler);
 
-	public void listTickets(UserInfos user, Integer page, List<String> statuses, List<String> applicants, String school_id, String sortBy, String order, Integer nbTicketsPerPage, Handler<Either<String, JsonArray>> handler);
+	/**
+	 * return list of tickets
+	 *
+	 *
+	 * @param user current user from which we want to get this list
+	 * @param page pagination
+	 * @param statuses statuses
+	 * @param applicants applicants
+	 * @param school_id structures to filter on
+	 * @param sortBy column on which we want to sort
+	 * @param order [ASC/DESC]
+	 * @param nbTicketsPerPage max number of ticket per page
+	 * @param orderedIds list of ids order when we want to order by another table (neo4j)
+	 * @param structureChildren structure children
+	 * @return {Future<JsonArray>} list of tickets
+	 */
+	Future<JsonArray> listTickets(UserInfos user, Integer page, List<String> statuses, List<String> applicants,
+																String school_id, String sortBy, String order, Integer nbTicketsPerPage,
+																JsonArray orderedIds, JsonObject structureChildren);
+	Future<JsonArray> listTickets(UserInfos user, Integer page, List<String> statuses, List<String> applicants,
+																String school_id, String sortBy, String order, Integer nbTicketsPerPage,
+																JsonObject structureChildren);
+	Future<JsonArray> listTickets(UserInfos user, Integer page, List<String> statuses, List<String> applicants,
+																String school_id, String sortBy, String order, Integer nbTicketsPerPage,
+																JsonArray orderedStructures);
 
 	public void listMyTickets(UserInfos user, Integer page, List<String> statuses, String school_id, String sortBy, String order, Integer nbTicketsPerPage, Handler<Either<String, JsonArray>> handler);
 
@@ -62,8 +89,9 @@ public interface TicketServiceSql extends CrudService {
 
     /**
      * Get ticket in format usable in escalation service
+     *
      * @param ticketId Id of the ticket to get
-     * @param handler Handler that will process the response
+     * @param handler  Handler that will process the response
      */
 	public void getTicketForEscalationService( String ticketId, Handler<Either<String, Ticket>> handler);
 
@@ -108,7 +136,36 @@ public interface TicketServiceSql extends CrudService {
 
     public void updateTicketIssueUpdateDateAndStatus(Long ticketId, String updateDate, Long status, Handler<Either<String, Void>> handler);
 
-    public void listEvents(String ticketId, Handler<Either<String, JsonArray>> handler);
+    Future<JsonArray> getTicketsFromListId(List<String> idList);
+
+    Future<List<Event>> getlistEvents(String ticketId);
+
+    /**
+     * @param user     : used to get user structures
+     * @param schoolId : id the structure you want to count the tickets
+     * @return {Future<JsonObject>} number of ticket of the structure
+     **/
+    Future<JsonObject> countTickets(UserInfos user, JsonObject schoolId);
+
+    /**
+     * @param user : user from which you want to retrieve tickets
+     * @return {Future<List<TicketModel>>} tickets of the user's structures
+     **/
+    Future<List<TicketModel>> getUserTickets(UserInfos user);
+
+    /**
+     * @param idList : list of structure ids from which you want to retrieve tickets
+     * @return {Future<JsonObject>} tickets of structures
+     **/
+    Future<JsonArray> getTicketsFromStructureIds(JsonObject idList);
+
+    /**
+     * get list of ticket owner ids in structures
+     *
+     * @param structureIds list of structure ids to filter on
+     * @return {Future<List<String>>} list of ticket owner ids
+     */
+    Future<List<String>> listTicketsOwnerIds(List<String> structureIds);
 
 	public Future<Long> getLastSynchroEpoch();
 	public Future<Void> setLastSynchroEpoch(Long epoch);

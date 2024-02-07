@@ -1,10 +1,19 @@
 import {ng, routes} from 'entcore';
 import {SupportController} from "./controllers/controller";
-import {AttachmentService} from "./services/attachment.service";
+import * as directives from "./directives";
+import * as services from "./services";
 
 
 ng.controllers.push(SupportController);
-ng.services.push(AttachmentService);
+
+
+for (let service in services) {
+    ng.services.push(services[service]);
+}
+
+for (let directive in directives) {
+    ng.directives.push(directives[directive]);
+}
 
 /**
  * Support routes declaration

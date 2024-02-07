@@ -20,6 +20,10 @@
 package net.atos.entng.support.services.impl;
 
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.Promise;
+import net.atos.entng.support.constants.JiraTicket;
+import net.atos.entng.support.helpers.PromiseHelper;
 import net.atos.entng.support.services.UserService;
 
 import io.vertx.core.Handler;
@@ -27,13 +31,19 @@ import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.entcore.common.neo4j.Neo4j;
+import org.entcore.common.neo4j.Neo4jResult;
+
+import java.util.List;
 
 public class UserServiceDirectoryImpl implements UserService {
 
 	private final EventBus eb;
+	private final Neo4j neo4j;
 	private static final String DIRECTORY_ADDRESS = "directory";
 
-	public UserServiceDirectoryImpl(EventBus eb) {
+	public UserServiceDirectoryImpl(EventBus eb, Neo4j neo4j) {
+		this.neo4j = neo4j;
 		this.eb = eb;
 	}
 
@@ -51,6 +61,21 @@ public class UserServiceDirectoryImpl implements UserService {
 		});
 	}
 
+	@Override
+	public Future<JsonArray> getUserIdsProfileOrdered(List<String> ownerIds) {
+		Promise<JsonArray> promise = Promise.promise();
 
+		String query = " MATCH (u:User)-[:IN]->(pg:ProfileGroup)-[:HAS_PROFILE]->(profile:Profile) " +
+				" WHERE u.id IN {ownerIds} " +
+				" WITH profile, u " +
+				" ORDER BY profile.name " +
+				" RETURN distinct u.id as id ";
+		JsonObject params = new JsonObject().put(JiraTicket.OWNERIDS, ownerIds);
+		neo4j.execute(query, params, Neo4jResult.validResultHandler(PromiseHelper.handler(promise,
+				String.format("[Minibadge@%s::getUsersRequest] Fail to create badge assigned",
+						this.getClass().getSimpleName()))));
+
+		return promise.future();
+	}
 
 }
