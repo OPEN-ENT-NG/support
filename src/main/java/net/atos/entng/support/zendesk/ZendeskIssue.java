@@ -88,7 +88,7 @@ public class ZendeskIssue extends Issue implements JSONAble
         @JSONRename("new")
         NEW(TicketStatus.OPENED), // Le ticket, bien que nouveau dans Zendesk, a commencé à être traité du point de vue de l'ENT, car il a été transmis
         open(TicketStatus.OPENED),
-        pending(TicketStatus.OPENED),
+        pending(TicketStatus.WAITING),
         hold(TicketStatus.OPENED),
         solved(TicketStatus.RESOLVED),
         closed(TicketStatus.CLOSED),
