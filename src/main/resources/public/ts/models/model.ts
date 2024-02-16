@@ -264,7 +264,7 @@ model.build = function() {
 	this.makeModels(models);
 
 	this.collection(models.Ticket, {
-		sync : function(page= 1, filters: any = [true,true,true,true,true], school = '*', sortBy= 'modified', order = true, callback) {
+		sync : function(page= 1, filters: any = [true,true,true,true,true,true], school = '*', sortBy= 'modified', order = true, callback) {
 			const queryParams = '?page=' + page
 				+ (filters[1]?'&status=1':'')
 				+ (filters[2]?'&status=2':'')
