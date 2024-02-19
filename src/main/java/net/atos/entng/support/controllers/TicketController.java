@@ -63,6 +63,7 @@ import org.entcore.common.storage.Storage;
 import org.entcore.common.user.DefaultFunctions;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
+import org.entcore.common.utils.Id;
 import org.vertx.java.core.http.RouteMatcher;
 
 import java.util.*;
@@ -855,14 +856,15 @@ public class TicketController extends ControllerHelper {
         });
     }
 
-    @Get("/gridfs/:id")
+    @Get("/gridfs/:id/:attachmentId")
     @ApiDoc("Get bug tracker attachment saved in gridfs")
-    @SecuredAction(value = "support.manager", type = ActionType.RESOURCE)
-    @ResourceFilter(Admin.class)
+    @SecuredAction(value = "", type = ActionType.RESOURCE)
+    @ResourceFilter(OwnerOrLocalAdmin.class)
     public void getBugTrackerAttachment(final HttpServerRequest request) {
-        final String attachmentId = request.params().get("id");
+        final Id<Ticket, Integer> ticketId = new Id<Ticket, Integer>(Integer.parseInt(request.params().get("id")));
+        final String attachmentId = request.params().get("attachmentId");
 
-        ticketServiceSql.getIssueAttachmentName(attachmentId, event -> {
+        ticketServiceSql.getIssueAttachmentName(ticketId, attachmentId, event -> {
             if (event.isRight() && event.right().getValue() != null) {
                 String name = event.right().getValue().getString("name", null);
                 final String filename = (name != null && name.trim().length() > 0) ? name : "filename";

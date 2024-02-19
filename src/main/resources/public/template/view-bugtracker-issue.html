@@ -36,7 +36,7 @@
 			<li class="row" ng-repeat="attachment in ticket.issue.attachments">
 				<span ng-if="attachment.document_id != null || attachment.gridfs_id != null">
 					<a ng-if="attachment.document_id != null" href="/workspace/document/[[attachment.document_id]]">[[attachment.filename]]</a>
-					<a ng-if="attachment.gridfs_id != null" href="/support/gridfs/[[attachment.gridfs_id]]">[[attachment.filename]]</a>
+					<a ng-if="attachment.gridfs_id != null" href="/support/gridfs/[[ticket.id]]/[[attachment.gridfs_id]]">[[attachment.filename]]</a>
 					&nbsp;<em>[[attachment.author.name]] <i18n>support.on</i18n> [[formatDate(attachment.created_on)]]</em>
 				</span>
 			</li>

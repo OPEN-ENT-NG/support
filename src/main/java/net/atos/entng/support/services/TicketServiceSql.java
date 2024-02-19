@@ -126,7 +126,7 @@ public interface TicketServiceSql extends CrudService {
 
 	public void getIssue(String ticketId, Handler<Either<String, Issue>> handler);
 
-	public void getIssueAttachmentName(String gridfsId, Handler<Either<String, JsonObject>> handler);
+	public void getIssueAttachmentName(Id<Ticket, ?> ticketId, String gridfsId, Handler<Either<String, JsonObject>> handler);
 
 	public void insertIssueAttachment(Id<Issue, ? extends Number> issueId, Attachment attachment, Handler<Either<String, Void>> handler);
 

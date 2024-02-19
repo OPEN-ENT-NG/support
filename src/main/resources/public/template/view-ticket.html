@@ -74,7 +74,7 @@
             <div ng-repeat="attachment in ticket.issue.attachments">
                 <span class="row" ng-if="ticket.isAttachmentDuplicated(attachment) == false && (attachment.document_id != null || attachment.gridfs_id != null)">
                     <i class="attachment ng-scope"></i>&nbsp;<a ng-if="attachment.document_id != null" href="/workspace/document/[[attachment.document_id]]">[[attachment.filename]]</a>
-                    <a ng-if="attachment.gridfs_id != null" href="/support/gridfs/[[attachment.gridfs_id]]">[[attachment.filename]]</a>
+                    <a ng-if="attachment.gridfs_id != null" href="/support/gridfs/[[ticket.id]]/[[attachment.gridfs_id]]">[[attachment.filename]]</a>
                     &nbsp;<em>[[attachment.author.name]] <i18n>support.on</i18n> [[formatDate(attachment.created_on)]]</em>
                 </span>
             </div>
@@ -124,5 +124,3 @@
 
 <!-- lightbox to open confirmation for deleting attachment -->
 <div ng-include="'/support/public/template/attachment-delete-picture-lightbox.html'"></div>
-
-
