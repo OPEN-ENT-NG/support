@@ -873,9 +873,11 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 	}
 
 	@Override
-	public void getIssueAttachmentName(String gridfsId, Handler<Either<String, JsonObject>> handler) {
-		String query = "SELECT name FROM support.bug_tracker_attachments WHERE gridfs_id = ?";
-		JsonArray values = new JsonArray().add(gridfsId);
+	public void getIssueAttachmentName(Id<Ticket, ?> ticketId, String gridfsId, Handler<Either<String, JsonObject>> handler) {
+		String query = "SELECT a.name FROM support.bug_tracker_attachments a " +
+										"RIGHT JOIN support.bug_tracker_issues i ON (i.bugtracker = a.bugtracker AND i.id = a.issue_id) " +
+										"WHERE a.gridfs_id = ? AND i.ticket_id = ?";
+		JsonArray values = new JsonArray().add(gridfsId).add(ticketId.get());
 		sql.prepared(query, values, validUniqueResultHandler(handler));
 	};
 
