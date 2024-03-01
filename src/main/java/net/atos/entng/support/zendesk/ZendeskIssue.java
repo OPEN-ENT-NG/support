@@ -121,6 +121,8 @@ public class ZendeskIssue extends Issue implements JSONAble
                     return ZendeskStatus.solved;
                 case CLOSED:
                     return ZendeskStatus.solved;
+                case WAITING:
+                    return ZendeskStatus.open; // On force la réouverture du ticket Zendesk même si l'utilisateur a oublié de changer le statut dans l'ENT
                 default:
                     return null;
             }
