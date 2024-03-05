@@ -973,37 +973,20 @@ public class EscalationServiceZendeskImpl implements EscalationService {
 								else
 								{
 									ZendeskStatus oldStatus = ZendeskStatus.fromString(updateStatus.right().getValue());
-									ZendeskStatus newStatus = issue.status;
-									Long tId = new Long(issue.getTicketId().get());
-									Long tStatus = new Long(newStatus.correspondingStatus.status());
-
-									// Update the status
-									ticketServiceSql.updateTicketIssueUpdateDateAndStatus(tId, issue.updated_at, tStatus, new Handler<Either<String, Void>>()
+									// Process the new comment & notify users
+									updateTicketHisto(issue, oldStatus, lastUpdate).onFailure(new Handler<Throwable>()
 									{
 										@Override
-										public void handle(Either<String, Void> res)
+										public void handle(Throwable t)
 										{
-											if(res.isLeft())
-												promise.fail(res.left().getValue());
-											else
-											{
-												// Process the new comment & notify users
-												updateTicketHisto(issue, oldStatus, lastUpdate).onFailure(new Handler<Throwable>()
-												{
-													@Override
-													public void handle(Throwable t)
-													{
-														promise.fail(t);
-													}
-												}).onSuccess(new Handler<Void>()
-												{
-													@Override
-													public void handle(Void v)
-													{
-														promise.complete(null);
-													}
-												});
-											}
+											promise.fail(t);
+										}
+									}).onSuccess(new Handler<Void>()
+									{
+										@Override
+										public void handle(Void v)
+										{
+											promise.complete(null);
 										}
 									});
 								}
@@ -1153,61 +1136,76 @@ public class EscalationServiceZendeskImpl implements EscalationService {
 						promise.fail("[Support] Error : cannot get ticketId or schoolId. Unable to send timeline notification.");
 					else
 					{
-						LinkedList<ZendeskComment> newComments = new LinkedList<ZendeskComment>();
-						boolean newAttachments = false;
-						for(ZendeskComment comment : issue.comments)
+						Long tId = new Long(ticket.id.get());
+						Long tStatus = new Long(issue.status.correspondingStatus.status());
+						// Update the status
+						ticketServiceSql.updateTicketIssueUpdateDateAndStatus(tId, issue.updated_at, tStatus, new Handler<Either<String, Void>>()
 						{
-							long postDate = parseDateToEpoch(comment.created);
-							ZendeskVia via = comment.via; // Comments with an api via have been sent by the ENT (e.g. the first comment on each issue)
-							if((postDate > lastUpdate || postDate == 0) && (via == null || via.isFromAPI() == false))
+							@Override
+							public void handle(Either<String, Void> res)
 							{
-								newComments.add(comment);
-								if(comment.attachments != null && comment.attachments.size() > 0)
-									newAttachments = true;
-							}
-						}
-
-						String additionnalInfoHisto = "";
-						if(oldStatus.equals(issue.status) == false)
-							additionnalInfoHisto += I18n.getInstance().translate("support.ticket.histo.bug.tracker.attr", I18n.DEFAULT_DOMAIN, ticket.locale);
-						if(newComments.size() > 0)
-							additionnalInfoHisto += I18n.getInstance().translate("support.ticket.histo.bug.tracker.notes", I18n.DEFAULT_DOMAIN, ticket.locale);
-						if(newAttachments == true)
-							additionnalInfoHisto += I18n.getInstance().translate("support.ticket.histo.bug.tracker.attachment", I18n.DEFAULT_DOMAIN, ticket.locale);
-
-						if("".equals(additionnalInfoHisto))
-							promise.complete(null);// Nothing interesting happened
-						else
-						{
-							String update = I18n.getInstance().translate("support.ticket.histo.bug.tracker.updated", I18n.DEFAULT_DOMAIN, ticket.locale);
-							String updateEvent = update + additionnalInfoHisto;
-							String tId = ticket.id.get().toString();
-							ZendeskStatus newStatus = issue.status;
-							int ticketStatus = newStatus.correspondingStatus.status();
-							ticketServiceSql.createTicketHisto(tId, updateEvent, ticketStatus, null, TicketHisto.REMOTE_UPDATED, new Handler<Either<String, Void>>()
-							{
-								@Override
-								public void handle(Either<String, Void> commentRes)
+								if(res.isLeft())
+									promise.fail(res.left().getValue());
+								else
 								{
-									if(commentRes.isLeft())
-										promise.fail(commentRes.left().getValue());
+									LinkedList<ZendeskComment> newComments = new LinkedList<ZendeskComment>();
+									boolean newAttachments = false;
+									for(ZendeskComment comment : issue.comments)
+									{
+										long postDate = parseDateToEpoch(comment.created);
+										ZendeskVia via = comment.via; // Comments with an api via have been sent by the ENT (e.g. the first comment on each issue)
+										if((postDate > lastUpdate || postDate == 0) && (via == null || via.isFromAPI() == false))
+										{
+											newComments.add(comment);
+											if(comment.attachments != null && comment.attachments.size() > 0)
+												newAttachments = true;
+										}
+									}
+
+									String additionnalInfoHisto = "";
+									if(oldStatus.equals(issue.status) == false)
+										additionnalInfoHisto += I18n.getInstance().translate("support.ticket.histo.bug.tracker.attr", I18n.DEFAULT_DOMAIN, ticket.locale);
+									if(newComments.size() > 0)
+										additionnalInfoHisto += I18n.getInstance().translate("support.ticket.histo.bug.tracker.notes", I18n.DEFAULT_DOMAIN, ticket.locale);
+									if(newAttachments == true)
+										additionnalInfoHisto += I18n.getInstance().translate("support.ticket.histo.bug.tracker.attachment", I18n.DEFAULT_DOMAIN, ticket.locale);
+
+									if("".equals(additionnalInfoHisto))
+										promise.complete(null);// Nothing interesting happened
 									else
 									{
-										notifyIssueChanged(issue, oldStatus, ticket);
-										addAllCommentsToTicket(newComments, ticket, newStatus, promise);
-
-										ticketServiceSql.updateEventCount(tId, new Handler<Either<String, Void>>()
+										String update = I18n.getInstance().translate("support.ticket.histo.bug.tracker.updated", I18n.DEFAULT_DOMAIN, ticket.locale);
+										String updateEvent = update + additionnalInfoHisto;
+										String tId = ticket.id.get().toString();
+										ZendeskStatus newStatus = issue.status;
+										int ticketStatus = newStatus.correspondingStatus.status();
+										ticketServiceSql.createTicketHisto(tId, updateEvent, ticketStatus, null, TicketHisto.REMOTE_UPDATED, new Handler<Either<String, Void>>()
 										{
 											@Override
-											public void handle(Either<String, Void> countRes)
+											public void handle(Either<String, Void> commentRes)
 											{
-												// Nothing to do
+												if(commentRes.isLeft())
+													promise.fail(commentRes.left().getValue());
+												else
+												{
+													notifyIssueChanged(issue, oldStatus, ticket);
+													addAllCommentsToTicket(newComments, ticket, newStatus, promise);
+
+													ticketServiceSql.updateEventCount(tId, new Handler<Either<String, Void>>()
+													{
+														@Override
+														public void handle(Either<String, Void> countRes)
+														{
+															// Nothing to do
+														}
+													});
+												}
 											}
 										});
 									}
 								}
-							});
-						}
+							}
+						});
 					}
 				}
 			}
