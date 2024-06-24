@@ -929,7 +929,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 			StringBuilder attachmentsQuery = new StringBuilder();
 			attachmentsQuery.append("SELECT ");
 
-			JsonArray attachmentsValues = new fr.wseduc.webutils.collections.JsonArray();
+			JsonArray attachmentsValues = new JsonArray();
 
 			for (Attachment attachment : attachments)
 			{
@@ -1107,7 +1107,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
         String query = "INSERT INTO support.tickets_histo( ticket_id, event, status, user_id, event_type) "
                 + " values( ?, ?, ?, ?, ? )";
 
-        JsonArray values = new fr.wseduc.webutils.collections.JsonArray()
+        JsonArray values = new JsonArray()
                 .add(parseId(ticketId))
                 .add(event)
                 .add(status)
