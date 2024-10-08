@@ -632,13 +632,23 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 
     @Override
     public void endInProgressEscalationAsync(String ticketId, UserInfos user, JsonObject issueJira, Handler<Either<String, JsonObject>> handler) {
-        JsonObject issue = new JsonObject()
-                .put(Ticket.ISSUE, new JsonObject()
-                        .put(Ticket.ID, issueJira.getString(Ticket.ID_JIRA_FIELD))
-                        .put(Ticket.STATUS, issueJira.getString(Ticket.STATUS_JIRA_FIELD))
-                        .put(Ticket.DATE, DateHelper.convertDateFormat())
-                        .put(Ticket.ID_ENT, ticketId));
+        JsonObject issue = new JsonObject();
 
+        if(issueJira != null && !issueJira.isEmpty() && issueJira.containsKey("id_iws")) {
+            issueJira.put(Ticket.ID, issueJira.getString("id_iws"));
+            issue = new JsonObject()
+                    .put(Ticket.ISSUE, issueJira);
+
+        } else {
+            issue = new JsonObject()
+                    .put(Ticket.ISSUE, new JsonObject()
+                            .put(Ticket.ID, issueJira.getString(Ticket.ID_JIRA_FIELD))
+                            .put(Ticket.STATUS, issueJira.getString(Ticket.STATUS_JIRA_FIELD))
+                            .put(Ticket.DATE, DateHelper.convertDateFormat())
+                            .put(Ticket.ID_ENT, ticketId));
+
+        }
+        
         Number issueId = 0;
         try {
             // use ticket id as issue id in database

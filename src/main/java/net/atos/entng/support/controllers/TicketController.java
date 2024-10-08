@@ -816,7 +816,7 @@ public class TicketController extends ControllerHelper {
                     // Bug tracker is async, can't get information of tracker issue
                     // Send dummy info to front
                     log.info("Bug tracker issue not fetched in asynchronous mode");
-                    ticketServiceSql.endInProgressEscalationAsync(ticketId, user, issue, event -> {
+                    ticketServiceSql.endInProgressEscalationAsync(ticketId, user, issue.getJsonObject("issue"), event -> {
                         if (event.isLeft()) {
                             log.error("Error when trying to update escalation status to in_progress");
                         }
