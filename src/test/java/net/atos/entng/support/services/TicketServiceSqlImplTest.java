@@ -1,5 +1,6 @@
 package net.atos.entng.support.services;
 
+import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
@@ -59,7 +60,7 @@ public class TicketServiceSqlImplTest {
             ctx.assertEquals(expectedParams, values.toString());
             async.complete();
             return null;
-        }).when(sql).prepared(Mockito.anyString(), Mockito.any(), Mockito.any());
+        }).when(sql).prepared(Mockito.anyString(), Mockito.any(JsonArray.class), Mockito.any(Handler.class));
 
         this.service.getlistEvents("1");
         async.awaitSuccess(10000);
@@ -93,7 +94,7 @@ public class TicketServiceSqlImplTest {
             ctx.assertEquals(expectedParams, values);
             async.complete();
             return null;
-        }).when(sql).prepared(Mockito.anyString(), Mockito.any(), Mockito.any());
+        }).when(sql).prepared(Mockito.anyString(), Mockito.any(JsonArray.class), Mockito.any(Handler.class));
 
         this.service.getUserTickets(userInfos);
         async.awaitSuccess(10000);
