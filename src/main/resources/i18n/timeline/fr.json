@@ -27,5 +27,7 @@
     "support.timeline.is.now.available.in.your.workspace": "est désormais disponible dans votre espace documentaire",
     "support.push.notif.title.error": "Erreur lors de l'exportation des demandes d'assistance ENT",
     "support.timeline.export.error": "Une erreur est intervenue lors de la création du document d'export des demandes Assistance ENT.",
-    "support.timeline.export.verify": "Vérifiez l'espace disponible ou réessayez."
+    "support.timeline.export.verify": "Vérifiez l'espace disponible ou réessayez.",
+    "support.export-events": "Export des demandes terminé",
+    "support.export-events-error": "Export des demandes en erreur"
 }
