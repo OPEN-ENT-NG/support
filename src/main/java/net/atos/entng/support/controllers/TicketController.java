@@ -631,7 +631,7 @@ public class TicketController extends ControllerHelper {
                         ticket.put(JiraTicket.ID, message.body().getJsonObject(JiraTicket.ISSUE, new JsonObject()).getString(JiraTicket.ID_JIRA));
                     }
                     String ticketId = ticket.getValue(JiraTicket.ID).toString();
-                    Ticket notifyTicket = new Ticket(ticket.getInteger(JiraTicket.ID));
+                    Ticket notifyTicket = new Ticket(ticket.getInteger(JiraTicket.ID_ENT));
                     notifyTicket.subject = ticket.getString("subject");
                     notifyTicket.ownerId = ticket.getString("owner");
                     notifyTicket.schoolId = ticket.getString("school_id");
@@ -818,7 +818,7 @@ public class TicketController extends ControllerHelper {
                     // Bug tracker is async, can't get information of tracker issue
                     // Send dummy info to front
                     log.info("Bug tracker issue not fetched in asynchronous mode");
-                    ticketServiceSql.endInProgressEscalationAsync(ticketId, user, issue.getContent(), event -> {
+                    ticketServiceSql.endInProgressEscalationAsync(ticketId, user, issue.getContent().getJsonObject("issue"), event -> {
                         if (event.isLeft()) {
                             log.error("Error when trying to update escalation status to in_progress");
                         }
@@ -828,9 +828,7 @@ public class TicketController extends ControllerHelper {
                             "support.ticket.escalation.successful",
                             getHost(request), I18n.acceptLanguage(request));
                     if (doResponse) {
-                        renderJson(request, new JsonObject().put("issue",
-                                new JsonObject().put(JiraTicket.ID, issue.id)
-                                        .put(JiraTicket.STATUS, new JsonObject().put(JiraTicket.NAME, EscalationStatus.SUCCESSFUL))));
+                        renderJson(request, issue.getContent());
                     }
                 }
             }
