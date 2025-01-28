@@ -558,8 +558,15 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 
 					JsonArray attachments = new JsonArray(sqlTicket.getString("attachments", "[]"));
 					JsonArray attachmentsNames = new JsonArray(sqlTicket.getString("attachmentsNames", sqlTicket.getString("attachmentsnames", "[]")));
-					for(int i = 0; i < attachments.size(); ++i)
-						ticket.attachments.add(new WorkspaceAttachment(null, attachmentsNames.getString(i), attachments.getString(i)));
+					
+					for(int i = 0; i < attachments.size(); ++i) {
+						// check if attachementsNames size and attachmentsNames.getString(i) exits and is not empty
+						if(attachmentsNames.size() > i && attachmentsNames.getString(i) != null && !attachmentsNames.getString(i).isEmpty()) {
+							ticket.attachments.add(new WorkspaceAttachment(null, attachmentsNames.getString(i), attachments.getString(i)));
+						} else {
+							ticket.attachments.add(new WorkspaceAttachment(null, ("Attachement_" + attachments.getString(i)), attachments.getString(i)));
+						}
+					}
 
 					if(additionalAttachments != null)
 						for(int i = 0; i < additionalAttachments.size(); ++i)
