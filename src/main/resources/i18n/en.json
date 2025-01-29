@@ -103,5 +103,6 @@
     "exercizer": "Exercices",
     "archive": "Mes données",
     "apizimbra": "Messagerie",
+    "wiki": "Lecture and Wiki",
     "support.toast.export.worker": "Le fichier demandé est trop lourd pour être téléchargé directement dans le navigateur. Il est en cours de création dans l'espace documentaire. Vous recevrez une notification dans le fil d'actualité lorsqu'il sera disponible."
 }
