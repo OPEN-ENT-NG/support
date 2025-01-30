@@ -558,8 +558,15 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 
 					JsonArray attachments = new JsonArray(sqlTicket.getString("attachments", "[]"));
 					JsonArray attachmentsNames = new JsonArray(sqlTicket.getString("attachmentsNames", sqlTicket.getString("attachmentsnames", "[]")));
-					for(int i = 0; i < attachments.size(); ++i)
-						ticket.attachments.add(new WorkspaceAttachment(null, attachmentsNames.getString(i), attachments.getString(i)));
+					
+					for(int i = 0; i < attachments.size(); ++i) {
+						// check if attachementsNames size and attachmentsNames.getString(i) exits and is not empty
+						if(attachmentsNames.size() > i && attachmentsNames.getString(i) != null && !attachmentsNames.getString(i).isEmpty()) {
+							ticket.attachments.add(new WorkspaceAttachment(null, attachmentsNames.getString(i), attachments.getString(i)));
+						} else {
+							ticket.attachments.add(new WorkspaceAttachment(null, ("Attachement_" + attachments.getString(i)), attachments.getString(i)));
+						}
+					}
 
 					if(additionalAttachments != null)
 						for(int i = 0; i < additionalAttachments.size(); ++i)
@@ -666,12 +673,22 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 
     @Override
     public void endInProgressEscalationAsync(String ticketId, UserInfos user, JsonObject issueJira, Handler<Either<String, JsonObject>> handler) {
-		JsonObject issue = new JsonObject()
-				.put(JiraTicket.ISSUE, new JsonObject()
-						.put(JiraTicket.ID, issueJira.getString(JiraTicket.ID_JIRA_FIELD))
-						.put(JiraTicket.STATUS, issueJira.getString(JiraTicket.STATUS_JIRA_FIELD))
-						.put(JiraTicket.DATE, DateHelper.convertDateFormat())
-						.put(JiraTicket.ID_ENT, ticketId));
+
+		JsonObject issue = new JsonObject();
+
+		if(issueJira != null && !issueJira.isEmpty() && issueJira.containsKey("id_iws")) {
+            issueJira.put(JiraTicket.ID, issueJira.getString("id_iws"));
+            issue = new JsonObject()
+                    .put(JiraTicket.ISSUE, issueJira);
+
+        } else {
+            issue = new JsonObject()
+                    .put(JiraTicket.ISSUE, new JsonObject()
+                            .put(JiraTicket.ID, issueJira.getString(JiraTicket.ID_JIRA_FIELD))
+                            .put(JiraTicket.STATUS, issueJira.getString(JiraTicket.STATUS_JIRA_FIELD))
+                            .put(JiraTicket.DATE, DateHelper.convertDateFormat())
+                            .put(JiraTicket.ID_ENT, ticketId));
+        }
 
 		Number issueId = 0;
 		try {

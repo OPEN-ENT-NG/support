@@ -74,6 +74,7 @@ public class EscalationServicePivotImpl implements EscalationService
     private final static String ATTACHMENT_FIELD = "pj";
     private final static String ATTACHMENT_NAME_FIELD = "nom";
     private final static String ATTACHMENT_CONTENT_FIELD = "contenu";
+    private final static String ATTACHMENT_CONTENT_TYPE_FIELD = "contentType";
     private final String STATUSIWS_FIELD;
     private final static String STATUSENT_FIELD = "statut_ent";
     private final static String STATUSJIRA_FIELD = "statut_jira";
@@ -135,7 +136,7 @@ public class EscalationServicePivotImpl implements EscalationService
                                final Handler<Either<String, Issue>> handler) {
 
         JsonObject ticketJson = ticket.toJsonObject();
-        doTicketEscalation(ticketJson, ticketJson.getJsonArray("comments"), ticketJson.getJsonArray("attachments"), issue.toJsonObject(), user, handler);
+        doTicketEscalation(ticketJson, ticketJson.getJsonArray("comments"), ticketJson.getJsonArray("attachments"), (issue != null && issue.id.get() != null ? issue.toJsonObject() : (new JsonObject()).put("id", "")), user, handler);
     }
 
     /**
@@ -162,14 +163,14 @@ public class EscalationServicePivotImpl implements EscalationService
                 final String attachmentId = (String) o;
 
                 wksHelper.readDocument(attachmentId, file -> {
-                    final int attachmentSize = file.getDocument().getJsonObject(JiraTicket.METADATA).getInteger(JiraTicket.SIZE);
+                    final long attachmentSize = file.getDocument().getJsonObject(JiraTicket.METADATA).getLong(JiraTicket.SIZE);
+                    final String contentType = file.getDocument().getJsonObject(JiraTicket.METADATA).getString("content-type");
                     try {
                         if (attachmentSize > 0 && attachmentSize < MAX_SIZE_ATTACHMENT_JIRA) {
                             final String filename = file.getDocument().getString(JiraTicket.NAME);
                             final String encodedData = Base64.getMimeEncoder().encodeToString( file.getData().getBytes() );
-
                             JsonObject attachment = new JsonObject().put(ATTACHMENT_NAME_FIELD, filename)
-                                    .put(ATTACHMENT_CONTENT_FIELD, encodedData);
+                                    .put(ATTACHMENT_CONTENT_FIELD, encodedData).put(ATTACHMENT_CONTENT_TYPE_FIELD, contentType );
                             attachments.add(attachment);
 
                             // Create issue only if all attachments have been retrieved successfully
@@ -358,8 +359,8 @@ public class EscalationServicePivotImpl implements EscalationService
         final boolean updateStatus = ( ticketStatus.intValue() != issueStatus
                 && (issueStatus == TicketStatus.RESOLVED.status()
                     || issueStatus == TicketStatus.CLOSED.status()) );
-
-        JsonArray ticketComments = new JsonArray(ticket.getString("comments", "[]"));
+        
+        JsonArray ticketComments = ticket.getJsonArray("comments", new JsonArray());
         JsonArray issueComments = issue.getJsonArray(COMM_FIELD, new JsonArray());
 
         if(issue.containsKey(CLIENT_RESPONSE)) {
@@ -383,7 +384,7 @@ public class EscalationServicePivotImpl implements EscalationService
             data.put("status", issueStatus);
         }
 
-        JsonArray ticketAttachments = new JsonArray(ticket.getString("attachmentsnames", "[]"));
+        JsonArray ticketAttachments = ticket.getJsonArray("attachmentsnames",  new JsonArray());
         List<String> attsName = new LinkedList<>();
         for(Object o : ticketAttachments) {
             if(!(o instanceof String)) continue;
@@ -625,7 +626,7 @@ public class EscalationServicePivotImpl implements EscalationService
                             data.put(ATTACHMENT_FIELD, attachments);
                         }
                         if (issue != null && issue.containsKey("content") ) {
-                            JsonObject issueContent = new JsonObject(issue.getString("content"));
+                            JsonObject issueContent = issue.getJsonObject("content");
                             if (issueContent.containsKey("issue")) {
                                 JsonObject issueData = issueContent.getJsonObject("issue");
                                 if (issueData.containsKey(IDIWS_FIELD) && !issueData.getString(IDIWS_FIELD).isEmpty()) {

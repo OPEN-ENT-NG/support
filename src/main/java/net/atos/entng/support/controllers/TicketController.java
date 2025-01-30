@@ -444,6 +444,8 @@ public class TicketController extends ControllerHelper {
                                         ));
                         params.put("pushNotif", pushNotif);
 
+                        log.info("Sending notification to " + ticketId);
+
                         notification.notifyTimeline(request, "support." + notificationName, user, recipients, params);
                     }
                 }
@@ -627,11 +629,11 @@ public class TicketController extends ControllerHelper {
 
                     JsonObject ticket = response.getJsonObject("ticket");
                     ticket.put("owner", ticket.getString("owner_id"));
-                    if (message.body().getJsonObject(JiraTicket.ISSUE, new JsonObject()).getString(JiraTicket.ID_JIRA) != null) {
-                        ticket.put(JiraTicket.ID, message.body().getJsonObject(JiraTicket.ISSUE, new JsonObject()).getString(JiraTicket.ID_JIRA));
+                    if (message.body().getJsonObject(JiraTicket.ISSUE, new JsonObject()).getString(JiraTicket.ID_ENT) != null) {
+                        ticket.put(JiraTicket.ID, message.body().getJsonObject(JiraTicket.ISSUE, new JsonObject()).getString(JiraTicket.ID_ENT));
                     }
                     String ticketId = ticket.getValue(JiraTicket.ID).toString();
-                    Ticket notifyTicket = new Ticket(ticket.getInteger(JiraTicket.ID));
+                    Ticket notifyTicket = new Ticket(ticket.getInteger(JiraTicket.ID_ENT));
                     notifyTicket.subject = ticket.getString("subject");
                     notifyTicket.ownerId = ticket.getString("owner");
                     notifyTicket.schoolId = ticket.getString("school_id");
@@ -818,7 +820,7 @@ public class TicketController extends ControllerHelper {
                     // Bug tracker is async, can't get information of tracker issue
                     // Send dummy info to front
                     log.info("Bug tracker issue not fetched in asynchronous mode");
-                    ticketServiceSql.endInProgressEscalationAsync(ticketId, user, issue.getContent(), event -> {
+                    ticketServiceSql.endInProgressEscalationAsync(ticketId, user, issue.getContent().getJsonObject("issue"), event -> {
                         if (event.isLeft()) {
                             log.error("Error when trying to update escalation status to in_progress");
                         }
@@ -828,9 +830,7 @@ public class TicketController extends ControllerHelper {
                             "support.ticket.escalation.successful",
                             getHost(request), I18n.acceptLanguage(request));
                     if (doResponse) {
-                        renderJson(request, new JsonObject().put("issue",
-                                new JsonObject().put(JiraTicket.ID, issue.id)
-                                        .put(JiraTicket.STATUS, new JsonObject().put(JiraTicket.NAME, EscalationStatus.SUCCESSFUL))));
+                        renderJson(request, issue.getContent());
                     }
                 }
             }
