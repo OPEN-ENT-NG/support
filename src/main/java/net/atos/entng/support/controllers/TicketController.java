@@ -444,6 +444,8 @@ public class TicketController extends ControllerHelper {
                                         ));
                         params.put("pushNotif", pushNotif);
 
+                        log.info("Sending notification to " + ticketId);
+
                         notification.notifyTimeline(request, "support." + notificationName, user, recipients, params);
                     }
                 }
@@ -627,8 +629,8 @@ public class TicketController extends ControllerHelper {
 
                     JsonObject ticket = response.getJsonObject("ticket");
                     ticket.put("owner", ticket.getString("owner_id"));
-                    if (message.body().getJsonObject(JiraTicket.ISSUE, new JsonObject()).getString(JiraTicket.ID_JIRA) != null) {
-                        ticket.put(JiraTicket.ID, message.body().getJsonObject(JiraTicket.ISSUE, new JsonObject()).getString(JiraTicket.ID_JIRA));
+                    if (message.body().getJsonObject(JiraTicket.ISSUE, new JsonObject()).getString(JiraTicket.ID_ENT) != null) {
+                        ticket.put(JiraTicket.ID, message.body().getJsonObject(JiraTicket.ISSUE, new JsonObject()).getString(JiraTicket.ID_ENT));
                     }
                     String ticketId = ticket.getValue(JiraTicket.ID).toString();
                     Ticket notifyTicket = new Ticket(ticket.getInteger(JiraTicket.ID_ENT));
