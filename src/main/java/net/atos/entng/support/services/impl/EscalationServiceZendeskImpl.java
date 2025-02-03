@@ -388,6 +388,10 @@ public class EscalationServiceZendeskImpl implements EscalationService {
 		});
 	}
 
+	private class LoadCommentsResponse implements JSONAble {
+		public List<ZendeskComment> comments;
+	}
+
 	public Future<ZendeskIssue> loadComments(ZendeskIssue issue) {
 		Promise<ZendeskIssue> promise = Promise.promise();
 		zendeskClient.request(new RequestOptions()
@@ -403,12 +407,7 @@ public class EscalationServiceZendeskImpl implements EscalationService {
       }
       else
       {
-
-        class loadCommentsResponse implements JSONAble
-        {
-          public List<ZendeskComment> comments;
-        }
-        loadCommentsResponse res = new loadCommentsResponse();
+        LoadCommentsResponse res = new LoadCommentsResponse();
         res.fromJson(new JsonObject(data.toString()));
         List<ZendeskComment> publicComments = new ArrayList<>(res.comments.size());
         for(ZendeskComment c : res.comments)
