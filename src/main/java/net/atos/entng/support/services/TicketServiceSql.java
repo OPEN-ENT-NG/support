@@ -20,6 +20,7 @@
 package net.atos.entng.support.services;
 
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
 
 import org.entcore.common.service.CrudService;
@@ -169,4 +170,18 @@ public interface TicketServiceSql extends CrudService {
 
 	public Future<Long> getLastSynchroEpoch();
 	public Future<Void> setLastSynchroEpoch(Long epoch);
+
+	/**
+	 * List all tickets without category label
+	 *
+	 * @return {Future<JsonArray>} list of ticket without category labels
+	 */
+	Future<JsonArray> listAllWithoutCategoryLabel();
+
+	/**
+	 * Update category label for a list of tickets
+	 *
+	 * @return {Future<Integer>} number of tickets modified
+	 */
+	Future<Integer> updateAllTicketsWithoutCategoryLabel(Map<Integer, String> idCategoryLabelMap);
 }
