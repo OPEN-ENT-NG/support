@@ -6,17 +6,28 @@ import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import net.atos.entng.support.constants.JiraTicket;
 import net.atos.entng.support.enums.Error;
+import net.atos.entng.support.enums.I18nKeys;
+import net.atos.entng.support.helpers.I18nHelper;
 import net.atos.entng.support.model.I18nConfig;
 import net.atos.entng.support.services.TicketService;
+import net.atos.entng.support.services.TicketServiceNeo4j;
+import net.atos.entng.support.services.TicketServiceSql;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class TicketServiceImpl implements TicketService {
+
+    protected static final Logger log = LoggerFactory.getLogger(TicketServiceImpl.class);
+    private final TicketServiceSql ticketServiceSql;
+
+    public TicketServiceImpl(TicketServiceSql ticketServiceSql) {
+        this.ticketServiceSql = ticketServiceSql;
+    }
 
     public Future<JsonArray> getProfileFromTickets(JsonArray ticketsList, I18nConfig i18nConfig) {
         Promise<JsonArray> promise = Promise.promise();
@@ -112,5 +123,53 @@ public class TicketServiceImpl implements TicketService {
 
     public CompositeFuture getSchoolAndProfileFromTicket(JsonArray tickets, I18nConfig i18nConfig) {
         return CompositeFuture.all(getProfileFromTickets(tickets, i18nConfig), getSchoolFromTickets(tickets));
+    }
+
+    public Future<Integer> fillCategoryLabel(String locale) {
+        Promise<Integer> promise = Promise.promise();
+
+        Map<String, String> addressCategoryLabelMap = new HashMap<>();
+
+        TicketServiceNeo4jImpl.getAllApps()
+            .compose(apps -> {
+                // Fill map between Address and CategoryLabel
+                apps.stream()
+                    .filter(JsonObject.class::isInstance)
+                    .map(JsonObject.class::cast)
+                    .forEach(app -> {
+                        String address = app.getString("address");
+                        if (address != null && !address.isEmpty()) {
+                            String displayName = app.getString("displayName");
+                            I18nKeys i18nKey = I18nKeys.getI18nKey(displayName);
+                            String categoryLabel = i18nKey != null ? I18nHelper.getI18nValue(i18nKey, locale) : displayName;
+                            addressCategoryLabelMap.put(app.getString("address"), categoryLabel);
+                        }
+                    });
+                addressCategoryLabelMap.put("support.category.other", I18nHelper.getI18nValue(I18nKeys.OTHER, locale));
+
+                return ticketServiceSql.listAllWithoutCategoryLabel();
+            })
+            .compose(tickets -> {
+                // Store for each ticket id its category_label
+                Map<Integer, String> idCategoryLabelMap = new HashMap<>();
+                tickets.stream()
+                    .filter(JsonObject.class::isInstance)
+                    .map(JsonObject.class::cast)
+                    .forEach(ticket -> {
+                        String category = ticket.getString("category");
+                        idCategoryLabelMap.put(ticket.getInteger("id"), addressCategoryLabelMap.getOrDefault(category, null));
+                    });
+
+                // Update tickets
+                return ticketServiceSql.updateAllTicketsWithoutCategoryLabel(idCategoryLabelMap);
+            })
+            .onSuccess(promise::complete)
+            .onFailure(err -> {
+                String errorMessage = "[Support@TicketServiceImpl::fillCategoryLabel] Failed to fill tickets without category label : ";
+                log.error(errorMessage + err.getMessage());
+                promise.fail(err.getMessage());
+            });
+
+        return promise.future();
     }
 }

@@ -52,6 +52,7 @@ public class JiraTicket {
     public static final String WORKFLOW = "workflow";
     public static final String STRUCTURE_ID = "structureId";
     public static final String USERID = "userId";
+    public static final String CATEGORY_LABEL = "category_label";
 
     // Rights
     public static final String AUTO_OPEN_TICKET = "support.ticket.auto.open";

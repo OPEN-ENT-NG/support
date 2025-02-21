@@ -36,7 +36,7 @@ public class ServiceFactory {
     }
 
     public TicketService ticketService() {
-        return new TicketServiceImpl();
+        return new TicketServiceImpl(this.ticketServiceSql());
     }
 
     public TicketServiceSql ticketServiceSql() {

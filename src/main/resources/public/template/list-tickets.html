@@ -32,7 +32,7 @@
 								'five': !canEscalate() || !atLeastOneTicketEscalated()}">
                     <i18n>support.ticket.table.subject</i18n>
                 </th>
-                <th class="one" ng-click="switchSortBy('category')"
+                <th class="one" ng-click="switchSortBy('category_label')"
                     ng-class="{'order-by-reversed': (sort.expression === sortCategoryFunction && sort.reverse === false),
 								'order-by': (sort.expression === sortCategoryFunction && sort.reverse === true)}">
                     <i18n>support.ticket.table.category</i18n>

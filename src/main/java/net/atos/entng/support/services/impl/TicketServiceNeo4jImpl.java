@@ -97,4 +97,14 @@ public class TicketServiceNeo4jImpl {
         neo4j.execute(query, params, validUniqueResultHandler(PromiseHelper.handler(promise)));
         return promise.future();
     }
+
+    public static Future<JsonArray> getAllApps() {
+        Promise<JsonArray> promise = Promise.promise();
+
+        String query = "MATCH(a:Application) RETURN a.address as address, a.displayName as displayName";
+
+        Neo4j.getInstance().execute(query, new JsonObject(), validResultHandler(PromiseHelper.handler(promise)));
+
+        return promise.future();
+    }
 }

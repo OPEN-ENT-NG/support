@@ -39,11 +39,9 @@ import net.atos.entng.support.Ticket;
 import net.atos.entng.support.Issue;
 import net.atos.entng.support.Attachment;
 import net.atos.entng.support.Comment;
-import net.atos.entng.support.enums.TicketHisto;
+import net.atos.entng.support.enums.*;
 import net.atos.entng.support.constants.JiraTicket;
-import net.atos.entng.support.enums.BugTrackerSyncType;
 import net.atos.entng.support.enums.Error;
-import net.atos.entng.support.enums.EscalationStatus;
 import net.atos.entng.support.export.TicketsCSVExport;
 import net.atos.entng.support.filters.Admin;
 import net.atos.entng.support.filters.AdminOfTicketsStructure;
@@ -53,12 +51,14 @@ import net.atos.entng.support.model.I18nConfig;
 import net.atos.entng.support.model.TicketModel;
 import net.atos.entng.support.services.*;
 import net.atos.entng.support.services.impl.TicketServiceNeo4jImpl;
+import org.entcore.common.appregistry.ApplicationUtils;
 import org.entcore.common.controller.ControllerHelper;
 import org.entcore.common.events.EventHelper;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.ResourceFilter;
+import org.entcore.common.http.filter.SuperAdminFilter;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.user.DefaultFunctions;
 import org.entcore.common.user.UserInfos;
@@ -117,6 +117,14 @@ public class TicketController extends ControllerHelper {
                     ticket.put("event_count", 1);
                     JsonArray attachments = ticket.getJsonArray("attachments", null);
                     ticket.remove("attachments");
+                    String displayName = user.getApps().stream()
+                            .filter(app -> app.getAddress().equals(ticket.getString("category")))
+                            .map(UserInfos.Application::getDisplayName)
+                            .findFirst()
+                            .orElse("other");
+                    String i18nValue = I18nHelper.getI18nValue(I18nKeys.getI18nKey(displayName), request);
+                    ticket.put("category_label", i18nValue != null ? i18nValue : displayName);
+
                     final Handler<Either<String,Ticket>> handler = getCreateOrUpdateTicketHandler(request, user, ticket, null);
                     ticketServiceSql.createTicket(ticket, attachments, user, I18n.acceptLanguage(request), eventHelper.onCreateResource(request, RESOURCE_NAME, handler));
                 });
@@ -1135,4 +1143,29 @@ public class TicketController extends ControllerHelper {
             }
         });
     }
+
+    @Get("/tickets/category/label/fill")
+    @ApiDoc("Fill category_label column in database")
+    @SecuredAction(value = "", type = ActionType.RESOURCE)
+    @ResourceFilter(SuperAdminFilter.class)
+    public void fillCategoryLabel(HttpServerRequest request) {
+        UserUtils.getUserInfos(eb, request, user -> {
+            if (user == null) {
+                String errorMessage = "[Support@TicketController::fillCategoryLabel] User not found in session.";
+                log.error(errorMessage);
+                unauthorized(request);
+                return;
+            }
+
+            ticketService.fillCategoryLabel(I18n.acceptLanguage(request))
+                .onSuccess(result -> renderJson(request, new JsonObject().put("message", result + " row updated")))
+                .onFailure(err -> {
+                    String errorMessage = "[Support@TicketController::fillCategoryLabel] Failed to fill tickets without category label : ";
+                    log.error(errorMessage + err.getMessage());
+                    renderError(request, new JsonObject().put("error", err.getMessage()));
+                });
+        });
+    }
+
+
 }
