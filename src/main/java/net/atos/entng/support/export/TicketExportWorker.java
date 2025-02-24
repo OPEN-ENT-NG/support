@@ -45,7 +45,7 @@ public class TicketExportWorker extends BusModBase implements Handler<Message<Js
     public void start() {
         super.start();
         ticketServiceSql = new TicketServiceSqlImpl(null);
-        ticketService = new TicketServiceImpl();
+        ticketService = new TicketServiceImpl(ticketServiceSql);
 
         Storage storage = new StorageFactory(vertx, new JsonObject()).getStorage();
         fileService = new DefaultFileService(storage);

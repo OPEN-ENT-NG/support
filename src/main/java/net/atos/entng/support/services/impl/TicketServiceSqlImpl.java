@@ -43,8 +43,10 @@ import net.atos.entng.support.enums.TicketHisto;
 import net.atos.entng.support.helpers.DateHelper;
 import net.atos.entng.support.helpers.IModelHelper;
 import net.atos.entng.support.helpers.PromiseHelper;
+import net.atos.entng.support.helpers.TransactionHelper;
 import net.atos.entng.support.model.Event;
 import net.atos.entng.support.model.TicketModel;
+import net.atos.entng.support.model.TransactionElement;
 import net.atos.entng.support.services.TicketServiceSql;
 
 import org.entcore.common.service.impl.SqlCrudService;
@@ -77,7 +79,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
     protected static final Logger log = LoggerFactory.getLogger(Renders.class);
     private final static String UPSERT_USER_QUERY = "SELECT support.merge_users(?,?)";
     private final List<String> ALLOWED_SORT_BY_COLUMN = new ArrayList<>(Arrays.asList(JiraTicket.ID, JiraTicket.MODIFICATION_DATE, JiraTicket.STATUS,
-            JiraTicket.CATEGORY, JiraTicket.OWNER, JiraTicket.EVENT_COUNT, JiraTicket.SUBJECT, JiraTicket.SCHOOL_ID, JiraTicket.PROFILE));
+			JiraTicket.CATEGORY, JiraTicket.CATEGORY_LABEL, JiraTicket.OWNER, JiraTicket.EVENT_COUNT, JiraTicket.SUBJECT, JiraTicket.SCHOOL_ID, JiraTicket.PROFILE));
     private final BugTracker bugTrackerType;
     private final Logger LOGGER = LoggerFactory.getLogger(TicketServiceSqlImpl.class);
 
@@ -1324,4 +1326,36 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
         return promise.future();
     }
 
+	@Override
+	public Future<JsonArray> listAllWithoutCategoryLabel() {
+		Promise<JsonArray> promise = Promise.promise();
+
+		String query = "SELECT * FROM support.tickets WHERE category_label IS NULL;";
+
+		String errorMessage = "[Support@TicketServiceSqlImpl::listAllWithoutCategoryLabel] Fail list tickets without category_label : ";
+		sql.prepared(query, new JsonArray(), validResultHandler(PromiseHelper.handler(promise, errorMessage)));
+
+		return promise.future();
+	}
+
+	@Override
+	public Future<Integer> updateAllTicketsWithoutCategoryLabel(Map<Integer, String> idCategoryLabelMap) {
+		Promise<Integer> promise = Promise.promise();
+
+		List<TransactionElement> transactionElements = new ArrayList<>();
+
+		String query = "UPDATE support.tickets SET category_label = ? WHERE id = ?;";
+
+		idCategoryLabelMap.forEach((id, categoryLabel) -> {
+			JsonArray params = new JsonArray().add(categoryLabel).add(id);
+			transactionElements.add(new TransactionElement(query, params));
+		});
+
+		String errorMessage = "[Support@TicketServiceSqlImpl::updateAllTicketsWithoutCategoryLabel] Fail to update tickets without category_label : ";
+		TransactionHelper.executeTransactionAndGetJsonObjectResults(transactionElements, errorMessage)
+			.onSuccess(result -> promise.complete(transactionElements.size()))
+			.onFailure(err -> promise.fail(err.getMessage()));
+
+		return promise.future();
+	}
 }
