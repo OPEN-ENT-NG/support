@@ -15,24 +15,41 @@ public class I18nHelper {
     private I18nHelper() {}
 
     public static String getI18nValue(I18nKeys i18nKey, HttpServerRequest request) {
-        return I18n.getInstance().translate(i18nKey.getValue(), I18n.DEFAULT_DOMAIN, I18n.acceptLanguage(request));
+        return getI18nValue(i18nKey.getValue(), request);
+    }
+
+    public static String getI18nValue(String i18StringKey, HttpServerRequest request) {
+        return I18n.getInstance().translate(i18StringKey, I18n.DEFAULT_DOMAIN, I18n.acceptLanguage(request));
     }
 
     public static String getI18nValue(I18nKeys i18nKey, String locale) {
-        return I18n.getInstance().translate(i18nKey.getValue(), I18n.DEFAULT_DOMAIN, locale);
+        return getI18nValue(i18nKey.getValue(), locale);
     }
 
-    public static <T> String getWithParams(I18nKeys key, List<T> params, HttpServerRequest request) {
-        String i18n = getI18nValue(key, request);
-        for(int i = 0; i < params.size(); i ++){
-           i18n = i18n.replace("{" + i + "}", params.get(i).toString());
-        }
-        return i18n;
+    public static String getI18nValue(String i18StringKey, String locale) {
+        return I18n.getInstance().translate(i18StringKey, I18n.DEFAULT_DOMAIN, locale);
     }
 
     public static <T> String getWithParam(I18nKeys key, T param, HttpServerRequest request){
         List<T> finalParam = Collections.singletonList(param);
         return getWithParams(key, finalParam, request);
+    }
+
+    public static <T> String getWithParam(String i18n, T param, HttpServerRequest request){
+        List<T> finalParam = Collections.singletonList(param);
+        return getWithParams(i18n, finalParam, request);
+    }
+
+    public static <T> String getWithParams(I18nKeys key, List<T> params, HttpServerRequest request) {
+        String i18n = getI18nValue(key, request);
+        return getWithParams(i18n, params, request);
+    }
+
+    public static <T> String getWithParams(String i18n, List<T> params, HttpServerRequest request) {
+        for(int i = 0; i < params.size(); i ++){
+            i18n = i18n.replace("{" + i + "}", params.get(i).toString());
+        }
+        return i18n;
     }
 
 }

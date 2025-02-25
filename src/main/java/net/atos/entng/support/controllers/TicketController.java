@@ -51,7 +51,6 @@ import net.atos.entng.support.model.I18nConfig;
 import net.atos.entng.support.model.TicketModel;
 import net.atos.entng.support.services.*;
 import net.atos.entng.support.services.impl.TicketServiceNeo4jImpl;
-import org.entcore.common.appregistry.ApplicationUtils;
 import org.entcore.common.controller.ControllerHelper;
 import org.entcore.common.events.EventHelper;
 import org.entcore.common.events.EventStore;
@@ -67,8 +66,6 @@ import org.entcore.common.utils.Id;
 import org.vertx.java.core.http.RouteMatcher;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
 import static net.atos.entng.support.Support.SUPPORT_NAME;
@@ -117,17 +114,32 @@ public class TicketController extends ControllerHelper {
                     ticket.put("event_count", 1);
                     JsonArray attachments = ticket.getJsonArray("attachments", null);
                     ticket.remove("attachments");
-                    String displayName = user.getApps().stream()
-                            .filter(app -> app.getAddress().equals(ticket.getString("category")))
-                            .map(UserInfos.Application::getDisplayName)
-                            .findFirst()
-                            .orElse("other");
-                    String i18nValue = I18nHelper.getI18nValue(I18nKeys.getI18nKey(displayName), request);
-                    ticket.put("category_label", i18nValue != null ? i18nValue : displayName);
 
-                    final Handler<Either<String,Ticket>> handler = getCreateOrUpdateTicketHandler(request, user, ticket, null);
-                    ticketServiceSql.createTicket(ticket, attachments, user, I18n.acceptLanguage(request), eventHelper.onCreateResource(request, RESOURCE_NAME, handler));
-                });
+                    eb.request("portal", new JsonObject().put("action", "getI18n"))
+                        .onSuccess(portalI18nMessage -> {
+                            JsonObject portalI18n = (JsonObject) portalI18nMessage.body();
+                            JsonObject moduleI18n = I18n.getInstance().load(request);
+
+                            String displayName = user.getApps().stream()
+                                .filter(app -> app.getAddress().equals(ticket.getString("category")))
+                                .map(UserInfos.Application::getDisplayName)
+                                .findFirst()
+                                .orElse("other");
+
+                            String categoryLabel = moduleI18n.getString(displayName, null);
+                            if (categoryLabel == null) categoryLabel = portalI18n.getString(displayName, null);
+
+                            ticket.put("category_label", categoryLabel != null ? categoryLabel : displayName);
+
+                            final Handler<Either<String,Ticket>> handler = getCreateOrUpdateTicketHandler(request, user, ticket, null);
+                            ticketServiceSql.createTicket(ticket, attachments, user, I18n.acceptLanguage(request), eventHelper.onCreateResource(request, RESOURCE_NAME, handler));
+                        })
+                        .onFailure(err -> {
+                            String errorMessage = "[Support@TicketController::fillCategoryLabel] Failed to fill tickets without category label : ";
+                            log.error(errorMessage + err.getMessage());
+                            renderError(request, new JsonObject().put("error", err.getMessage()));
+                        });
+                    });
             } else {
                 log.debug("User not found in session.");
                 unauthorized(request);
@@ -1157,7 +1169,12 @@ public class TicketController extends ControllerHelper {
                 return;
             }
 
-            ticketService.fillCategoryLabel(I18n.acceptLanguage(request))
+            eb.request("portal", new JsonObject().put("action", "getI18n"))
+                .compose(portalI18nMessage -> {
+                    JsonObject portalI18n = (JsonObject) portalI18nMessage.body();
+                    JsonObject moduleI18n = I18n.getInstance().load(request);
+                    return ticketService.fillCategoryLabel(I18n.acceptLanguage(request), moduleI18n, portalI18n);
+                })
                 .onSuccess(result -> renderJson(request, new JsonObject().put("message", result + " row updated")))
                 .onFailure(err -> {
                     String errorMessage = "[Support@TicketController::fillCategoryLabel] Failed to fill tickets without category label : ";

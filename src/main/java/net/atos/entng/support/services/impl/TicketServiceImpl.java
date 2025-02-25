@@ -14,7 +14,6 @@ import net.atos.entng.support.enums.I18nKeys;
 import net.atos.entng.support.helpers.I18nHelper;
 import net.atos.entng.support.model.I18nConfig;
 import net.atos.entng.support.services.TicketService;
-import net.atos.entng.support.services.TicketServiceNeo4j;
 import net.atos.entng.support.services.TicketServiceSql;
 
 import java.util.*;
@@ -125,7 +124,7 @@ public class TicketServiceImpl implements TicketService {
         return CompositeFuture.all(getProfileFromTickets(tickets, i18nConfig), getSchoolFromTickets(tickets));
     }
 
-    public Future<Integer> fillCategoryLabel(String locale) {
+    public Future<Integer> fillCategoryLabel(String locale, JsonObject moduleI18n, JsonObject portalI18n) {
         Promise<Integer> promise = Promise.promise();
 
         Map<String, String> addressCategoryLabelMap = new HashMap<>();
@@ -138,11 +137,12 @@ public class TicketServiceImpl implements TicketService {
                     .map(JsonObject.class::cast)
                     .forEach(app -> {
                         String address = app.getString("address");
-                        if (address != null && !address.isEmpty()) {
-                            String displayName = app.getString("displayName");
-                            I18nKeys i18nKey = I18nKeys.getI18nKey(displayName);
-                            String categoryLabel = i18nKey != null ? I18nHelper.getI18nValue(i18nKey, locale) : displayName;
-                            addressCategoryLabelMap.put(app.getString("address"), categoryLabel);
+                        String displayName = app.getString("displayName");
+                        if (address != null && !address.isEmpty() && displayName != null && !displayName.isEmpty()) {
+                            String categoryLabel = moduleI18n.getString(displayName, null);
+                            if (categoryLabel == null) categoryLabel = portalI18n.getString(displayName, null);
+                            if (categoryLabel == null) categoryLabel = displayName;
+                            addressCategoryLabelMap.put(address, categoryLabel);
                         }
                     });
                 addressCategoryLabelMap.put("support.category.other", I18nHelper.getI18nValue(I18nKeys.OTHER, locale));

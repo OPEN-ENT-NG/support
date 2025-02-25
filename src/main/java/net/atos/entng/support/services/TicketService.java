@@ -5,7 +5,6 @@ import io.vertx.core.Future;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import net.atos.entng.support.model.I18nConfig;
-import org.entcore.common.user.UserInfos;
 
 import java.util.List;
 
@@ -52,7 +51,9 @@ public interface TicketService {
      * Fill tickets category_label if non-existing
      *
      * @param locale {String} locale language
+     * @param moduleI18n {JsonObject} all the i18n from this module
+     * @param portalI18n {JsonObject} all the i18n from Portal
      * @return {Future<Long>} Number of updated tickets
      **/
-    Future<Integer> fillCategoryLabel(String locale);
+    Future<Integer> fillCategoryLabel(String locale, JsonObject moduleI18n, JsonObject portalI18n);
 }
