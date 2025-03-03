@@ -30,7 +30,7 @@
 
     <properties>
         <entCoreVersion>6.4.0</entCoreVersion>
-        <junitVersion>5.1.0</junitVersion>
+        <junitVersion>4.10</junitVersion>
         <mockitoVersion>[2.0,3.0)</mockitoVersion>
         <powerMockVersion>2.0.2</powerMockVersion>
         <gatlingHighchartsVersion>2.2.2</gatlingHighchartsVersion>
