@@ -19,22 +19,27 @@
 
 package net.atos.entng.support.services.impl;
 
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.TimeZone;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-
+import fr.wseduc.webutils.Either;
+import fr.wseduc.webutils.I18n;
+import fr.wseduc.webutils.Server;
+import fr.wseduc.webutils.http.Renders;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.*;
 import io.vertx.core.http.impl.headers.HeadersMultiMap;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+import net.atos.entng.support.*;
+import net.atos.entng.support.enums.BugTracker;
+import net.atos.entng.support.enums.TicketHisto;
+import net.atos.entng.support.services.EscalationService;
+import net.atos.entng.support.services.TicketServiceSql;
+import net.atos.entng.support.services.UserService;
 import org.entcore.common.bus.WorkspaceHelper;
 import org.entcore.common.bus.WorkspaceHelper.Document;
 import org.entcore.common.neo4j.Neo4j;
@@ -46,30 +51,13 @@ import org.entcore.common.storage.Storage;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.utils.Id;
 
-import fr.wseduc.webutils.Either;
-import fr.wseduc.webutils.I18n;
-import fr.wseduc.webutils.Server;
-import fr.wseduc.webutils.http.Renders;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
-import io.vertx.core.buffer.Buffer;
-import io.vertx.core.eventbus.EventBus;
-import io.vertx.core.eventbus.Message;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-import net.atos.entng.support.Ticket;
-import net.atos.entng.support.Issue;
-import net.atos.entng.support.Comment;
-import net.atos.entng.support.enums.BugTracker;
-import net.atos.entng.support.enums.TicketHisto;
-import net.atos.entng.support.services.EscalationService;
-import net.atos.entng.support.services.TicketServiceSql;
-import net.atos.entng.support.services.UserService;
-import net.atos.entng.support.Attachment;
-import net.atos.entng.support.WorkspaceAttachment;
-import net.atos.entng.support.GridFSAttachment;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class EscalationServiceRedmineImpl implements EscalationService {
 
@@ -1319,4 +1307,9 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 				}));
 	}
 
+	@Override
+	public void refreshTicketFromBugTracker(Number issueId, final Handler<Either<String, Void>> handler) {
+		// Not implemented
+		handler.handle(new Either.Left<>("Method not implemented"));
+	}
 }

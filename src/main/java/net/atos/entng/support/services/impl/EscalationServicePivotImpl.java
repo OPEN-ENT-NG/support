@@ -1,42 +1,37 @@
 package net.atos.entng.support.services.impl;
 
 import fr.wseduc.webutils.Either;
-import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.LoggerFactory;
-import net.atos.entng.support.Ticket;
-import net.atos.entng.support.Issue;
-import net.atos.entng.support.Comment;
-import net.atos.entng.support.Attachment;
-import net.atos.entng.support.WorkspaceAttachment;
-import net.atos.entng.support.constants.JiraTicket;
-import net.atos.entng.support.enums.BugTracker;
-import net.atos.entng.support.enums.TicketStatus;
-import net.atos.entng.support.enums.TicketStatusJira;
-import net.atos.entng.support.enums.TicketHisto;
-import net.atos.entng.support.helpers.EscalationPivotHelper;
-import net.atos.entng.support.helpers.impl.EscalationPivotHelperImpl;
-import net.atos.entng.support.services.EscalationService;
-import net.atos.entng.support.services.TicketServiceSql;
-import net.atos.entng.support.services.UserService;
-import org.entcore.common.utils.Id;
-import org.entcore.common.bus.ErrorMessage;
-import org.entcore.common.bus.WorkspaceHelper;
-import org.entcore.common.notification.TimelineHelper;
-import org.entcore.common.storage.Storage;
-import org.entcore.common.user.UserInfos;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
-
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+import net.atos.entng.support.*;
+import net.atos.entng.support.constants.JiraTicket;
+import net.atos.entng.support.enums.BugTracker;
+import net.atos.entng.support.enums.TicketHisto;
+import net.atos.entng.support.enums.TicketStatus;
+import net.atos.entng.support.enums.TicketStatusJira;
+import net.atos.entng.support.helpers.EscalationPivotHelper;
+import net.atos.entng.support.helpers.impl.EscalationPivotHelperImpl;
+import net.atos.entng.support.services.EscalationService;
+import net.atos.entng.support.services.TicketServiceSql;
+import net.atos.entng.support.services.UserService;
+import org.entcore.common.bus.ErrorMessage;
+import org.entcore.common.bus.WorkspaceHelper;
+import org.entcore.common.notification.TimelineHelper;
+import org.entcore.common.storage.Storage;
+import org.entcore.common.user.UserInfos;
+import org.entcore.common.utils.Id;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
+
 import static fr.wseduc.webutils.Server.getEventBus;
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 
@@ -710,5 +705,11 @@ public class EscalationServicePivotImpl implements EscalationService
                 }
             }
         };
+    }
+
+    @Override
+    public void refreshTicketFromBugTracker(Number issueId, final Handler<Either<String, Void>> handler) {
+        // Not implemented
+        handler.handle(new Either.Left<>("Method not implemented"));
     }
 }
