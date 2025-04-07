@@ -9,7 +9,8 @@ import {
 	moment,
 	Behaviours,
 	workspace,
-	toasts
+	toasts,
+	http
 } from "entcore";
 import { models } from "../models/model";
 import {safeApply} from "../utils/safeApply";
@@ -553,6 +554,14 @@ export const SupportController: Controller = ng.controller('SupportController',
 			template.open('main', 'edit-ticket');
 		};
 
+        $scope.refreshTicket = function () {
+            try {
+                http().post('/support/ticket/' + $scope.ticket.issue.id + '/refresh');
+            } catch (error) {
+                notify.error('support.ticket.refresh.failed');
+            }
+        };
+
 		$scope.checkUpdateTicket = function (ticket) {
 			ticket.processing = true;
 
@@ -882,6 +891,14 @@ export const SupportController: Controller = ng.controller('SupportController',
 			}
 			return isLocalAdmin;
 		};
+
+		$scope.userIsSuperAdmin = function () {
+			if (model.me.functions.SUPER_ADMIN) {
+				return true;
+			}
+			return false;
+		};
+
 		/**
 		 * Modification en masse du statut
 		 * @param newStatus : nouveau statut
