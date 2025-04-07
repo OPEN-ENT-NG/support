@@ -1,30 +1,27 @@
 package net.atos.entng.support.zendesk;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import io.vertx.core.json.JsonObject;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.Future;
-import io.vertx.core.Promise;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.eventbus.Message;
-
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import net.atos.entng.support.Attachment;
+import net.atos.entng.support.Comment;
+import net.atos.entng.support.Issue;
+import net.atos.entng.support.Ticket;
+import net.atos.entng.support.enums.BugTracker;
+import net.atos.entng.support.enums.TicketStatus;
 import org.entcore.common.json.JSONAble;
 import org.entcore.common.json.JSONIgnore;
-import org.entcore.common.json.JSONRename;
 import org.entcore.common.json.JSONInherit;
-import org.entcore.common.json.JSONDefault;
+import org.entcore.common.json.JSONRename;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.utils.Id;
 
-import net.atos.entng.support.Issue;
-import net.atos.entng.support.Ticket;
-import net.atos.entng.support.Comment;
-import net.atos.entng.support.enums.BugTracker;
-import net.atos.entng.support.enums.TicketStatus;
-import net.atos.entng.support.Attachment;
+import java.util.ArrayList;
+import java.util.List;
 
 // cf. https://developer.zendesk.com/api-reference/ticketing/tickets/tickets/#create-ticket
 @JSONInherit(field="id")
@@ -248,7 +245,9 @@ public class ZendeskIssue extends Issue implements JSONAble
     public static ZendeskIssue followUp(ZendeskIssue oldIssue)
     {
         ZendeskIssue newIssue = new ZendeskIssue(oldIssue);
-        newIssue.status = ZendeskStatus.NEW;
+
+        // Even though the issue is "new", we need to set the status to "open" in Zendesk to prevent infinite loops
+        newIssue.status = ZendeskStatus.open;
         newIssue.via_followup_source_id = oldIssue.id.get();
         newIssue.comment = oldIssue.comments != null ? oldIssue.comments.get(0) : null;
 

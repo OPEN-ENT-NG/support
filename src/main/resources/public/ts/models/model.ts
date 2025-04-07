@@ -100,7 +100,16 @@ models.Ticket.prototype.createTicket = function(data, callback, badRequestCallba
 
 models.Ticket.prototype.updateTicket = function(data, callback) {
 	http().putJson('/support/ticket/' + this.id, data).done(function(result){
-		this.updateData(result);
+		// We filter null values to ensure only meaningful data are updated,
+		// avoiding overwriting existing properties with null values.
+		var filteredResult = {};
+		for (var key in result) {
+			if (result.hasOwnProperty(key) && result[key] !== null) {
+				filteredResult[key] = result[key];
+			}
+		}
+		
+		this.updateData(filteredResult);
 		this.trigger('change');
 		if(typeof callback === 'function'){
 			callback();
