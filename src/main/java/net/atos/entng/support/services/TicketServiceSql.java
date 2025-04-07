@@ -19,27 +19,24 @@
 
 package net.atos.entng.support.services;
 
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentMap;
-
+import fr.wseduc.webutils.Either;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import net.atos.entng.support.Attachment;
+import net.atos.entng.support.Issue;
+import net.atos.entng.support.Ticket;
+import net.atos.entng.support.enums.TicketHisto;
+import net.atos.entng.support.model.Event;
+import net.atos.entng.support.model.TicketModel;
+import net.atos.entng.support.zendesk.ZendeskComment;
 import org.entcore.common.service.CrudService;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.utils.Id;
 
-import io.vertx.core.Handler;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-import io.vertx.core.Future;
-
-import net.atos.entng.support.model.Event;
-import net.atos.entng.support.model.TicketModel;
-import fr.wseduc.webutils.Either;
-
-import net.atos.entng.support.Ticket;
-import net.atos.entng.support.Issue;
-import net.atos.entng.support.Attachment;
-import net.atos.entng.support.enums.TicketHisto;
+import java.util.List;
+import java.util.Map;
 
 public interface TicketServiceSql extends CrudService {
 
@@ -116,7 +113,9 @@ public interface TicketServiceSql extends CrudService {
 
     public void createTicketHisto(String ticketId, String event, int status, String userid, TicketHisto histoType, Handler<Either<String, Void>> handler);
 
-    public void getTicketFromIssueId(String issueId, String bugtracker, Handler<Either<String, Ticket>> handler);
+	void createTicketHistoZendesk(String ticketId, ZendeskComment comment, int status, String userId, TicketHisto histoType, Handler<Either<String, Void>> handler);
+
+	void getTicketFromIssueId(String issueId, String bugtracker, Handler<Either<String, Ticket>> handler);
 
 	public void getLastIssuesUpdate(Handler<Either<String, String>> handler);
 

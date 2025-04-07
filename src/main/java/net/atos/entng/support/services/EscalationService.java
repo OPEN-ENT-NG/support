@@ -19,26 +19,20 @@
 
 package net.atos.entng.support.services;
 
-import java.util.List;
-import java.util.concurrent.ConcurrentMap;
-
-import net.atos.entng.support.Ticket;
-import net.atos.entng.support.Issue;
-import net.atos.entng.support.Comment;
-import net.atos.entng.support.Attachment;
-import net.atos.entng.support.enums.BugTracker;
-
-import org.entcore.common.utils.Id;
-import org.entcore.common.user.UserInfos;
-
-import io.vertx.core.Handler;
-import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-import io.vertx.core.eventbus.Message;
-
-
 import fr.wseduc.webutils.Either;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonObject;
+import net.atos.entng.support.Attachment;
+import net.atos.entng.support.Comment;
+import net.atos.entng.support.Issue;
+import net.atos.entng.support.Ticket;
+import net.atos.entng.support.enums.BugTracker;
+import org.entcore.common.user.UserInfos;
+import org.entcore.common.utils.Id;
+
+import java.util.List;
 
 /**
  * Terminology used : "ticket" for tickets in ENT, "issue" for tickets in bug tracker
@@ -62,4 +56,18 @@ public interface EscalationService {
 
 	void syncAttachments(String ticketId, List<Attachment> attachments, Handler<Either<String, Id<Issue, Long>>> handler);
 
+	/**
+	 * This method is responsible for fetching updates and new event from the bug tracker for a specific ticket
+	 * and saving them in the database.
+	 * <p>
+	 * Behavior: <br>
+	 * - Fetch events from the bug tracker for the given issue ID.<br>
+	 * - Compare the timestamp of each event with the last recorded timestamp in the database. <br>
+	 * - If an event is newer, it is saved in the `tickets_histo` table.
+	 *
+	 * @param issueId The ID of the zendesk issue to refresh.
+	 * @param handler A handler that processes the result of the refresh operation.
+	 *                It returns either a success (`Void`) or an error message (`String`).
+	 */
+	void refreshTicketFromBugTracker(Number issueId, final Handler<Either<String, Void>> handler);
 }

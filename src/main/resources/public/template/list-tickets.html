@@ -117,11 +117,6 @@
     <section class="toggle-buttons" ng-class="{ hide: tickets.selection().length === 0 }">
         <div class="toggle">
             <div class="contextual-buttons twelve cell">
-                <span ng-repeat="status in statuses">
-                    <button ng-click="updateStatus(status.value)">
-                        <i18n>support.toggle.change.to</i18n><i18n>[[status.i18nValue]]</i18n>
-                    </button>
-                </span>
                 <button ng-if="userIsLocalAdmin() && !ticket.id" ng-click="exportSelectionCSV()">
                     <i18n>support.ticket.export.selected</i18n>
                 </button>

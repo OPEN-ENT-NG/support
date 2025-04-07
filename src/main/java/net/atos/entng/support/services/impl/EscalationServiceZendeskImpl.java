@@ -19,71 +19,45 @@
 
 package net.atos.entng.support.services.impl;
 
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Set;
-import java.util.TimeZone;
-import java.util.Locale;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
-import java.io.UnsupportedEncodingException;
-
-import io.vertx.core.http.*;
-import org.entcore.common.bus.WorkspaceHelper;
-import org.entcore.common.bus.WorkspaceHelper.Document;
-import org.entcore.common.neo4j.Neo4j;
-import org.entcore.common.neo4j.StatementsBuilder;
-import org.entcore.common.notification.TimelineHelper;
-import org.entcore.common.sql.Sql;
-import org.entcore.common.sql.SqlResult;
-import org.entcore.common.storage.Storage;
-import org.entcore.common.user.UserInfos;
-import org.entcore.common.utils.Id;
-import org.entcore.common.json.JSONAble;
-import org.entcore.common.remote.RemoteClient;
-
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.Server;
-import fr.wseduc.webutils.http.Renders;
-
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
+import io.vertx.core.*;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
+import io.vertx.core.http.*;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.core.Promise;
-import io.vertx.core.Future;
-import io.vertx.core.CompositeFuture;
-
-import net.atos.entng.support.Ticket;
-import net.atos.entng.support.Issue;
-import net.atos.entng.support.Comment;
-import net.atos.entng.support.Attachment;
-import net.atos.entng.support.GridFSAttachment;
+import net.atos.entng.support.*;
 import net.atos.entng.support.enums.BugTracker;
-import net.atos.entng.support.enums.TicketStatus;
 import net.atos.entng.support.enums.TicketHisto;
+import net.atos.entng.support.model.Event;
 import net.atos.entng.support.services.EscalationService;
 import net.atos.entng.support.services.TicketServiceSql;
 import net.atos.entng.support.services.UserService;
 import net.atos.entng.support.zendesk.*;
 import net.atos.entng.support.zendesk.ZendeskIssue.ZendeskStatus;
+import org.entcore.common.bus.WorkspaceHelper;
+import org.entcore.common.json.JSONAble;
+import org.entcore.common.notification.TimelineHelper;
+import org.entcore.common.remote.RemoteClient;
+import org.entcore.common.storage.Storage;
+import org.entcore.common.user.UserInfos;
+import org.entcore.common.utils.Id;
+import org.entcore.common.utils.StringUtils;
+
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class EscalationServiceZendeskImpl implements EscalationService {
 
@@ -98,7 +72,14 @@ public class EscalationServiceZendeskImpl implements EscalationService {
 	private final Storage storage;
 
 	private AtomicLong lastPullEpoch = new AtomicLong(0);
-	private AtomicBoolean pullInProgess = new AtomicBoolean(false);
+
+	// Sometimes the pull from zendesk may be blocked due to an error or long processing time
+	// In this case, we skip one pull to give zendesk time to process everything
+	// then we set this flag to true in order to force the next one
+	private final AtomicBoolean shouldForceSync = new AtomicBoolean(false);
+
+	// This flag is used to prevent multiple pull from zendesk at the same time
+	private final AtomicBoolean pullInProgess = new AtomicBoolean(false);
 
 	private final DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
 
@@ -161,10 +142,16 @@ public class EscalationServiceZendeskImpl implements EscalationService {
 							@Override
 							public void handle(Long timerId)
 							{
-								if(pullInProgess.get() == false)
-								{
+								if (!pullInProgess.get() || shouldForceSync.get()) {
+									// If pull is not in progress or a forced sync is scheduled
+									// start the pull from Zendesk
+									shouldForceSync.set(false);
 									pullInProgess.set(true);
 									pullDataAndUpdateIssues();
+								} else {
+									// In case of error, a pull from zendesk may be skipped
+									// the next one will be forced
+									shouldForceSync.set(true);
 								}
 							}
 						});
@@ -252,17 +239,51 @@ public class EscalationServiceZendeskImpl implements EscalationService {
 			wksHelper.readDocument(attachment.documentId, file -> {
 					try
 					{
-						final String filename = file.getDocument().getString("name");
-						final String contentType = file.getDocument().getJsonObject("metadata").getString("content-type");
-						final Long size = file.getDocument().getJsonObject("metadata").getLong("size");
+						if (file == null || file.getDocument() == null) {
+							log.error("[Support] Error : Attachment upload failed: empty file");
+							uploadPromise.fail("support.escalation.zendesk.error.upload.empty.file");
+							return;
+						}
+
+						final String filename = file.getDocument().getString("name", "");
+						JsonObject metadata = file.getDocument().getJsonObject("metadata", new JsonObject());
+						final String contentType = metadata.getString("content-type", "");
+						final Long size = metadata.getLong("size", 0L);
 						final Buffer data = file.getData();
+
+						if (data == null || data.length() == 0) {
+							log.error("[Support] Error : Attachment upload failed: empty data");
+							uploadPromise.fail("support.escalation.zendesk.error.upload.empty");
+							return;
+						}
+
+						if (filename == null || filename.isEmpty()) {
+							log.error("[Support] Error : Attachment upload failed: empty filename");
+							uploadPromise.fail("support.escalation.zendesk.error.upload.empty.filename");
+							return;
+						}
+
+						// Zendesk requires a file extension in the filename
+						// We add the content type as extension if the filename does not already contain one
+						String finalFilename;
+						if (filename.contains(".")) {
+							finalFilename = filename;
+						} else if (contentType.contains("/")) {
+							finalFilename = filename + "." + contentType.substring(contentType.indexOf("/") + 1);
+						} else {
+							finalFilename = filename + ".txt"; // Default to .txt if no extension can be determined
+						}
+
+						// Accents in filenames are not well-supported by Zendesk and caused problems in the past
+						// We remove them to prevent issues
+						finalFilename = StringUtils.stripAccents(finalFilename);
 
 						// This will be reused when inserting the issue attachment in postgres
 						attachment.contentType = contentType;
 						attachment.size = size.intValue();
 						zendeskClient.request(new RequestOptions()
 							.setMethod(HttpMethod.POST)
-							.setURI("/api/v2/uploads.json?filename=" + filename)
+										.setURI("/api/v2/uploads.json?filename=" + finalFilename)
 							.addHeader(HttpHeaders.CONTENT_TYPE, contentType)
 							.addHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(data.length()))
 						).flatMap(req -> req.send(data))
@@ -465,68 +486,82 @@ public class EscalationServiceZendeskImpl implements EscalationService {
 		}
 	}
 
-	private Future<Void> commentIssue(Number issueId, ZendeskStatus updateStatus, Comment comment)
-	{
+	// This method attempts to comment on an issue and send it to Zendesk API
+	// The request may fail if the comment's status transition is invalid or if the comment is not well-formed
+	private Future<Void> sendCommentToZendesk(Number issueId, ZendeskStatus status, Comment comment) {
 		Promise<Void> promise = Promise.promise();
-		ZendeskComment zComment;
-		if(comment instanceof ZendeskComment)
-			zComment = (ZendeskComment) comment;
-		else
-			zComment = new ZendeskComment(comment);
 
+		ZendeskComment zComment;
+		if (comment instanceof ZendeskComment)
+			zComment = (ZendeskComment) comment;
+		else {
+			zComment = new ZendeskComment(comment);
+		}
+
+		// Prepare the Zendesk issue object with the provided issue ID and status
 		ZendeskIssue capsule = new ZendeskIssue(issueId.longValue());
-		capsule.status = updateStatus;
+		capsule.status = status;
 		capsule.comment = zComment;
 
 		zendeskClient.request(new RequestOptions()
-			.setMethod(HttpMethod.PUT)
-			.setURI("/api/v2/tickets/" + issueId)
-			.addHeader(HttpHeaders.CONTENT_TYPE, "application/json; charset=utf-16"))
-		.flatMap(req -> req.send(new JsonObject().put("ticket", capsule.toJson()).encode()))
-		.onSuccess(response -> {
-			response.bodyHandler(new Handler<Buffer>()
-			{
-				@Override
-				public void handle(Buffer data)
-				{
-					if(response.statusCode()  != 200)
-					{
-						// Not sure we get a json back 100% of the time
-						try
-						{
-							JsonObject jo = new JsonObject(data.toString());
-							String errorCode = jo.getString("error");
-							if("RecordInvalid".equals(errorCode))
-							{
-								createFollowUpIssue(issueId, comment.ownerName, res -> {
-                  if(res.isLeft())
-                    promise.fail(res.left().getValue());
-                  else
-                  {
-                    ZendeskIssue followup = res.right().getValue();
-                    commentIssue(followup.id.get(), updateStatus, comment)
-                      .onFailure(promise::fail)
-                      .onSuccess(promise::complete);
-                  }
-                });
-								return;
+						.setMethod(HttpMethod.PUT)
+						.setURI("/api/v2/tickets/" + issueId)
+						.addHeader(HttpHeaders.CONTENT_TYPE, "application/json; charset=utf-16"))
+				.flatMap(req -> req.send(new JsonObject().put("ticket", capsule.toJson()).encode()))
+				.onSuccess(response -> {
+					response.bodyHandler(data -> {
+						if (response.statusCode() != 200) {
+							try {
+								JsonObject jo = new JsonObject(data.toString());
+								String errorCode = jo.getString("error");
+
+								// If the RecordInvalid error occurs, it indicates that the comment's status transition is invalid
+								// (for example, trying to transition a ticket from open to new).
+								if ("RecordInvalid".equals(errorCode)) {
+									promise.fail(new RuntimeException("RecordInvalid"));
+								} else {
+									promise.fail("support.escalation.zendesk.error.comment.failure");
+								}
+							} catch (Exception e) {
+								promise.fail("support.escalation.zendesk.error.comment.failure");
 							}
+						} else {
+							promise.complete();
 						}
-						catch(Exception e)
-						{
-						}
-						log.error("[Support] Error : Zendesk ticket comment failed: " + data.toString());
-						promise.fail("support.escalation.zendesk.error.comment.failure");
+					});
+				})
+				.onFailure(promise::fail);
+
+		return promise.future();
+	}
+
+	// This method attempts to comment an issue, and if it encounters a 'RecordInvalid' error,
+	// it tries to create a follow-up issue and then apply the comment to that follow-up.
+	private Future<Void> commentIssue(Number issueId, ZendeskStatus updateStatus, Comment comment) {
+		Promise<Void> promise = Promise.promise();
+
+		sendCommentToZendesk(issueId, updateStatus, comment)
+				.onComplete(res -> {
+					if (res.succeeded()) {
+						promise.complete();
+					} else if ("RecordInvalid".equals(res.cause().getMessage())) {
+						// If the error is 'RecordInvalid', we create a follow-up issue
+						createFollowUpIssue(issueId, comment.ownerName, followUpRes -> {
+							if (followUpRes.isLeft()) {
+								promise.fail(followUpRes.left().getValue());
+							} else {
+								// If follow-up is created successfully, comment on the follow-up issue
+								ZendeskIssue followup = followUpRes.right().getValue();
+								sendCommentToZendesk(followup.id.get(), updateStatus, comment)
+										.onSuccess(v -> promise.complete())
+										.onFailure(promise::fail);
+							}
+						});
+					} else {
+						promise.fail(res.cause());
 					}
-					else
-						promise.complete(null);
-				}
-			});
-		})
-		.onFailure(t -> {
-			log.error("[Support] Error : exception raised by zendesk escalation httpClient", t);
-			promise.fail("support.escalation.zendesk.error.comment.request");
-		});
+				});
+
 		return promise.future();
 	}
 
@@ -705,111 +740,117 @@ public class EscalationServiceZendeskImpl implements EscalationService {
 
 		final long finalPullStart = pullStart;
 		log.info("[Support] Info: Listing zendesk issues modified since " + pullStart);
-		zendeskClient.request(new RequestOptions()
-			.setMethod(HttpMethod.GET)
-			.setURI("/api/v2/incremental/tickets?include=comment_events&start_time=" + pullStart)
-			.addHeader(HttpHeaders.ACCEPT, "application/json"))
-		.flatMap(HttpClientRequest::send)
-		.onSuccess(response -> {
-			response.bodyHandler(new Handler<Buffer>()
-			{
-				@Override
-				public void handle(Buffer data)
-				{
-					if(response.statusCode()  != 200)
-					{
-						log.error("[Support] Error : Zendesk pull failed: " + data.toString());
-						log.info("[Support] Info: No zendesk issues to update");
-						pullInProgess.set(false);
-					}
-					else
-					{
-						IncrementalZendeskPull izp = new IncrementalZendeskPull(new JsonObject(data.toString()));
 
-						if(izp.tickets.size() == 0)
-						{
-							pullInProgess.set(false);
-							return;
-						}
-
-						Long[] issueIds = new Long[izp.count.intValue()];
-						Map<Long, ZendeskIssue> issuesMap = new HashMap<Long, ZendeskIssue>();
-						for(int i = izp.tickets.size(); i-- > 0;)
-						{
-							issueIds[i] = izp.tickets.get(i).id.get();
-							issuesMap.put(issueIds[i], izp.tickets.get(i));
-						}
-
-						ticketServiceSql.listExistingIssues(issueIds, new Handler<Either<String, List<Issue>>>()
-						{
+		try {
+			zendeskClient.request(new RequestOptions()
+							.setMethod(HttpMethod.GET)
+							.setURI("/api/v2/incremental/tickets?include=comment_events&start_time=" + pullStart)
+							.addHeader(HttpHeaders.ACCEPT, "application/json"))
+					.flatMap(HttpClientRequest::send)
+					.onSuccess(response -> {
+						response.bodyHandler(new Handler<Buffer>() {
 							@Override
-							public void handle(Either<String, List<Issue>> listRes)
-							{
-								if(listRes.isLeft())
-								{
-									log.error("[Support] Error: Zendesk find existing issues failed: " + listRes.left().getValue());
+							public void handle(Buffer data) {
+								if (response.statusCode() != 200) {
+									log.error("[Support] Error : Zendesk pull failed: " + data.toString());
 									pullInProgess.set(false);
-								}
-								else
-								{
-									List<Issue> listResult = listRes.right().getValue();
-									List<Future> issuesUpdates = new ArrayList<Future>(listResult.size());
+								} else {
+									IncrementalZendeskPull izp = new IncrementalZendeskPull(
+											new JsonObject(data.toString()));
 
-									log.info("[Support] Info: Updating " + listResult.size() + " zendesk issues");
-									for(Issue existing : listResult)
-										issuesUpdates.add(updateDatabaseIssue(issuesMap.get(existing.id.get()), existing.attachments, finalPullStart));
+									if (izp.tickets.size() == 0) {
+										pullInProgess.set(false);
+										return;
+									}
 
-									CompositeFuture.all(issuesUpdates).onSuccess(new Handler<CompositeFuture>()
-									{
-										@Override
-										public void handle(CompositeFuture allUploadsResult)
-										{
-											Handler<Void> next = new Handler<Void>()
-											{
+									Long[] issueIds = new Long[izp.count.intValue()];
+									Map<Long, ZendeskIssue> issuesMap = new HashMap<Long, ZendeskIssue>();
+									for (int i = izp.tickets.size(); i-- > 0; ) {
+										issueIds[i] = izp.tickets.get(i).id.get();
+										issuesMap.put(issueIds[i], izp.tickets.get(i));
+									}
+
+									ticketServiceSql.listExistingIssues(issueIds,
+											new Handler<Either<String, List<Issue>>>() {
 												@Override
-												public void handle(Void v)
-												{
-													lastPullEpoch.set(izp.end_time.longValue());
-													if(Boolean.TRUE.equals(izp.end_of_stream) == false)
-														pullDataAndUpdateIssues();
-													else
-													{
-														log.info("[Support] Info: All zendesk issues are up to date");
+												public void handle(Either<String, List<Issue>> listRes) {
+													if (listRes.isLeft()) {
+														log.error(
+																"[Support] Error: Zendesk find existing issues failed: "
+																		+ listRes.left().getValue());
 														pullInProgess.set(false);
+													} else {
+														List<Issue> listResult = listRes.right().getValue();
+														List<Future> issuesUpdates = new ArrayList<Future>(
+																listResult.size());
+
+														log.info("[Support] Info: Updating " + listResult.size()
+																+ " zendesk issues");
+														for (Issue existing : listResult)
+															issuesUpdates
+																	.add(updateDatabaseIssue(
+																			issuesMap.get(existing.id.get()),
+																			existing.attachments, finalPullStart));
+
+														CompositeFuture.all(issuesUpdates)
+																.onSuccess(new Handler<CompositeFuture>() {
+																	@Override
+																	public void handle(
+																			CompositeFuture allUploadsResult) {
+																		Handler<Void> next = new Handler<Void>() {
+																			@Override
+																			public void handle(Void v) {
+																				lastPullEpoch
+																						.set(izp.end_time.longValue());
+																				if (!Boolean.TRUE
+																						.equals(izp.end_of_stream))
+																					pullDataAndUpdateIssues();
+																				else {
+																					log.info(
+																							"[Support] Info: All zendesk issues are up to date");
+																					pullInProgess.set(false);
+																				}
+																			}
+																		};
+																		ticketServiceSql
+																				.setLastSynchroEpoch(izp.end_time)
+																				.onFailure(new Handler<Throwable>() {
+																					@Override
+																					public void handle(Throwable t) {
+																						log.error(
+																								"[Support] Error: Failed to save the last Zendesk synchro time");
+																						// Keep importing anyways
+																						next.handle(null);
+																					}
+																				}).onSuccess(next);
+																	}
+																}).onFailure(new Handler<Throwable>() {
+																	@Override
+																	public void handle(Throwable t) {
+																		log.error(
+																				"[Support] Error: failed to update zendesk issues: ",
+																				t);
+																		pullInProgess.set(false);
+																	}
+																});
 													}
 												}
-											};
-											ticketServiceSql.setLastSynchroEpoch(izp.end_time).onFailure(new Handler<Throwable>()
-											{
-												@Override
-												public void handle(Throwable t)
-												{
-													log.error("[Support] Error: Failed to save the last Zendesk synchro time");
-													// Keep importing anyways
-													next.handle(null);
-												}
-											}).onSuccess(next);
-										}
-									}).onFailure(new Handler<Throwable>()
-									{
-										@Override
-										public void handle(Throwable t)
-										{
-											log.error("[Support] Error: failed to update zendesk issues: ", t);
-											pullInProgess.set(false);
-										}
-									});
+											});
 								}
 							}
 						});
-					}
-				}
-			});
-		})
-		.onFailure(t -> {
-			log.error("[Support] Error : exception raised by zendesk escalation httpClient", t);
+					})
+					.onFailure(t -> {
+						log.error("[Support] Error : exception raised by zendesk escalation httpClient", t);
+						pullInProgess.set(false);
+					});
+		} catch (Exception e) {
+			// In the past the synchronisation has been blocked due to unexpected errors
+			// To prevent such case, we catch errors and set the pull in progress flag to
+			// false
 			pullInProgess.set(false);
-		});
+			log.error("[Support] Error : an unexpected error occurred during zendesk synchronisation");
+		}
 	}
 
 	private Future<Void> updateDatabaseIssue(ZendeskIssue issue, List<Attachment> existingAttachments, long lastUpdate)
@@ -1021,13 +1062,24 @@ public class EscalationServiceZendeskImpl implements EscalationService {
 									promise.fail(res.left().getValue());
 								else
 								{
+									// List used to store new comments to be added to ticket history
 									LinkedList<ZendeskComment> newComments = new LinkedList<ZendeskComment>();
 									boolean newAttachments = false;
 									for(ZendeskComment comment : issue.comments)
 									{
 										long postDate = parseDateToEpoch(comment.created);
+
+										// Comments with an api via may have been sent by the ENT (e.g. the first comment on each issue)
+										// But then could be sent by Zendesk too (e.g. when bulk updating tickets form Zendesk)
 										ZendeskVia via = comment.via; // Comments with an api via have been sent by the ENT (e.g. the first comment on each issue)
-										if((postDate > lastUpdate || postDate == 0) && (via == null || via.isFromAPI() == false))
+
+										// To prevent skipping comments sent by Zendesk we check if the comment is from the ENT
+										// Comments containing the string "Auteur :" at the first line are sent by the ENT
+										boolean isFromENT = comment.content != null && comment.content.contains("<br>")
+												&& comment.content.split("<br>", 2)[0].contains("Auteur :");
+
+										// We check if the comment is new, if so we add it to the linked list
+										if ((postDate > lastUpdate || postDate == 0) && (via == null || !via.isFromAPI() || (via.isFromAPI() && !isFromENT)))
 										{
 											newComments.add(comment);
 											if(comment.attachments != null && comment.attachments.size() > 0)
@@ -1119,7 +1171,7 @@ public class EscalationServiceZendeskImpl implements EscalationService {
 		else
 		{
 			String tId = ticket.id.get().toString();
-			ticketServiceSql.createTicketHisto(tId, comment.content, -1, null, TicketHisto.REMOTE_COMMENT, new Handler<Either<String, Void>>()
+			ticketServiceSql.createTicketHistoZendesk(tId, comment, -1, null, TicketHisto.REMOTE_COMMENT, new Handler<Either<String, Void>>()
 			{
 				@Override
 				public void handle(Either<String, Void> eventRes)
@@ -1135,7 +1187,7 @@ public class EscalationServiceZendeskImpl implements EscalationService {
 	}
 
 	/*
-	 * Notify local administrators (of the ticket's school_id) that the Redmine
+	 * Notify local administrators (of the ticket's school_id) that the Zendesk
 	 * issue's status has been changed to "resolved" or "closed"
 	 */
 	private void notifyIssueChanged(ZendeskIssue issue, ZendeskStatus oldStatus, Ticket ticket)
@@ -1193,5 +1245,92 @@ public class EscalationServiceZendeskImpl implements EscalationService {
 		{
 			log.error("[Support] Error : unable to send timeline notification.", e);
 		}
+	}
+
+	@Override
+	public void refreshTicketFromBugTracker(Number issueId, final Handler<Either<String, Void>> handler) {
+		getIssue(issueId, issue -> {
+			if (issue.isLeft()) {
+				log.error("[Support] Error: Unable to fetch issue from Zendesk: " + issue.left().getValue());
+				handler.handle(new Either.Left<>("Failed to fetch issue from Zendesk"));
+			} else {
+				ZendeskIssue zIssue = (ZendeskIssue) issue.right().getValue();
+
+				updateTicketHistoRefresh(zIssue)
+						.onFailure(t -> {
+							log.error("[Support] Error: Failed to update ticket history for ticket " + zIssue.getTicketId().get(), t);
+							handler.handle(new Either.Left<>("Failed to update ticket history"));
+						})
+						.onSuccess(v -> {
+							handler.handle(new Either.Right<String, Void>(null));
+						});
+			}
+		});
+	}
+
+	private Future<Void> updateTicketHistoRefresh(ZendeskIssue zendeskIssue) {
+		Promise<Void> promise = Promise.promise();
+
+		ticketServiceSql.getTicketIdAndSchoolId(zendeskIssue.id.get(), res -> {
+			if (res.isLeft()) {
+				String errorMessage = "[Support] Error: Unable to fetch ticket ID and school ID for issue " + zendeskIssue.id.get() + ": " + res.left().getValue();
+				log.error("[Support] Error: Unable to fetch ticket ID and school ID for issue " + zendeskIssue.id.get() + ": " + res.left().getValue());
+				promise.fail(errorMessage);
+				return;
+			}
+
+			Ticket ticket = res.right().getValue();
+
+			ticketServiceSql.getlistEvents(ticket.id.get().toString())
+					.onFailure(t -> {
+						String errorMessage = "[Support] Error: Unable to fetch ticket events for issue " + zendeskIssue.id.get() + ": " + t.getMessage();
+						log.error(errorMessage);
+						promise.fail(errorMessage);
+					})
+					.onSuccess(events -> {
+						LinkedList<ZendeskComment> newComments = new LinkedList<>();
+						for (ZendeskComment comment : zendeskIssue.comments) {
+							long zendeskCommentDate = parseDateToEpoch(comment.created);
+
+							// To prevent skipping comments sent by Zendesk we check if the comment is from the ENT
+							// Comments containing the string "Auteur :" at the first line are sent by the ENT
+							boolean isFromENT = comment.content != null && comment.content.contains("<br>")
+									&& comment.content.split("<br>", 2)[0].contains("Auteur :");
+
+							if (isFromENT) {
+								continue; // Skip comments from ENT
+							}
+
+							boolean found = false;
+							for (Event event : events) {
+								// Parse event date and convert to epoch seconds
+								long eventTimestamp = LocalDateTime.parse(event.getEventDate())
+										.atZone(ZoneId.systemDefault())
+										.toInstant()
+										.toEpochMilli() / 1000;
+
+								// Check if the comment date matches any event date
+								// If it's the case, it means the comment has already been saved in the database
+								if (zendeskCommentDate == eventTimestamp) {
+									found = true;
+									break;
+								}
+							}
+
+							if (!found) {
+								newComments.add(comment);
+							}
+						}
+
+						if (!newComments.isEmpty()) {
+							// Add all new comments to the ticket
+							addAllCommentsToTicket(newComments, ticket, zendeskIssue.status, promise);
+						} else {
+							promise.complete(); // Complete the promise if no new comments
+						}
+					});
+		});
+
+		return promise.future();
 	}
 }

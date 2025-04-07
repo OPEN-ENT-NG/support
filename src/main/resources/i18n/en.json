@@ -54,6 +54,8 @@
     "support.ticket.export.error" : "Une erreur est survenue lors de l'exportation des tickets",
     "support.ticket.creation.date": "Date de création",
     "support.ticket.description": "Description",
+    "support.ticket.refresh": "Rafraîchir le ticket",
+    "support.ticket.refresh.failed": "Une erreur est survenue lors de la mise à jour du ticket",
     "support.ticket.edit": "Mettre à jour la demande",
     "support.ticket.empty": "Aucune demande",
     "support.ticket.escalation.failed": "Erreur serveur : la demande n'a pas pu être transmise",

@@ -34,14 +34,11 @@ import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import net.atos.entng.support.Support;
-import net.atos.entng.support.Ticket;
-import net.atos.entng.support.Issue;
-import net.atos.entng.support.Attachment;
-import net.atos.entng.support.Comment;
-import net.atos.entng.support.enums.*;
+import net.atos.entng.support.*;
 import net.atos.entng.support.constants.JiraTicket;
+import net.atos.entng.support.enums.BugTrackerSyncType;
 import net.atos.entng.support.enums.Error;
+import net.atos.entng.support.enums.TicketHisto;
 import net.atos.entng.support.export.TicketsCSVExport;
 import net.atos.entng.support.filters.Admin;
 import net.atos.entng.support.filters.AdminOfTicketsStructure;
@@ -912,7 +909,38 @@ public class TicketController extends ControllerHelper {
                 unauthorized(request);
             }
         });
+    }
 
+    @Post("/ticket/:id/refresh")
+    @ApiDoc("Refresh issue from bug track and save new comments in database")
+    @SecuredAction(value = "", type = ActionType.RESOURCE)
+    @ResourceFilter(SuperAdminFilter.class)
+    public void refreshTicketFromBugTracker(final HttpServerRequest request) {
+        final String issueIdStr = request.params().get("id");
+
+        if (issueIdStr == null || issueIdStr.isEmpty()) {
+            log.error("Error when trying to update bug tracker issue: Missing ticket ID");
+            badRequest(request, "Missing ticket ID");
+            return;
+        }
+
+        final long issueId;
+        try {
+            issueId = Long.parseLong(issueIdStr);
+        } catch (NumberFormatException e) {
+            log.error("Error when trying to update bug tracker issue: Invalid ticket ID");
+            badRequest(request, "Invalid ticket ID format: " + issueIdStr);
+            return;
+        }
+
+        escalationService.refreshTicketFromBugTracker(issueId, res -> {
+            if (res.isLeft()) {
+                log.error("[Support] Failed to refresh issue " + issueId + ": " + res.left().getValue());
+                renderError(request, new JsonObject().put("Failed to refresh issue: " + issueId, res.left().getValue()));
+            } else {
+                ok(request);
+            }
+        });
     }
 
     private void refreshIssue(final Long issueId, final HttpServerRequest request, Handler<Either<String, Issue>> handler) {

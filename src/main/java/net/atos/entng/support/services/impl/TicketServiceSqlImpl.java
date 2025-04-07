@@ -19,27 +19,22 @@
 
 package net.atos.entng.support.services.impl;
 
-import static org.entcore.common.sql.Sql.parseId;
-import static org.entcore.common.sql.SqlResult.validUniqueResultHandler;
-import static org.entcore.common.sql.SqlResult.validResultHandler;
-
-import java.text.DateFormat;
-import java.text.Format;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.concurrent.ConcurrentMap;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-
+import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.http.Renders;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.Promise;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import net.atos.entng.support.*;
 import net.atos.entng.support.constants.JiraTicket;
 import net.atos.entng.support.enums.BugTracker;
 import net.atos.entng.support.enums.EscalationStatus;
-import net.atos.entng.support.enums.TicketStatus;
 import net.atos.entng.support.enums.TicketHisto;
+import net.atos.entng.support.enums.TicketStatus;
 import net.atos.entng.support.helpers.DateHelper;
 import net.atos.entng.support.helpers.IModelHelper;
 import net.atos.entng.support.helpers.PromiseHelper;
@@ -48,7 +43,7 @@ import net.atos.entng.support.model.Event;
 import net.atos.entng.support.model.TicketModel;
 import net.atos.entng.support.model.TransactionElement;
 import net.atos.entng.support.services.TicketServiceSql;
-
+import net.atos.entng.support.zendesk.ZendeskComment;
 import org.entcore.common.service.impl.SqlCrudService;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlResult;
@@ -57,22 +52,18 @@ import org.entcore.common.user.DefaultFunctions;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserInfos.Function;
 import org.entcore.common.utils.Id;
-import io.vertx.core.Handler;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-import io.vertx.core.Future;
-import io.vertx.core.Promise;
 
-import fr.wseduc.webutils.Either;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-import io.vertx.core.eventbus.Message;
+import java.text.DateFormat;
+import java.text.Format;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
-import net.atos.entng.support.Ticket;
-import net.atos.entng.support.Issue;
-import net.atos.entng.support.Attachment;
-import net.atos.entng.support.WorkspaceAttachment;
-import net.atos.entng.support.Comment;
+import static org.entcore.common.sql.Sql.parseId;
+import static org.entcore.common.sql.SqlResult.validResultHandler;
+import static org.entcore.common.sql.SqlResult.validUniqueResultHandler;
 
 public class TicketServiceSqlImpl extends SqlCrudService implements TicketServiceSql {
 
@@ -1110,18 +1101,18 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
     }
 
     /**
-     * @param ticketId  : id of the ticket historized
-     * @param event     : description of the event
-     * @param status    : status after the event
-     * @param userid    : user that made de creation / modification
-     * @param eventType : 1 : new ticket /
-     *                  2 : ticket updated /
-     *                  3 : new comment /
-     *                  4 : ticket escalated to bug-tracker /
-     *                  5 : new comment from bug-tracker /
-     *                  6 : bug-tracker updated.
-     * @param handler
-     */
+	 * @param ticketId  : id of the ticket historized
+	 * @param event     : description of the event
+	 * @param status    : status after the event
+	 * @param userid    : user that made de creation / modification
+	 * @param histoType 1 : new ticket /
+	 *                  2 : ticket updated /
+	 *                  3 : new comment /
+	 *                  4 : ticket escalated to bug-tracker /
+	 *                  5 : new comment from bug-tracker /
+	 *                  6 : bug-tracker updated.
+	 * @param handler
+	 */
     public void createTicketHisto(String ticketId, String event, int status, String userid, TicketHisto histoType, Handler<Either<String, Void>> handler) {
         String query = "INSERT INTO support.tickets_histo( ticket_id, event, status, user_id, event_type) "
                 + " values( ?, ?, ?, ?, ? )";
@@ -1146,6 +1137,57 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 		}));
     }
 
+	/**
+	 * @param ticketId  : id of the ticket historized
+	 * @param comment   : the comment (including event comment)
+	 * @param status    : status after the event
+	 * @param userId    : user that made de creation / modification
+	 * @param histoType 1 : new ticket /
+	 *                  2 : ticket updated /
+	 *                  3 : new comment /
+	 *                  4 : ticket escalated to bug-tracker /
+	 *                  5 : new comment from bug-tracker /
+	 *                  6 : bug-tracker updated.
+	 * @param handler
+	 */
+	public void createTicketHistoZendesk(String ticketId, ZendeskComment comment, int status, String userId, TicketHisto histoType, Handler<Either<String, Void>> handler) {
+		// First we are checking if there is already a similar entry in the tickets_histo table
+		// If there is, it means that the comment has already been added (this is done to avoid duplicates)
+		// Duplicates can happen if the comment as already been added using manual refresh and when the synchronisation runs afterward
+
+		// SELECT 1 simply returns 1 if the entry exists: it's an optimized way to check for existence
+		String selectQuery = "SELECT 1 FROM support.tickets_histo " + "WHERE ticket_id = ? AND event = ? AND event_date = ? AND event_type = ?";
+		JsonArray selectValues = new JsonArray()
+				.add(parseId(ticketId))
+				.add(comment.content)
+				.add(comment.created)
+				.add(histoType.eventType());
+
+		sql.prepared(selectQuery, selectValues, validUniqueResultHandler(res -> {
+			if (res.isRight() && !res.right().getValue().isEmpty()) {
+				handler.handle(new Either.Right<>(null));
+			} else {
+				// If there is no similar entry, we proceed to insert the new comment
+				String insertQuery = "INSERT INTO support.tickets_histo(ticket_id, event, event_date, status, user_id, event_type) "
+						+ "VALUES(?, ?, ?, ?, ?, ?)";
+				JsonArray insertValues = new JsonArray()
+						.add(parseId(ticketId))
+						.add(comment.content)
+						.add(comment.created)
+						.add(status)
+						.add(userId)
+						.add(histoType.eventType());
+
+				sql.prepared(insertQuery, insertValues, validUniqueResultHandler(insertRes -> {
+					if (insertRes.isLeft()) {
+						handler.handle(new Either.Left<>(insertRes.left().getValue()));
+					} else {
+						handler.handle(new Either.Right<>(null));
+					}
+				}));
+			}
+		}));
+	}
 
 	public Future<Long> getLastSynchroEpoch()
 	{
