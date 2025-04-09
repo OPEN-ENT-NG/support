@@ -1059,7 +1059,7 @@ public class EscalationServiceZendeskImpl implements EscalationService {
 												&& comment.content.split("<br>", 2)[0].contains("Auteur :");
 
 										// We check if the comment is new, if so we add it to the linked list
-										if ((postDate > lastUpdate || postDate == 0) && (via == null || via.isFromAPI() && !isFromENT))
+										if ((postDate > lastUpdate || postDate == 0) && (via == null || !via.isFromAPI() || (via.isFromAPI() && !isFromENT)))
 										{
 											newComments.add(comment);
 											if(comment.attachments != null && comment.attachments.size() > 0)
