@@ -1257,7 +1257,12 @@ public class EscalationServiceZendeskImpl implements EscalationService {
 							// Convert LocalDateTime to epoch seconds
 							long lastEventTimestamp = localDateTime.toInstant(ZoneOffset.UTC).toEpochMilli() / 1000;
 
-							updateTicketHisto(zIssue, zIssue.status, lastEventTimestamp);
+							updateTicketHisto(zIssue, zIssue.status, lastEventTimestamp).onFailure(t -> {
+								log.error("[Support] Error: Failed to update ticket history for ticket " + ticketId, t);
+								handler.handle(new Either.Left<>("Failed to update ticket history"));
+							}).onSuccess(v -> {
+								handler.handle(new Either.Right<String, Void>(null));
+							});
 						})
 						.onFailure(err -> {
 							log.error("[Support] Error: Failed to get last event date for ticket " + ticketId, err);
