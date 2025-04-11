@@ -480,16 +480,21 @@ public class EscalationServiceZendeskImpl implements EscalationService {
 		}
 	}
 
-	private Future<Void> commentIssue(Number issueId, ZendeskStatus updateStatus, Comment comment) {
+	// This method attempts to comment on an issue and send it to Zendesk API
+	// The request may fail if the comment's status transition is invalid or if the comment is not well-formed
+	private Future<Void> sendCommentToZendesk(Number issueId, ZendeskStatus status, Comment comment) {
 		Promise<Void> promise = Promise.promise();
-		ZendeskComment zComment;
-		if(comment instanceof ZendeskComment)
-			zComment = (ZendeskComment) comment;
-		else
-			zComment = new ZendeskComment(comment);
 
+		ZendeskComment zComment;
+		if (comment instanceof ZendeskComment)
+			zComment = (ZendeskComment) comment;
+		else {
+			zComment = new ZendeskComment(comment);
+		}
+
+		// Prepare the Zendesk issue object with the provided issue ID and status
 		ZendeskIssue capsule = new ZendeskIssue(issueId.longValue());
-		capsule.status = updateStatus;
+		capsule.status = status;
 		capsule.comment = zComment;
 
 		zendeskClient.request(new RequestOptions()
@@ -498,50 +503,59 @@ public class EscalationServiceZendeskImpl implements EscalationService {
 						.addHeader(HttpHeaders.CONTENT_TYPE, "application/json; charset=utf-16"))
 				.flatMap(req -> req.send(new JsonObject().put("ticket", capsule.toJson()).encode()))
 				.onSuccess(response -> {
-					response.bodyHandler(new Handler<Buffer>() {
-						@Override
-						public void handle(Buffer data) {
-							if (response.statusCode() != 200) {
-								// Not sure if we get a json back 100% of the time
+					response.bodyHandler(data -> {
+						if (response.statusCode() != 200) {
+							try {
+								JsonObject jo = new JsonObject(data.toString());
+								String errorCode = jo.getString("error");
 
-								// Zendesk may return an error if the user perform an invalid action
-								// For example if we change the status of a ticket to "new" while it is open
-								try {
-									JsonObject jo = new JsonObject(data.toString());
-									String errorCode = jo.getString("error");
-
-									// If the comment we tried to create returns an error we create a follow-up issue
-									// See it as a copy of the previous ticket with the right status
-									if ("RecordInvalid".equals(errorCode)) {
-										createFollowUpIssue(issueId, comment.ownerName, res -> {
-											if (res.isLeft()) {
-												log.error("[Support] Error : failed to create a follow up issue: " + res.left().getValue());
-												promise.fail(res.left().getValue());
-											}
-											else {
-												ZendeskIssue followup = res.right().getValue();
-
-												// We recursively call commentIssue to copy each comment from the previous issue to the followup issue
-												commentIssue(followup.id.get(), updateStatus, comment)
-														.onFailure(promise::fail)
-														.onSuccess(promise::complete);
-											}
-										});
-										return;
-									}
-								} catch (Exception e) {
+								// If the RecordInvalid error occurs, it indicates that the comment's status transition is invalid
+								// (for example, trying to transition a ticket from open to new).
+								if ("RecordInvalid".equals(errorCode)) {
+									promise.fail(new RuntimeException("RecordInvalid"));
+								} else {
+									promise.fail("support.escalation.zendesk.error.comment.failure");
 								}
-								log.error("[Support] Error : Zendesk ticket comment failed: " + data.toString());
+							} catch (Exception e) {
 								promise.fail("support.escalation.zendesk.error.comment.failure");
-							} else
-								promise.complete(null);
+							}
+						} else {
+							promise.complete();
 						}
 					});
 				})
-				.onFailure(t -> {
-					log.error("[Support] Error : exception raised by zendesk escalation httpClient", t);
-					promise.fail("support.escalation.zendesk.error.comment.request");
+				.onFailure(promise::fail);
+
+		return promise.future();
+	}
+
+	// This method attempts to comment an issue, and if it encounters a 'RecordInvalid' error,
+	// it tries to create a follow-up issue and then apply the comment to that follow-up.
+	private Future<Void> commentIssue(Number issueId, ZendeskStatus updateStatus, Comment comment) {
+		Promise<Void> promise = Promise.promise();
+
+		sendCommentToZendesk(issueId, updateStatus, comment)
+				.onComplete(res -> {
+					if (res.succeeded()) {
+						promise.complete();
+					} else if ("RecordInvalid".equals(res.cause().getMessage())) {
+						// If the error is 'RecordInvalid', we create a follow-up issue
+						createFollowUpIssue(issueId, comment.ownerName, followUpRes -> {
+							if (followUpRes.isLeft()) {
+								promise.fail(followUpRes.left().getValue());
+							} else {
+								// If follow-up is created successfully, comment on the follow-up issue
+								ZendeskIssue followup = followUpRes.right().getValue();
+								sendCommentToZendesk(followup.id.get(), updateStatus, comment)
+										.onSuccess(v -> promise.complete())
+										.onFailure(promise::fail);
+							}
+						});
+					} else {
+						promise.fail(res.cause());
+					}
 				});
+
 		return promise.future();
 	}
 
