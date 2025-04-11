@@ -554,13 +554,17 @@ export const SupportController: Controller = ng.controller('SupportController',
 			template.open('main', 'edit-ticket');
 		};
 
-        $scope.refreshTicket = function () {
-            try {
-                http().post('/support/ticket/' + $scope.ticket.issue.id + '/refresh');
-            } catch (error) {
-                notify.error('support.ticket.refresh.failed');
-            }
-        };
+		$scope.refreshTicket = function () {
+				try {
+				http().post('/support/ticket/' + $scope.ticket.issue.id + '/refresh')
+					.done(function () {
+						notify.success('support.ticket.refresh.successful');
+						$scope.goToMainPage();
+					});
+			} catch (error) {
+				notify.error('support.ticket.refresh.failed');
+			}
+		};
 
 		$scope.checkUpdateTicket = function (ticket) {
 			ticket.processing = true;
