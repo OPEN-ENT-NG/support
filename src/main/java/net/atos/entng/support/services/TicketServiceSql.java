@@ -171,15 +171,6 @@ public interface TicketServiceSql extends CrudService {
 	public Future<Void> setLastSynchroEpoch(Long epoch);
 
 	/**
-	 * Retrieves the date of the last event saved in the `tickets_histo` table for a specific Zendesk issue.
-	 *
-	 * @param zendeskIssueId The ID of the Zendesk issue for which to retrieve the last event date.
-	 *                       Must be a valid number.
-	 * @return {Future<String>} A future containing the date of the last event as a string.
-	 */
-	Future<String> getLastEventDate(Number zendeskIssueId);
-
-	/**
 	 * List all tickets without category label
 	 *
 	 * @return {Future<JsonArray>} list of ticket without category labels

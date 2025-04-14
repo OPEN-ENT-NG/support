@@ -34,6 +34,7 @@ import io.vertx.core.logging.LoggerFactory;
 import net.atos.entng.support.*;
 import net.atos.entng.support.enums.BugTracker;
 import net.atos.entng.support.enums.TicketHisto;
+import net.atos.entng.support.model.Event;
 import net.atos.entng.support.services.EscalationService;
 import net.atos.entng.support.services.TicketServiceSql;
 import net.atos.entng.support.services.UserService;
@@ -52,8 +53,7 @@ import java.text.Normalizer;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -1246,43 +1246,85 @@ public class EscalationServiceZendeskImpl implements EscalationService {
 		getIssue(issueId, issue -> {
 			if (issue.isLeft()) {
 				log.error("[Support] Error: Unable to fetch issue from Zendesk: " + issue.left().getValue());
+				handler.handle(new Either.Left<>("Failed to fetch issue from Zendesk"));
 			} else {
 				ZendeskIssue zIssue = (ZendeskIssue) issue.right().getValue();
-				Number ticketId = zIssue.getTicketId().get();
-				ticketServiceSql.getLastEventDate(ticketId)
-						.onSuccess(lastEventDateString -> {
-							if (lastEventDateString == null) {
-								log.error("[Support] Error: Unable to fetch last event date for ticket " + ticketId);
-								handler.handle(new Either.Left<>("Failed to get last event date"));
-								return;
-							}
 
-							// Assuming the date string is in the format "yyyy-MM-dd'T'HH:mm:ss.SSS"
-							DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS");
-
-							// Parse the date string to LocalDateTime
-							LocalDateTime localDateTime = LocalDateTime.parse(lastEventDateString, formatter);
-							if (localDateTime == null) {
-								log.error("[Support] Error: Unable to parse last event date for ticket " + ticketId);
-								handler.handle(new Either.Left<>("Failed to parse last event date"));
-								return;
-							}
-
-							// Convert LocalDateTime to epoch seconds
-							long lastEventTimestamp = localDateTime.toInstant(ZoneOffset.UTC).toEpochMilli() / 1000;
-
-							updateTicketHisto(zIssue, zIssue.status, lastEventTimestamp).onFailure(t -> {
-								log.error("[Support] Error: Failed to update ticket history for ticket " + ticketId, t);
-								handler.handle(new Either.Left<>("Failed to update ticket history"));
-							}).onSuccess(v -> {
-								handler.handle(new Either.Right<String, Void>(null));
-							});
+				updateTicketHistoRefresh(zIssue)
+						.onFailure(t -> {
+							log.error("[Support] Error: Failed to update ticket history for ticket " + zIssue.getTicketId().get(), t);
+							handler.handle(new Either.Left<>("Failed to update ticket history"));
 						})
-						.onFailure(err -> {
-							log.error("[Support] Error: Failed to get last event date for ticket " + ticketId, err);
-							handler.handle(new Either.Left<>("Failed to get last event date"));
+						.onSuccess(v -> {
+							handler.handle(new Either.Right<String, Void>(null));
 						});
 			}
 		});
+	}
+
+	private Future<Void> updateTicketHistoRefresh(ZendeskIssue zendeskIssue) {
+		Promise<Void> promise = Promise.promise();
+
+		ticketServiceSql.getTicketIdAndSchoolId(zendeskIssue.id.get(), res -> {
+			if (res.isLeft()) {
+				String errorMessage = "[Support] Error: Unable to fetch ticket ID and school ID for issue " + zendeskIssue.id.get() + ": " + res.left().getValue();
+				log.error("[Support] Error: Unable to fetch ticket ID and school ID for issue " + zendeskIssue.id.get() + ": " + res.left().getValue());
+				promise.fail(errorMessage);
+				return;
+			}
+
+			Ticket ticket = res.right().getValue();
+
+			ticketServiceSql.getlistEvents(ticket.id.get().toString())
+					.onFailure(t -> {
+						String errorMessage = "[Support] Error: Unable to fetch ticket events for issue " + zendeskIssue.id.get() + ": " + t.getMessage();
+						log.error(errorMessage);
+						promise.fail(errorMessage);
+					})
+					.onSuccess(events -> {
+						LinkedList<ZendeskComment> newComments = new LinkedList<>();
+						for (ZendeskComment comment : zendeskIssue.comments) {
+							long zendeskCommentDate = parseDateToEpoch(comment.created);
+
+							// To prevent skipping comments sent by Zendesk we check if the comment is from the ENT
+							// Comments containing the string "Auteur :" at the first line are sent by the ENT
+							boolean isFromENT = comment.content != null && comment.content.contains("<br>")
+									&& comment.content.split("<br>", 2)[0].contains("Auteur :");
+
+							if (isFromENT) {
+								continue; // Skip comments from ENT
+							}
+
+							boolean found = false;
+							for (Event event : events) {
+								// Parse event date and convert to epoch seconds
+								long eventTimestamp = LocalDateTime.parse(event.getEventDate())
+										.atZone(ZoneId.systemDefault())
+										.toInstant()
+										.toEpochMilli() / 1000;
+
+								// Check if the comment date matches any event date
+								// If it's the case, it means the comment has already been saved in the database
+								if (zendeskCommentDate == eventTimestamp) {
+									found = true;
+									break;
+								}
+							}
+
+							if (!found) {
+								newComments.add(comment);
+							}
+						}
+
+						if (!newComments.isEmpty()) {
+							// Add all new comments to the ticket
+							addAllCommentsToTicket(newComments, ticket, zendeskIssue.status, promise);
+						} else {
+							promise.complete(); // Complete the promise if no new comments
+						}
+					});
+		});
+
+		return promise.future();
 	}
 }

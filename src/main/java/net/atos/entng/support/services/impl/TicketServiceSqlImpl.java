@@ -1243,40 +1243,6 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 		return promise.future();
 	}
 
-	/**
-	 * Retrieves the date of the last event saved in the `tickets_histo` table for a specific Zendesk issue.
-	 *
-	 * @param zendeskIssueId The ID of the Zendesk issue for which to retrieve the last event date.
-	 *                       Must be a valid number.
-	 * @return {Future<String>} A future containing the date of the last event as a string.
-	 */
-	public Future<String> getLastEventDate(Number zendeskIssueId) {
-		Promise<String> promise = Promise.promise();
-
-		String query = "SELECT event_date FROM support.tickets_histo WHERE ticket_id = ? ORDER BY event_date DESC LIMIT 1";
-
-		JsonArray values = new JsonArray().add(zendeskIssueId);
-
-		sql.prepared(query, values, validResultHandler(new Handler<Either<String, JsonArray>>() {
-			@Override
-			public void handle(Either<String, JsonArray> res) {
-				if (res.isLeft()) {
-					promise.fail(res.left().getValue());
-				} else {
-					JsonArray result = res.right().getValue();
-					if (result != null && !result.isEmpty()) {
-						String eventDateStr = result.getJsonObject(0).getString("event_date");
-						promise.complete(eventDateStr);
-					} else {
-						promise.complete(null);
-					}
-				}
-			}
-		}));
-
-		return promise.future();
-	}
-
     /**
      * @param idList : list of ticket ids I want to retrieve
      * @return {@link Future} of {@link JsonArray}
