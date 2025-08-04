@@ -1250,6 +1250,8 @@ public class EscalationServiceZendeskImpl implements EscalationService {
 											));
 							params.put("pushNotif", pushNotif);
 
+							log.info("Sending notification to " + String.valueOf(ticket.id.get()));
+
 							notification.notifyTimeline(null, "support." + notificationName, null, recipients, null, params);
 						}
 					}
