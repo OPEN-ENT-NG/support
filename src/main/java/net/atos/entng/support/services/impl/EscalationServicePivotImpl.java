@@ -1,6 +1,7 @@
 package net.atos.entng.support.services.impl;
 
 import fr.wseduc.webutils.Either;
+import fr.wseduc.webutils.I18n;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
@@ -293,6 +294,8 @@ public class EscalationServicePivotImpl implements EscalationService
 
         String ticketOwner = issue.getString("owner_id");
         String structure = issue.getString("school_id");
+        String username = user.getString("username");
+
         final Set<String> recipientSet = new HashSet<>();
         String notificationName = getNotificationName( issueStatus );
 
@@ -310,12 +313,24 @@ public class EscalationServicePivotImpl implements EscalationService
             if (!recipients.isEmpty()) {
                 JsonObject params = new JsonObject();
                 params.put("issueId",ticket_id_iws)
-                        .put("username", user.getString("username"))
+                        .put("username", username)
                         .put("ticketId", ticketId);
                 params.put("ticketUri", "/support#/ticket/" + ticketId);
                 params.put("resourceUri", params.getString("ticketUri"))
                         .put("ticketsubject", shortenSubject(issue.getString("description") ));
                 params.put("resourceUri", params.getString("ticketUri"));
+
+                JsonObject pushNotif = new JsonObject()
+                        .put("title", "push-notif.support." + notificationName)
+                        .put("body", I18n.getInstance()
+                                .translate(
+                                        "push-notif." + notificationName + ".body",
+                                        I18n.DEFAULT_DOMAIN,
+                                        issue.getString("locale", "fr"),
+                                        username,
+                                        ticketId
+                                ));
+                params.put("pushNotif", pushNotif);
 
                 notification.notifyTimeline(null, "support." + notificationName, null, recipients, params);
             }
