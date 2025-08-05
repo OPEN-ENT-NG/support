@@ -482,7 +482,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 	 */
 	private String escalateTicketInfoQuery( String fromTable, String whereClause )  {
 		return "SELECT t.id, t.status, t.subject, t.description, t.category, t.school_id,"
-		+ " u.username AS owner_name, t.owner as owner_id, t.created,"
+		+ " u.username AS owner_name, t.owner as owner_id, t.created, t.locale,"
 				+ " CASE WHEN COUNT(a.document_id) = 0 THEN '[]' ELSE json_agg(DISTINCT a.document_id) END AS attachments,"
 				+ " CASE WHEN COUNT(a.name) = 0 THEN '[]' ELSE json_agg(DISTINCT a.name) END AS attachmentsNames,"
 		+ " CASE WHEN COUNT(c.id) = 0 THEN '[]' "
