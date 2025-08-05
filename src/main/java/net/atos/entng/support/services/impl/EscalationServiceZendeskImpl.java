@@ -1236,6 +1236,11 @@ public class EscalationServiceZendeskImpl implements EscalationService {
 							params.put("ticketUri", "/support#/ticket/" + ticket.id.get());
 							params.put("resourceUri", params.getString("ticketUri"));
 
+							String supportName = I18n.getInstance()
+									.translate("support",
+													I18n.DEFAULT_DOMAIN,
+													ticket.locale);
+
 							JsonObject pushNotif = new JsonObject()
 									.put("title", "push-notif.support." + notificationName)
 									.put("body", I18n.getInstance()
@@ -1245,7 +1250,7 @@ public class EscalationServiceZendeskImpl implements EscalationService {
 													ticket.locale,
 													//Requière l'intégration d'un nouveau endpoint de zendesk pour récupérer les audits du ticket
 													//afin d'extraire le nom de la dernière personne ayant modifiée
-													"Zendesk",
+													supportName,
                                                     String.valueOf(ticket.id.get())
 											));
 							params.put("pushNotif", pushNotif);
