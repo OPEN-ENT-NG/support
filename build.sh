@@ -26,36 +26,36 @@ init() {
 }
 
 clean () {
-  docker-compose run --rm maven mvn $MVN_OPTS clean
+  docker compose run --rm maven mvn $MVN_OPTS clean
 }
 
 install () {
-  docker-compose run --rm maven mvn $MVN_OPTS install -DskipTests
+  docker compose run --rm maven mvn $MVN_OPTS install -DskipTests
 }
 
 test () {
-  docker-compose run --rm maven mvn $MVN_OPTS test
+  docker compose run --rm maven mvn $MVN_OPTS test
 }
 
 buildNode () {
   case `uname -s` in
     MINGW*)
-      docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install --no-bin-links && node_modules/gulp/bin/gulp.js build"
+      docker compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install --no-bin-links && node_modules/gulp/bin/gulp.js build"
       ;;
     *)
-      docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install && node_modules/gulp/bin/gulp.js build"
+      docker compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install && node_modules/gulp/bin/gulp.js build"
   esac
 }
 
 publish() {
-  version=`docker-compose run --rm maven mvn $MVN_OPTS help:evaluate -Dexpression=project.version -q -DforceStdout`
+  version=`docker compose run --rm maven mvn $MVN_OPTS help:evaluate -Dexpression=project.version -q -DforceStdout`
   level=`echo $version | cut -d'-' -f3`
   case "$level" in
     *SNAPSHOT) export nexusRepository='snapshots' ;;
     *)         export nexusRepository='releases' ;;
   esac
 
-  docker-compose run --rm  maven mvn $MVN_OPTS -DrepositoryId=ode-$nexusRepository -DskiptTests --settings /var/maven/.m2/settings.xml deploy
+  docker compose run --rm  maven mvn $MVN_OPTS -DrepositoryId=ode-$nexusRepository -DskiptTests --settings /var/maven/.m2/settings.xml deploy
 }
 
 testNode () {
@@ -63,10 +63,10 @@ testNode () {
   rm -rf */build
   case `uname -s` in
     MINGW*)
-      docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install --no-bin-links && node_modules/gulp/bin/gulp.js drop-cache &&  npm test"
+      docker compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install --no-bin-links && node_modules/gulp/bin/gulp.js drop-cache &&  npm test"
       ;;
     *)
-      docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install && node_modules/gulp/bin/gulp.js drop-cache && npm test"
+      docker compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install && node_modules/gulp/bin/gulp.js drop-cache && npm test"
   esac
 }
 
