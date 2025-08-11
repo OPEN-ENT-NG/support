@@ -111,6 +111,21 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 		StringBuilder sb = new StringBuilder();
 		JsonArray values = new JsonArray();
 		for (String attr : data.fieldNames()) {
+			// COCO-4341 Update description iif ticket is not already escalated.
+			if("description".equals(attr)) {
+				s.prepared(
+					"UPDATE support.tickets SET description = ? WHERE id = ? AND escalation_status NOT IN (?, ?)", 
+					new JsonArray()
+					.add(data.getValue(attr))
+					.add(parseId(ticketId))
+					.add(EscalationStatus.IN_PROGRESS.status())
+					.add(EscalationStatus.SUCCESSFUL.status())
+				);
+				continue;
+			}
+
+			// Update other fields, except for new comments and attachments which are updated in steps 3 and 4.
+			// Also set modification date to now.
 			if( !"newComment".equals(attr) && !"newComments".equals(attr) && !"attachments".equals(attr) ) {
 				sb.append(attr).append(" = ?, ");
 				values.add(data.getValue(attr));
