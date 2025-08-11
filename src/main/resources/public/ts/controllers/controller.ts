@@ -1,31 +1,29 @@
+import { copy } from "angular";
+import { AxiosError, AxiosResponse } from "axios";
 import {
-	Controller,
-	ng,
-	idiom as lang,
-	template,
 	_,
 	angular,
-	notify,
-	moment,
 	Behaviours,
-	workspace,
+	Controller,
+	http,
+	idiom as lang,
+	moment,
+	ng,
+	notify,
+	template,
 	toasts,
-	http
+	workspace
 } from "entcore";
+import { DEMANDS } from "../core/enum/demands.enum";
+import { WORKFLOW } from "../core/enum/workflow.enum";
+import { Attachment } from "../models/Attachment";
+import { ICountTicketsResponse } from "../models/countTickets.model";
 import { models } from "../models/model";
-import {safeApply} from "../utils/safeApply";
-import {IAttachmentService} from "../services";
-import {Attachment} from "../models/Attachment";
+import { INbTicketsPerPageResponse } from "../models/nbTicketsPerPage.model";
+import { ITicketPayload, Ticket } from "../models/ticket.model";
+import { IAttachmentService, ITicketService } from "../services";
+import { safeApply } from "../utils/safeApply";
 import service = workspace.v2.service;
-import {AxiosError, AxiosResponse} from "axios";
-import {attachment} from "entcore/types/src/ts/editor/options";
-import {DEMANDS} from "../core/enum/demands.enum";
-import {ITicketService} from "../services";
-import {ITicketPayload, Ticket} from "../models/ticket.model";
-import {WORKFLOW} from "../core/enum/workflow.enum";
-import {copy} from "angular";
-import {ICountTicketsResponse} from "../models/countTickets.model";
-import {INbTicketsPerPageResponse} from "../models/nbTicketsPerPage.model";
 
 declare let model: any;
 
@@ -682,6 +680,12 @@ export const SupportController: Controller = ng.controller('SupportController',
 
 		$scope.isViewingEscalatedTicket = function() {
 			return template.contains('main', 'view-bugtracker-issue');
+		};
+
+		// Function to test if edited ticket has been escalated
+		$scope.isEditedTicketEscalated =  function() {
+			return $scope.editedTicket.escalation_status == model.escalationStatuses.IN_PROGRESS
+			|| $scope.editedTicket.escalation_status == model.escalationStatuses.SUCCESSFUL;
 		};
 
 		// Functions to escalate tickets or process escalated tickets

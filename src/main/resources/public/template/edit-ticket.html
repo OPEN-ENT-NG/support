@@ -48,8 +48,16 @@
 		<div class="row">
 			<label class="two cell"><i18n>support.ticket.description</i18n></label>
 			<div class="ten cell">
-				<textarea ng-model="editedTicket.description" ng-if="!isRichEditorActivated" input-guard></textarea>
-				<editor ng-model="editedTicket.description" ng-if="isRichEditorActivated" input-guard></editor>
+				<textarea input-guard
+						  ng-model="editedTicket.description"
+						  ng-if="!isRichEditorActivated" 
+						  ng-disabled="isEditedTicketEscalated()"
+				></textarea>
+				<editor input-guard
+					    ng-model="editedTicket.description"
+						ng-if="isRichEditorActivated"
+						ng-disabled="isEditedTicketEscalated()"
+				></editor>
 			</div>
 		</div>
 
