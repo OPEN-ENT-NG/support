@@ -496,7 +496,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 		+ " LEFT JOIN support.users AS v ON c.owner = v.id"
 		+ " " + whereClause
 		+ " GROUP BY t.id, t.status, t.subject, t.description, t.category, t.school_id, u.username,"
-		+ " t.owner, t.created";
+		+ " t.owner, t.created, t.locale";
 	}
 
 	/**
