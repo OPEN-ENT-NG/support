@@ -20,6 +20,7 @@
 package net.atos.entng.support;
 
 import fr.wseduc.mongodb.MongoDb;
+import fr.wseduc.webutils.collections.SharedDataHelper;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
@@ -32,6 +33,7 @@ import net.atos.entng.support.helpers.PromiseHelper;
 import net.atos.entng.support.message.MessageResponseHandler;
 import net.atos.entng.support.services.*;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.entcore.common.folders.FolderManager;
 import org.entcore.common.http.BaseServer;
 import org.entcore.common.neo4j.Neo4j;
@@ -47,6 +49,7 @@ import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.json.JsonObject;
 
 import java.util.HashMap;
+import java.util.Map;
 
 
 public class Support extends BaseServer {
@@ -58,7 +61,18 @@ public class Support extends BaseServer {
 
 	@Override
 	public void start(Promise<Void> startPromise) throws Exception {
-		super.start(startPromise);
+		final Promise<Void> promise = Promise.promise();
+		super.start(promise);
+		promise.future()
+				.compose(init -> StorageFactory.build(vertx, config,
+						new PostgresqlApplicationStorage("support.attachments", Support.class.getSimpleName(), new JsonObject().put("id", "document_id"))))
+				.compose(storageFactory -> SharedDataHelper.getInstance().getMulti("server", "node")
+								.map(supportConfigMap -> Pair.of(storageFactory, supportConfigMap)))
+				.compose(configPair -> initSupport(configPair.getLeft(), configPair.getRight()))
+				.onComplete(startPromise);
+	}
+
+	private Future<Void> initSupport(StorageFactory storageFactory, Map<String, Object> configMap) {
 
 		addController(new DisplayController());
 
@@ -66,12 +80,10 @@ public class Support extends BaseServer {
 
 		// Default value to REDMINE for compatibility purpose
 		bugTrackerType = BugTracker.valueOf(config.getString("bug-tracker-name", BugTracker.REDMINE.toString()).toUpperCase());
-		final Storage storage = new StorageFactory(vertx, config,
-				new PostgresqlApplicationStorage("support.attachments", Support.class.getSimpleName(),
-						new JsonObject().put("id", "document_id"))).getStorage();
+		final Storage storage = storageFactory.getStorage();
 
 
-		String node = (String) vertx.sharedData().getLocalMap("server").get("node");
+		String node = (String) configMap.get("node");
 		if (node == null) {
 			node = "";
 		}
@@ -118,6 +130,7 @@ public class Support extends BaseServer {
 
 		vertx.deployVerticle(TicketExportWorker.class, new DeploymentOptions().setConfig(config).setWorker(true));
 
+		return Future.succeededFuture();
 	}
 
 	public static boolean escalationIsActivated() {

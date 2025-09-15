@@ -42,12 +42,18 @@ public class TicketExportWorker extends BusModBase implements Handler<Message<Js
     protected String exportNotification;
 
     @Override
-    public void start() {
+    public void start(Promise<Void> startPromise) {
         super.start();
+       StorageFactory.build(vertx, new JsonObject())
+               .compose(storageFactory -> initTicketExportWoker(storageFactory))
+               .onComplete(startPromise);
+    }
+
+    private Future<Void> initTicketExportWoker(StorageFactory storageFactory) {
         ticketServiceSql = new TicketServiceSqlImpl(null);
         ticketService = new TicketServiceImpl(ticketServiceSql);
 
-        Storage storage = new StorageFactory(vertx, new JsonObject()).getStorage();
+        Storage storage = storageFactory.getStorage();
         fileService = new DefaultFileService(storage);
         workspaceHelper = new WorkspaceHelper(vertx.eventBus(), storage);
         timelineHelper = new TimelineHelper(this.vertx, this.vertx.eventBus(), config());
@@ -58,6 +64,7 @@ public class TicketExportWorker extends BusModBase implements Handler<Message<Js
         log.info(launchLog);
 
         eb.consumer(this.getClass().getName(), this);
+        return Future.succeededFuture();
     }
 
     @Override
