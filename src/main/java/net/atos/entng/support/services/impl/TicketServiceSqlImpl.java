@@ -253,7 +253,8 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 		Function superAdmin = user.getFunctions().get(DefaultFunctions.SUPER_ADMIN);
 		Function adminLocal = user.getFunctions().get(DefaultFunctions.ADMIN_LOCAL);
 		if (superAdmin != null || adminLocal != null) {
-			List<String> scopesList = adminLocal.getScope();
+			List<String> scopesList = superAdmin != null ? superAdmin.getScope() : adminLocal.getScope();
+
 			if (scopesList != null && !scopesList.isEmpty()) {
 				query.append(" AND t.school_id IN ");
 				if (school_id.equals("*")) {
