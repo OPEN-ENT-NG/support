@@ -242,20 +242,33 @@ public class ZendeskIssue extends Issue implements JSONAble
         this.fromJson(o);
     }
 
-    public static ZendeskIssue followUp(ZendeskIssue oldIssue)
-    {
+    public static ZendeskIssue followUp(ZendeskIssue oldIssue) {
+        return followUp(oldIssue, null);
+    }
+
+    public static ZendeskIssue followUp(ZendeskIssue oldIssue, ZendeskComment newComment) {
         ZendeskIssue newIssue = new ZendeskIssue(oldIssue);
 
         // Even though the issue is "new", we need to set the status to "open" in Zendesk to prevent infinite loops
         newIssue.status = ZendeskStatus.open;
         newIssue.via_followup_source_id = oldIssue.id.get();
-        newIssue.comment = oldIssue.comments != null ? oldIssue.comments.get(0) : null;
+        newIssue.via = new ZendeskVia();
+        newIssue.via.channel = "api";
 
-        if(newIssue.comment == null)
-            newIssue.comment = new ZendeskComment();
-
-        if(oldIssue.comments != null)
-            newIssue.comments = oldIssue.comments;
+        if (newComment != null) {
+            // Set the NEW user comment as the first comment of the followup
+            newIssue.comment = newComment;
+            newIssue.comments = new ArrayList<>();
+        } else {
+            // Legacy behavior: copy first comment from old issue
+            newIssue.comment = oldIssue.comments != null ? oldIssue.comments.get(0) : null;
+            if (newIssue.comment == null) {
+                newIssue.comment = new ZendeskComment();
+            }
+            if (oldIssue.comments != null) {
+                newIssue.comments = oldIssue.comments;
+            }
+        }
 
         return newIssue;
     }
