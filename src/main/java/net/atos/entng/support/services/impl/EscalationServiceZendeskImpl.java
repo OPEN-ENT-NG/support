@@ -39,24 +39,6 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-import java.util.TimeZone;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
 import net.atos.entng.support.Attachment;
 import net.atos.entng.support.Comment;
 import net.atos.entng.support.GridFSAttachment;
@@ -82,6 +64,26 @@ import org.entcore.common.storage.Storage;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.utils.Id;
 import org.entcore.common.utils.StringUtils;
+
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.TimeZone;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 public class EscalationServiceZendeskImpl implements EscalationService {
 
@@ -112,6 +114,18 @@ public class EscalationServiceZendeskImpl implements EscalationService {
 	{
 		return BugTracker.ZENDESK;
 	}
+
+    private static class UploadResult {
+        final boolean success;
+        final Ticket ticket;
+        final UserInfos user;
+
+        UploadResult(boolean success, Ticket ticket, UserInfos user) {
+            this.success = success;
+            this.ticket = ticket;
+            this.user = user;
+        }
+    }
 
 	private long parseDateToEpoch(String date)
 	{
@@ -187,216 +201,174 @@ public class EscalationServiceZendeskImpl implements EscalationService {
 	/**
 	 * @inheritDoc
 	 */
-	@Override
-	public void escalateTicket(final HttpServerRequest request, Ticket ticket, final UserInfos user, Issue issue, final Handler<Either<String, Issue>> handler)
-	{
-		if(issue != null && issue.id.get() != null)
-		{
-			log.error("[Support] Zendesk issue " + issue.id.get() + " already exists for ticket " + ticket.id.get());
-			handler.handle(new Either.Left<String, Issue>("support.escalation.zendesk.error.issue.exists"));
-		}
-		else
-		{
-			this.uploadAllAttachments(ticket.attachments).onFailure(new Handler<Throwable>()
-			{
-				@Override
-				public void handle(Throwable t)
-				{
-					handler.handle(new Either.Left<String, Issue>(t.getMessage()));
-				}
+    @Override
+    public void escalateTicket(final HttpServerRequest request, Ticket ticket, final UserInfos user, Issue issue,
+                               final Handler<Either<String, Issue>> handler) {
+        if (issue != null && issue.id.get() != null) {
+            log.error("[Support] Zendesk issue " + issue.id.get() + " already exists for ticket " + ticket.id.get());
+            handler.handle(new Either.Left<>("support.escalation.zendesk.error.issue.exists"));
 
-			}).onSuccess(new Handler<CompositeFuture>()
-			{
-				@Override
-				public void handle(CompositeFuture allUploadsResult)
-				{
-					Future<ZendeskIssue> future = ZendeskIssue.fromTicket(ticket, user);
-					future.onSuccess(new Handler<ZendeskIssue>()
-					{
-						@Override
-						public void handle(ZendeskIssue issue)
-						{
-							createIssue(issue, new Handler<Either<String, ZendeskIssue>>()
-							{
-								@Override
-								public void handle(Either<String, ZendeskIssue> res)
-								{
-									if(res.isLeft())
-										handler.handle(new Either.Left<String, Issue>(res.left().getValue()));
-									else
-									{
-										ZendeskIssue zIssue = res.right().getValue();
-										zIssue.attachments = ticket.attachments;
-										handler.handle(new Either.Right<String, Issue>(zIssue));
-									}
-								}
-							});
-						}
-					});
-				}
-			}).onFailure(new Handler<Throwable>()
-			{
-				@Override
-				public void handle(Throwable t)
-				{
-					handler.handle(new Either.Left<String, Issue>(t.getMessage()));
-				}
-			});
-		}
-	}
+            return;
+        }
 
-	private CompositeFuture uploadAllAttachments(List<Attachment> attachments)
-	{
-		List<Future> uploads = new ArrayList<Future>();
-		for(Attachment a : attachments)
-			uploads.add(this.uploadAttachment(a));
+        this.uploadAllAttachments(ticket.attachments)
+                .map(compositeFuture -> new UploadResult(true, ticket, user))
+                .recover(error -> {
+                    log.warn("[Support] Attachment upload failed for ticket " + ticket.id.get(), error);
 
-		return CompositeFuture.all(uploads);
-	}
+                    return Future.succeededFuture(new UploadResult(false, ticket, user));
+                }).compose(uploadResult -> {
+                    // If an upload failed, we add a note to the ticket description, but we continue the escalation process
+                    // so the support team can continue the normal processing of the ticket
+                    if (!uploadResult.success) {
+                        String note = "\n\n--- \nL'utilisateur a tenté d'ajouter des pièces jointes, mais le téléversement a échoué.\n";
+                        note += "Veuillez vous réferer au ticket dans l'application Assistance ENT\n";
+                        ticket.description = (ticket.description == null ? "" : ticket.description) + note;
+                    }
 
-	private Future<Attachment> uploadAttachment(Attachment attachment) {
-		Promise<Attachment> uploadPromise = Promise.promise();
+                    return ZendeskIssue.fromTicket(uploadResult.ticket, uploadResult.user);
+                }).compose(zendeskIssue -> {
+                    Promise<ZendeskIssue> promise = Promise.promise();
+                    createIssue(zendeskIssue, result -> {
+                        if (result.isLeft()) {
+                            promise.fail(result.left().getValue());
+                        } else {
+                            promise.complete(result.right().getValue());
+                        }
+                    });
 
-		if(attachment == null || attachment.documentId == null) {
-			uploadPromise.fail("support.escalation.zendesk.error.upload.invalid");
-		} else {
-			wksHelper.readDocument(attachment.documentId, file -> {
-					try
-					{
-						if (file == null || file.getDocument() == null) {
-							log.error("[Support] Error : Attachment upload failed: empty file");
-							uploadPromise.fail("support.escalation.zendesk.error.upload.empty.file");
-							return;
-						}
+                    return promise.future();
+                }).onSuccess(finalZendeskIssue -> {
+                    finalZendeskIssue.attachments = ticket.attachments;
+                    handler.handle(new Either.Right<>(finalZendeskIssue));
+                }).onFailure(error -> {
+                    log.error("[Support] Failed to escalate ticket " + ticket.id.get(), error);
+                    handler.handle(new Either.Left<>(error.getMessage()));
+                });
+    }
 
-						final String filename = file.getDocument().getString("name", "");
-						JsonObject metadata = file.getDocument().getJsonObject("metadata", new JsonObject());
-						final String contentType = metadata.getString("content-type", "");
-						final Long size = metadata.getLong("size", 0L);
-						final Buffer data = file.getData();
+    private CompositeFuture uploadAllAttachments(List<Attachment> attachments) {
+        List<Future<Attachment>> uploads = attachments.stream()
+                .map(this::uploadAttachment)
+                .collect(Collectors.toList());
 
-						if (data == null || data.length() == 0) {
-							log.error("[Support] Error : Attachment upload failed: empty data");
-							uploadPromise.fail("support.escalation.zendesk.error.upload.empty");
-							return;
-						}
+        return Future.all(uploads);
+    }
 
-						if (filename == null || filename.isEmpty()) {
-							log.error("[Support] Error : Attachment upload failed: empty filename");
-							uploadPromise.fail("support.escalation.zendesk.error.upload.empty.filename");
-							return;
-						}
+    private Future<Attachment> uploadAttachment(Attachment attachment) {
+        if (attachment == null || attachment.documentId == null) {
+            return Future.failedFuture("support.escalation.zendesk.error.upload.invalid");
+        }
 
-						// Zendesk requires a file extension in the filename
-						// We add the content type as extension if the filename does not already contain one
-						String finalFilename;
-						if (filename.contains(".")) {
-							finalFilename = filename;
-						} else if (contentType.contains("/")) {
-							finalFilename = filename + "." + contentType.substring(contentType.indexOf("/") + 1);
-						} else {
-							finalFilename = filename + ".txt"; // Default to .txt if no extension can be determined
-						}
+        Promise<WorkspaceHelper.Document> fileReadPromise = Promise.promise();
+        wksHelper.readDocument(attachment.documentId, file -> {
+            if (file == null) {
+                log.error("[Support] Error: Attachment read from wksHelper was null or empty.");
+                fileReadPromise.fail("support.escalation.zendesk.error.upload.empty.file");
+            } else {
+                fileReadPromise.complete(file);
+            }
+        });
 
-						// Accents in filenames are not well-supported by Zendesk and caused problems in the past
-						// We remove them to prevent issues
-						finalFilename = StringUtils.stripAccents(finalFilename);
+        return fileReadPromise.future()
+                .compose(file -> {
+                    final JsonObject documentObject = file.getDocument();
+                    final String filename = documentObject.getString("name", "");
+                    final Buffer data = file.getData();
 
-						// This will be reused when inserting the issue attachment in postgres
-						attachment.contentType = contentType;
-						attachment.size = size.intValue();
-						zendeskClient.request(new RequestOptions()
-							.setMethod(HttpMethod.POST)
-										.setURI("/api/v2/uploads.json?filename=" + finalFilename)
-							.addHeader(HttpHeaders.CONTENT_TYPE, contentType)
-							.addHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(data.length()))
-						).flatMap(req -> req.send(data))
-						.onSuccess(response -> {
-							response.bodyHandler(data1 -> {
-                if(response.statusCode()  != 201) {
-                  log.error("[Support] Error : Attachment upload failed: " + data1.toString());
-                  uploadPromise.fail("support.escalation.zendesk.error.upload.failure");
-                } else {
-                  JsonObject upload = new JsonObject(data1.toString()).getJsonObject("upload");
-                  attachment.bugTrackerToken = upload.getString("token");
-                  attachment.bugTrackerId = upload.getJsonObject("attachment").getLong("id");
-                  uploadPromise.complete(attachment);
-                }
-              });
-						})
-						.onFailure(t -> {
-							log.error("[Support] Error : exception raised by zendesk escalation httpClient", t);
-							uploadPromise.fail("support.escalation.zendesk.error.upload.request");
-						});
-					}
-					catch (Exception e)
-					{
-						log.error("[Support] Error when processing response from readDocument", e);
-						uploadPromise.fail("support.escalation.zendesk.error.upload.readerror");
-					}
+                    if (data == null || data.length() == 0) {
+                        return Future.failedFuture("support.escalation.zendesk.error.upload.empty");
+                    }
+                    if (filename.isEmpty()) {
+                        return Future.failedFuture("support.escalation.zendesk.error.upload.empty.filename");
+                    }
+                    return Future.succeededFuture(file);
 
-				}
-			);
-		}
+                }).compose(validatedFile -> {
+                    JsonObject documentObject = validatedFile.getDocument();
+                    JsonObject metadata = documentObject.getJsonObject("metadata", new JsonObject());
+                    String contentType = metadata.getString("content-type", "");
+                    Buffer data = validatedFile.getData();
 
-		return uploadPromise.future();
-	}
+                    String filename = StringUtils.stripAccents(documentObject.getString("name"));
+                    if (!filename.contains(".") && contentType.contains("/")) {
+                        filename += "." + contentType.substring(contentType.indexOf("/") + 1);
+                    } else if (!filename.contains(".")) {
+                        filename += ".txt";
+                    }
 
-	private void createIssue(ZendeskIssue issue, Handler<Either<String, ZendeskIssue>> handler)
-	{
-		zendeskClient.request(new RequestOptions()
-			.setMethod(HttpMethod.POST)
-			.setURI("/api/v2/tickets.json")
-			.addHeader(HttpHeaders.CONTENT_TYPE, "application/json"))
-		.flatMap(request -> request.send(new JsonObject().put("ticket", issue.toJson()).encode()))
-		.onSuccess(response -> {
-			response.bodyHandler(new Handler<Buffer>()
-			{
-				@Override
-				public void handle(Buffer data)
-				{
-					if(response.statusCode()  != 201)
-					{
-						log.error("[Support] Error : Zendesk ticket escalation failed: " + data.toString());
-						handler.handle(new Either.Left<String, ZendeskIssue>("support.escalation.zendesk.error.ticket.failure"));
-					}
-					else
-					{
-						JsonObject res = new JsonObject(data.toString());
-						ZendeskIssue zIssue = new ZendeskIssue(res.getJsonObject("ticket"));
+                    attachment.contentType = contentType;
+                    attachment.size = metadata.getLong("size", 0L).intValue();
 
-            if(issue.comments != null)
-						{
-							Handler<Integer> nextSender = new Handler<Integer>()
-							{
-								@Override
-								public void handle(Integer ix)
-								{
-									Handler<Integer> nextSender = this;
-									if(ix == issue.comments.size())
-										handler.handle(new Either.Right<>(zIssue));
-									else
-									{
-										commentIssue(zIssue.id.get(), zIssue.status, issue.comments.get(ix))
-											.onFailure(t -> handler.handle(new Either.Left<>(t.getMessage())))
-											.onSuccess(v -> nextSender.handle(ix + 1));
-									}
-								}
-							};
+                    return zendeskClient.request(new RequestOptions()
+                                    .setMethod(HttpMethod.POST)
+                                    .setURI("/api/v2/uploads.json?filename=" + filename)
+                                    .addHeader(HttpHeaders.CONTENT_TYPE, contentType))
+                            .compose(req -> req.send(data))
+                            .compose(response -> {
+                                if (response.statusCode() != 201) {
+                                    return response.body().compose(body ->
+                                            Future.failedFuture(
+                                                    "Status " + response.statusCode() + ": " + body.toString()));
+                                }
+                                return response.body().map(body -> body.toJsonObject().getJsonObject("upload"));
+                            })
+                            .map(uploadJson -> {
+                                attachment.bugTrackerToken = uploadJson.getString("token");
+                                attachment.bugTrackerId = uploadJson.getJsonObject("attachment").getLong("id");
+                                return attachment;
+                            }).onFailure(t -> log.error("[Support] Zendesk upload request failed", t));
+                });
+    }
 
-							nextSender.handle(0);
-						}
-						else
-							handler.handle(new Either.Right<>(zIssue));
-					}
-				}
-			});
-		})
-		.onFailure(t -> {
-			log.error("[Support] Error : exception raised by zendesk escalation httpClient", t);
-			handler.handle(new Either.Left<String, ZendeskIssue>("support.escalation.zendesk.error.ticket.request"));
-		});
-	}
+    private void createIssue(ZendeskIssue issue, Handler<Either<String, ZendeskIssue>> handler) {
+        zendeskClient.request(new RequestOptions()
+                        .setMethod(HttpMethod.POST)
+                        .setURI("/api/v2/tickets.json")
+                        .addHeader(HttpHeaders.CONTENT_TYPE, "application/json"))
+                .flatMap(request -> request.send(new JsonObject().put("ticket", issue.toJson()).encode()))
+                .onSuccess(response -> {
+                    response.bodyHandler(new Handler<Buffer>() {
+                        @Override
+                        public void handle(Buffer data) {
+                            if (response.statusCode() != 201) {
+                                log.error("[Support] Error : Zendesk ticket escalation failed: " + data.toString());
+                                handler.handle(new Either.Left<String, ZendeskIssue>(
+                                        "support.escalation.zendesk.error.ticket.failure"));
+                            } else {
+                                JsonObject res = new JsonObject(data.toString());
+                                ZendeskIssue zIssue = new ZendeskIssue(res.getJsonObject("ticket"));
+
+                                if (issue.comments != null) {
+                                    Handler<Integer> nextSender = new Handler<Integer>() {
+                                        @Override
+                                        public void handle(Integer ix) {
+                                            Handler<Integer> nextSender = this;
+                                            if (ix == issue.comments.size())
+                                                handler.handle(new Either.Right<>(zIssue));
+                                            else {
+                                                commentIssue(zIssue.id.get(), zIssue.status, issue.comments.get(ix))
+                                                        .onFailure(
+                                                                t -> handler.handle(new Either.Left<>(t.getMessage())))
+                                                        .onSuccess(v -> nextSender.handle(ix + 1));
+                                            }
+                                        }
+                                    };
+
+                                    nextSender.handle(0);
+                                } else {
+                                    handler.handle(new Either.Right<>(zIssue));
+                                }
+                            }
+                        }
+                    });
+                })
+                .onFailure(t -> {
+                    log.error("[Support] Error : exception raised by zendesk escalation httpClient", t);
+                    handler.handle(
+                            new Either.Left<String, ZendeskIssue>("support.escalation.zendesk.error.ticket.request"));
+                });
+    }
 
 	/**
 	 * Not used in synchronous bugtrackers
