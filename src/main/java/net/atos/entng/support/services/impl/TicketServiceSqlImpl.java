@@ -110,6 +110,8 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 		// 2. Update ticket
 		StringBuilder sb = new StringBuilder();
 		JsonArray values = new JsonArray();
+		//numéro de la ligne contenant les informations du ticket
+		int index = 1;
 		for (String attr : data.fieldNames()) {
 			// COCO-4341 Update description iif ticket is not already escalated.
 			if("description".equals(attr)) {
@@ -121,6 +123,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 					.add(EscalationStatus.IN_PROGRESS.status())
 					.add(EscalationStatus.SUCCESSFUL.status())
 				);
+				index++;
 				continue;
 			}
 
@@ -169,7 +172,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 		this.insertAttachments(attachments, user, s, ticketId);
 
 		// Send queries to event bus
-		sql.transaction(s.build(), validUniqueResultHandler(1, toTicketHandler(handler, attachments)));
+		sql.transaction(s.build(), validUniqueResultHandler(index, toTicketHandler(handler, attachments)));
 	}
 
 
