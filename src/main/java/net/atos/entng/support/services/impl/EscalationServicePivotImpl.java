@@ -327,9 +327,9 @@ public class EscalationServicePivotImpl implements EscalationService
                                         "push-notif." + notificationName + ".body",
                                         I18n.DEFAULT_DOMAIN,
                                         issue.getString("locale", "fr"),
-                                        username,
-                                        ticketId
-                                ));
+                                        ticketId,
+                                        ticket_id_iws
+                                        ));
                 params.put("pushNotif", pushNotif);
 
                 notification.notifyTimeline(null, "support." + notificationName, null, recipients, params);

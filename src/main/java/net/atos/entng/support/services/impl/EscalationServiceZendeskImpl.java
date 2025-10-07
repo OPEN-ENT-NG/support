@@ -1248,8 +1248,8 @@ public class EscalationServiceZendeskImpl implements EscalationService {
 													ticket.locale,
 													//Requière l'intégration d'un nouveau endpoint de zendesk pour récupérer les audits du ticket
 													//afin d'extraire le nom de la dernière personne ayant modifiée
-													supportName,
-                                                    String.valueOf(ticket.id.get())
+													String.valueOf(ticket.id.get()),
+													issue.id.get().toString()
 											));
 							params.put("pushNotif", pushNotif);
 
