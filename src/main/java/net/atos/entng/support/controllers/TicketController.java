@@ -359,7 +359,6 @@ public class TicketController extends ControllerHelper {
                     // TODO : do not authorize description update if there is a comment
                     ticketServiceSql.updateTicket(ticketId, ticket, user,
                             getCreateOrUpdateTicketHandler(request, user, ticket, ticketId));
-                    //notifyTicketUpdated(request, user, ticket);
                 });
             } else {
                 log.debug("User not found in session.");
