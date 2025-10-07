@@ -980,6 +980,18 @@ public class EscalationServiceRedmineImpl implements EscalationService {
 										params.put("ticketUri", "/support#/ticket/" + ticketId);
 										params.put("resourceUri", params.getString("ticketUri"));
 
+										JsonObject pushNotif = new JsonObject()
+												.put("title", "push-notif.support." + notificationName)
+												.put("body", I18n.getInstance()
+														.translate(
+																"push-notif." + notificationName + ".body",
+																I18n.DEFAULT_DOMAIN,
+																ticket.getString("locale"),
+																String.valueOf(ticketId),
+																String.valueOf(issueId)
+														));
+										params.put("pushNotif", pushNotif);
+
 										notification.notifyTimeline(null, "support." + notificationName, null,
 												recipients, null, params);
 										// Historization
