@@ -1,0 +1,63 @@
+{
+  "name": "net.atos~support",
+  "config": {
+    "main" : "net.atos.entng.support.Support",
+    "port" : 8027,
+  	"csrf-token": {{ csrfToken | default('true') }},
+    "sql" : true,
+    "mongodb" : true,
+    "neo4j" : true,
+    "app-name" : "Aide et support",
+    "app-address" : "/support",
+    "app-displayName": "support",
+    "app-icon" : "support-large",
+		"app-type" : "END_USER",
+    "host": "https://{{ host }}",
+    "ssl" : true,
+    "auto-redeploy": false,
+    "userbook-host": "https://{{ host }}",
+    "integration-mode": "{{ integration_mode|default('HTTP') }}",
+    "mode" : "prod",
+    "activate-escalation" : {{ supportEscalade | default('false') }},
+		"activate-rich-editor" : {{ supportActivateRichEditor | default('false') }},
+    {% if supportBugTrackername is defined %}"bug-tracker-name" : "{{ supportBugTrackername }}", {% endif %}
+		{% if supportEscalade is defined and supportEscalade == 'true' %}
+			{% if supportBugTrackername is defined and supportBugTrackername == 'PIVOT' %}
+				"user-iws-id" : "{{ supportUserIwsId }}",
+				"user-iws-name" : "{{ supportUserIwsName }}",
+				"status_iws":{
+				  "STATUS_NEW":"Ouvert",
+					"STATUS_OPENED":"En cours",
+					"STATUS_WAITING":"En attente de réponse utilisateur",
+					"STATUS_RESOLVED":"Résolu",
+					"STATUS_CLOSED":"Fermé"
+				},
+			{% elif supportBugTrackername is defined and supportBugTrackername == 'Zendesk' %}
+				"zendesk-remote":{{ supportZendeskRemote }},
+				"zendesk-escalation-conf":{{ supportZendeskEscalationConf }},
+				"zendesk-issue-template":{{ supportZendeskIssueTemplate }},
+				{% if ha is defined and ha and inventory_hostname_short is defined and inventory_hostname_short != 'jobs' %}
+					"zendesk-refresh-period": 0,
+				{% else %}
+					"zendesk-refresh-period": {{ supportZendeskRefreshPeriod | default('15') }},
+				{% endif %}
+			{% elif supportBugTrackername is defined and supportBugTrackername == 'REDMINE' %}
+				"bug-tracker-host" : "{{ supportBugTrackerUrl }}",
+				"bug-tracker-port" : 443,
+				"bug-tracker-api-key" : "{{ supportBugTrackerApiKey }}",
+				"bug-tracker-projectid" : {{ supportProjectId | default('0') }},
+				"bug-tracker-resolved-statusid" : 3,
+				"bug-tracker-closed-statusid" : 5,
+				"escalation-httpclient-maxpoolsize" : 16,
+				"escalation-httpclient-keepalive" : false,
+				"escalation-httpclient-tryusecompression" : true,
+				{% if ha is defined and ha and inventory_hostname_short is defined and inventory_hostname_short != 'jobs' %}
+					"refresh-period": 0
+				{% else %}
+					"refresh-period": {{ supportRefreshPeriod | default('15') }}
+				{% endif %}
+			{% endif %}
+		{% endif %}
+		"threshold-direct-export-tickets": "{{ supportThresholdDirectExportTickets | default(1000) }}"
+  }
+}
