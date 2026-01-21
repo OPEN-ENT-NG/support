@@ -533,13 +533,11 @@ public class EscalationServiceZendeskImpl implements EscalationService {
 
 	// Attempts to update the status of a Zendesk issue.
 	private Future<Void> updateIssueStatus(Long issueId, ZendeskStatus targetStatus) {
-		Promise<Void> promise = Promise.promise();
-
 		if (targetStatus == null || targetStatus == ZendeskStatus.open) {
-			promise.complete();
-			return promise.future();
+			return Future.succeededFuture();
 		}
 
+		Promise<Void> promise = Promise.promise();
 		JsonObject body = new JsonObject().put("ticket", new JsonObject().put("status", targetStatus.name()));
 
 		zendeskClient.request(
