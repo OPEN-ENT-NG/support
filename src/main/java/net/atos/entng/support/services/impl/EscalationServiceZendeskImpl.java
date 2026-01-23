@@ -531,6 +531,39 @@ public class EscalationServiceZendeskImpl implements EscalationService {
 		return promise.future();
 	}
 
+	// Attempts to update the status of a Zendesk issue.
+	private Future<Void> updateIssueStatus(Long issueId, ZendeskStatus targetStatus) {
+		if (targetStatus == null || targetStatus == ZendeskStatus.open) {
+			return Future.succeededFuture();
+		}
+
+		Promise<Void> promise = Promise.promise();
+		JsonObject body = new JsonObject().put("ticket", new JsonObject().put("status", targetStatus.name()));
+
+		zendeskClient.request(
+		    new RequestOptions()
+				.setMethod(HttpMethod.PUT)
+				.setURI("/api/v2/tickets/" + issueId)
+				.addHeader(HttpHeaders.CONTENT_TYPE, "application/json"))
+			.flatMap(req -> req.send(body.encode()))
+			.onComplete(res -> {
+				if (res.failed()) {
+					log.warn("[Support] Failed to update followup issue status to " + targetStatus + " for issue " + issueId + ": " + res.cause().getMessage());
+				} else {
+					res.result().bodyHandler(data -> {
+						if (res.result().statusCode() != 200) {
+							log.warn("[Support] Failed to update followup issue status to " + targetStatus + " for issue " + issueId + ": HTTP " + res.result().statusCode());
+						} else {
+							log.info("[Support] Successfully updated followup issue " + issueId + " status to " + targetStatus);
+						}
+					});
+				}
+				promise.complete();
+			});
+
+		return promise.future();
+	}
+
     // This method attempts to comment an issue, and if it encounters a 'RecordInvalid' error,
     // it tries to create a follow-up issue and then apply the comment to that follow-up.
     private Future<Void> commentIssue(Number issueId, ZendeskStatus updateStatus, Comment comment) {
@@ -551,7 +584,7 @@ public class EscalationServiceZendeskImpl implements EscalationService {
                     ownerName = comment.ownerName;
                 }
 
-                createFollowUpIssue(issueId, ownerName, zComment, followUpRes -> {
+                createFollowUpIssue(issueId, ownerName, zComment, updateStatus, followUpRes -> {
                     if (followUpRes.isLeft()) {
                         promise.fail(followUpRes.left().getValue());
                     } else {
@@ -572,6 +605,7 @@ public class EscalationServiceZendeskImpl implements EscalationService {
             Number issueId,
             String ownerName,
             ZendeskComment newComment,
+            ZendeskStatus targetStatus,
             Handler<Either<String, ZendeskIssue>> handler
     ) {
         getIssue(issueId, res -> {
@@ -586,36 +620,43 @@ public class EscalationServiceZendeskImpl implements EscalationService {
                         handler.handle(res3.left());
                     } else {
                         ZendeskIssue createdIssue = res3.right().getValue();
-                        ticketServiceSql.updateIssue(issueId, createdIssue, res2 -> {
-                            if (res2.isLeft()) {
-                                handler.handle(new Either.Left<>(res2.left().getValue()));
-                            } else {
-                                ticketServiceSql.getTicketIdAndSchoolId(createdIssue.id.get(), event -> {
-                                    if (event.isLeft()) {
-                                        handler.handle(new Either.Left<>(event.left().getValue()));
-                                    } else {
-                                        Ticket ticket = event.right().getValue();
-                                        ticketServiceSql.createTicketHisto(
+
+                        updateIssueStatus(createdIssue.id.get(), targetStatus).onComplete(statusRes -> {
+                            if (targetStatus != null && targetStatus != ZendeskStatus.open) {
+                                createdIssue.status = targetStatus;
+                            }
+
+                            ticketServiceSql.updateIssue(issueId, createdIssue, res2 -> {
+                                if (res2.isLeft()) {
+                                    handler.handle(new Either.Left<>(res2.left().getValue()));
+                                } else {
+                                    ticketServiceSql.getTicketIdAndSchoolId(createdIssue.id.get(), event -> {
+                                        if (event.isLeft()) {
+                                            handler.handle(new Either.Left<>(event.left().getValue()));
+                                        } else {
+                                            Ticket ticket = event.right().getValue();
+                                            ticketServiceSql.createTicketHisto(
                                                 ticket.id.get().toString(),
                                                 I18n.getInstance().translate(
-                                                        "support.ticket.histo.escalate.auto",
-                                                        I18n.DEFAULT_DOMAIN,
-                                                        ticket.locale
+                                                    "support.ticket.histo.escalate.auto",
+                                                    I18n.DEFAULT_DOMAIN,
+                                                    ticket.locale
                                                 ),
                                                 createdIssue.status.correspondingStatus.status(),
                                                 null,
                                                 TicketHisto.ESCALATION,
-                                                res1 -> {
-                                                    if (res1.isLeft()) {
-                                                        handler.handle(new Either.Left<>(res1.left().getValue()));
+                                                result -> {
+                                                    if (result.isLeft()) {
+                                                        handler.handle(new Either.Left<>(result.left().getValue()));
                                                     } else {
                                                         handler.handle(new Either.Right<>(createdIssue));
                                                     }
                                                 }
-                                        );
-                                    }
-                                });
-                            }
+                                            );
+                                        }
+                                    });
+                                }
+                            });
                         });
                     }
                 });
