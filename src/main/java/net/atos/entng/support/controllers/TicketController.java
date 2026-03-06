@@ -990,59 +990,37 @@ public class TicketController extends ControllerHelper {
         });
     }
 
+    private String cleanCommentContent(String content) {
+        // Tip tap rich text editor adds <img> tags pointing to /workspace.
+        // In order to avoid Zendesk trying to render images without access to them, we sanitize the content by removing all <img> tags
+        return content.replaceAll("<img[^>]*>", "");
+    }
 
-    public void sendIssueComment(final UserInfos user, Comment comment, final String id, final HttpServerRequest request, boolean answerRequest/*, Handler<Either<String, JsonObject>> handler*/){
-        // add author name to comment
-        StringBuilder content = new StringBuilder();
+    public void sendIssueComment(final UserInfos user, Comment comment, final String id,
+                                 final HttpServerRequest request, boolean answerRequest) {
+        final String host = getHost(request);
         final Long issueId = Long.parseLong(id);
-        String defaultComment = I18n.getInstance().translate("support.escalated.ticket.empty", getHost(request), I18n.acceptLanguage(request));
+        final I18n i18n = I18n.getInstance();
+        final String language = I18n.acceptLanguage(request);
 
-        content.append(I18n.getInstance().translate("support.escalated.ticket.author", getHost(request), I18n.acceptLanguage(request)))
-                .append(" : ")
-                .append(user.getUsername())
-                .append("\n")
-                .append(comment.content == null ? defaultComment : comment.content);
-        comment.content = content.toString();
+        String authorLabel = i18n.translate("support.escalated.ticket.author", host, language);
+        String defaultComment = i18n.translate("support.escalated.ticket.empty", host, language);
+        String body = comment.content == null ? defaultComment : cleanCommentContent(comment.content);
+
+        comment.content = authorLabel + " : " + user.getUsername() + "\n" + body;
 
         escalationService.commentIssue(issueId, comment, event -> {
             if (event.isRight()) {
                 // get the whole issue (i.e. with attachments' metadata and comments) and save it in postgresql
-                refreshIssue(issueId, request, new Handler<Either<String, Issue>>()
-                {
-                    @Override
-                    public void handle(Either<String, Issue> res)
-                    {
-                        if(answerRequest == true)
-                        {
-                            if(res.isLeft())
-                                renderError(request, new JsonObject().put("error",res.left().getValue()));
-                            else
-                                renderJson(request, res.right().getValue().toJsonObject(), 200);
-                        }
+                refreshIssue(issueId, request, res -> {
+                    if (!answerRequest) return;
+                    if (res.isLeft()) {
+                        renderError(request, new JsonObject().put("error", res.left().getValue()));
+                    } else {
+                        renderJson(request, res.right().getValue().toJsonObject(), 200);
                     }
                 });
-                /*
-                // Historization
-                ticketServiceSql.getTicketFromIssueId(id, new Handler<Either<String, JsonObject>>() {
-                    @Override
-                    public void handle(Either<String, JsonObject> res) {
-                        if (res.isRight()) {
-                            final JsonObject ticket = res.right().getValue();
-                            ticketServiceSql.createTicketHisto(ticket.getInteger("id").toString(), I18n.getInstance().translate("support.ticket.histo.add.bug.tracker.comment", I18n.acceptLanguage(request)),
-                                    ticket.getInteger("status"), user.getUserId(), TicketHisto.ESCALATION, new Handler<Either<String, Void>>() {
-                                        @Override
-                                        public void handle(Either<String, Void> res) {
-                                            if (res.isLeft()) {
-                                                log.error("Error creation historization : " + res.left().getValue());
-                                            }
-                                        }
-                                    });
-                        } else if (res.isLeft()) {
-                            log.error("Error creation historization : " + res.left().getValue());
-                        }
-                    }
-                });*/
-            } else if(answerRequest == true) {
+            } else if (answerRequest) {
                 renderError(request, new JsonObject().put("error", event.left().getValue()));
             }
         });
