@@ -29,12 +29,20 @@ import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.request.RequestUtils;
-import io.vertx.core.*;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.MultiMap;
+import io.vertx.core.Promise;
+import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import net.atos.entng.support.*;
+import net.atos.entng.support.Attachment;
+import net.atos.entng.support.Comment;
+import net.atos.entng.support.Issue;
+import net.atos.entng.support.Support;
+import net.atos.entng.support.Ticket;
 import net.atos.entng.support.constants.JiraTicket;
 import net.atos.entng.support.enums.BugTrackerSyncType;
 import net.atos.entng.support.enums.Error;
@@ -43,10 +51,18 @@ import net.atos.entng.support.export.TicketsCSVExport;
 import net.atos.entng.support.filters.Admin;
 import net.atos.entng.support.filters.AdminOfTicketsStructure;
 import net.atos.entng.support.filters.OwnerOrLocalAdmin;
-import net.atos.entng.support.helpers.*;
+import net.atos.entng.support.helpers.CSVHelper;
+import net.atos.entng.support.helpers.IModelHelper;
+import net.atos.entng.support.helpers.PromiseHelper;
+import net.atos.entng.support.helpers.RequestHelper;
+import net.atos.entng.support.helpers.UserInfosHelper;
 import net.atos.entng.support.model.I18nConfig;
 import net.atos.entng.support.model.TicketModel;
-import net.atos.entng.support.services.*;
+import net.atos.entng.support.services.EscalationService;
+import net.atos.entng.support.services.ServiceFactory;
+import net.atos.entng.support.services.TicketService;
+import net.atos.entng.support.services.TicketServiceSql;
+import net.atos.entng.support.services.UserService;
 import net.atos.entng.support.services.impl.TicketServiceNeo4jImpl;
 import org.entcore.common.controller.ControllerHelper;
 import org.entcore.common.events.EventHelper;
@@ -62,7 +78,13 @@ import org.entcore.common.user.UserUtils;
 import org.entcore.common.utils.Id;
 import org.vertx.java.core.http.RouteMatcher;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static net.atos.entng.support.Support.SUPPORT_NAME;
@@ -989,59 +1011,38 @@ public class TicketController extends ControllerHelper {
         });
     }
 
+    private String cleanCommentContent(String content) {
+        // Tip tap rich text editor adds <img> or <src> tags pointing to /workspace.
+        // In order to avoid Zendesk trying to render images or files without access to them, we sanitize the content by removing all unnecessary tags
+        return content.replaceAll("<img[^>]*>", "")
+                .replaceAll("(?s)<div class=\"attachments\">.*?</div>", "");
+    }
 
-    public void sendIssueComment(final UserInfos user, Comment comment, final String id, final HttpServerRequest request, boolean answerRequest/*, Handler<Either<String, JsonObject>> handler*/){
-        // add author name to comment
-        StringBuilder content = new StringBuilder();
+    public void sendIssueComment(final UserInfos user, Comment comment, final String id,
+                                 final HttpServerRequest request, boolean answerRequest) {
+        final String host = getHost(request);
         final Long issueId = Long.parseLong(id);
-        String defaultComment = I18n.getInstance().translate("support.escalated.ticket.empty", getHost(request), I18n.acceptLanguage(request));
+        final I18n i18n = I18n.getInstance();
+        final String language = I18n.acceptLanguage(request);
 
-        content.append(I18n.getInstance().translate("support.escalated.ticket.author", getHost(request), I18n.acceptLanguage(request)))
-                .append(" : ")
-                .append(user.getUsername())
-                .append("\n")
-                .append(comment.content == null ? defaultComment : comment.content);
-        comment.content = content.toString();
+        String authorLabel = i18n.translate("support.escalated.ticket.author", host, language);
+        String defaultComment = i18n.translate("support.escalated.ticket.empty", host, language);
+        String body = comment.content == null ? defaultComment : cleanCommentContent(comment.content);
+
+        comment.content = authorLabel + " : " + user.getUsername() + "\n" + body;
 
         escalationService.commentIssue(issueId, comment, event -> {
             if (event.isRight()) {
                 // get the whole issue (i.e. with attachments' metadata and comments) and save it in postgresql
-                refreshIssue(issueId, request, new Handler<Either<String, Issue>>()
-                {
-                    @Override
-                    public void handle(Either<String, Issue> res)
-                    {
-                        if(answerRequest == true)
-                        {
-                            if(res.isLeft())
-                                renderError(request, new JsonObject().put("error",res.left().getValue()));
-                            else
-                                renderJson(request, res.right().getValue().toJsonObject(), 200);
-                        }
+                refreshIssue(issueId, request, res -> {
+                    if (!answerRequest) return;
+                    if (res.isLeft()) {
+                        renderError(request, new JsonObject().put("error", res.left().getValue()));
+                    } else {
+                        renderJson(request, res.right().getValue().toJsonObject(), 200);
                     }
                 });
-                /*
-                // Historization
-                ticketServiceSql.getTicketFromIssueId(id, new Handler<Either<String, JsonObject>>() {
-                    @Override
-                    public void handle(Either<String, JsonObject> res) {
-                        if (res.isRight()) {
-                            final JsonObject ticket = res.right().getValue();
-                            ticketServiceSql.createTicketHisto(ticket.getInteger("id").toString(), I18n.getInstance().translate("support.ticket.histo.add.bug.tracker.comment", I18n.acceptLanguage(request)),
-                                    ticket.getInteger("status"), user.getUserId(), TicketHisto.ESCALATION, new Handler<Either<String, Void>>() {
-                                        @Override
-                                        public void handle(Either<String, Void> res) {
-                                            if (res.isLeft()) {
-                                                log.error("Error creation historization : " + res.left().getValue());
-                                            }
-                                        }
-                                    });
-                        } else if (res.isLeft()) {
-                            log.error("Error creation historization : " + res.left().getValue());
-                        }
-                    }
-                });*/
-            } else if(answerRequest == true) {
+            } else if (answerRequest) {
                 renderError(request, new JsonObject().put("error", event.left().getValue()));
             }
         });
