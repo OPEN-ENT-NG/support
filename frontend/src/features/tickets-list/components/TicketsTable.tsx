@@ -1,5 +1,12 @@
 /* Import Table component from Edifice UI library */
-import { Badge, Checkbox, Table, useIsAdml, useToast } from '@edifice.io/react';
+import {
+  Badge,
+  Checkbox,
+  Table,
+  useIsAdmc,
+  useIsAdml,
+  useToast,
+} from '@edifice.io/react';
 import {
   IconDownload,
   IconFullScreen,
@@ -209,6 +216,7 @@ export type TicketsTableProps = {
 
 function TicketsTable({ tickets = [], schools = [] }: TicketsTableProps) {
   const navigate = useNavigate();
+  const { isAdmc } = useIsAdmc();
   const { isAdml } = useIsAdml();
   const [selectedTickets, setSelectedTickets] = useState<Ticket[]>([]);
   const escalateWorkflow = useCanEscalate();
@@ -243,7 +251,7 @@ function TicketsTable({ tickets = [], schools = [] }: TicketsTableProps) {
         onClick: () => {
           exportTickets(selectedTickets.map((t) => t.id.toString()));
         },
-        isVisible: isAdml ?? false,
+        isVisible: (isAdmc || isAdml) ?? false,
       },
       {
         id: 'transfer',
@@ -271,7 +279,15 @@ function TicketsTable({ tickets = [], schools = [] }: TicketsTableProps) {
           (escalateWorkflow ?? false),
       },
     ],
-    [selectedTickets, navigate, isAdml, escalateWorkflow, toast, queryClient],
+    [
+      selectedTickets,
+      navigate,
+      isAdmc,
+      isAdml,
+      escalateWorkflow,
+      toast,
+      queryClient,
+    ],
   );
 
   const handleSelectAll = useCallback(() => {
