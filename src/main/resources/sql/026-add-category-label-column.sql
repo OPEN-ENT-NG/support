@@ -1,1 +1,0 @@
-ALTER TABLE support.tickets ADD COLUMN category_label VARCHAR(255);
