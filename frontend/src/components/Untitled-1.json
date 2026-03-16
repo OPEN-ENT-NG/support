@@ -1,0 +1,5424 @@
+[
+  {
+    "id": "07a80938-4a93-4161-8908-623142c2d55d",
+    "UAI": "0190624A",
+    "name": "LEGTPA-DE NAVES-NAVES",
+    "externalId": "LIMOGES-737",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées d'enseignement général et technologique agricole",
+        "id": "e9f324b4-7285-4f95-bf34-681fbddc3979"
+      }
+    ]
+  },
+  {
+    "id": "ea2d58e3-358b-4078-8b35-7426b3620e72",
+    "UAI": "0190087S",
+    "name": "LEGTPA-DE NEUVIC-NEUVIC",
+    "externalId": "LIMOGES-725",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées d'enseignement général et technologique agricole",
+        "id": "e9f324b4-7285-4f95-bf34-681fbddc3979"
+      }
+    ]
+  },
+  {
+    "id": "bdfcc5cc-680e-42f3-989c-4b802774deb4",
+    "UAI": "1029270A",
+    "name": "Etablissement Formation 56126",
+    "externalId": "8050",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Collèges",
+        "id": "3eaa6850-3518-4cf5-aebf-ec97be57967f"
+      }
+    ]
+  },
+  {
+    "id": "f16bf110-a255-413f-8da8-bd6f64bd75fa",
+    "UAI": null,
+    "name": "General",
+    "externalId": "d88c63a3-8b35-40c1-8479-d2aad2fee996",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": "General",
+    "source": "CSV",
+    "exports": null,
+    "parents": null
+  },
+  {
+    "id": "7c91365c-4c0d-401e-b9c1-99d241ea4c23",
+    "UAI": "0190058K",
+    "name": "LG PR-LYCEE BOSSUET-BRIVE-LA-GAILLARDE",
+    "externalId": "LIMOGES-718",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Privé",
+        "id": "23d1bf63-25be-4734-aa60-277882810398"
+      }
+    ]
+  },
+  {
+    "id": "96d19d87-3708-4c9f-be92-dad5e1d76b66",
+    "UAI": "0160065J",
+    "name": "LG PR-DE BEAULIEU-COGNAC",
+    "externalId": "POITIERS-2646",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Privé",
+        "id": "23d1bf63-25be-4734-aa60-277882810398"
+      }
+    ]
+  },
+  {
+    "id": "3a904e96-7bd0-4036-a5f8-471f73220825",
+    "UAI": "0160020K",
+    "name": "LPO-JEAN MONNET-COGNAC",
+    "externalId": "POITIERS-2616",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées Polyvalent",
+        "id": "1c34d8e9-70ab-4ea1-8711-88c8604d0d59"
+      }
+    ]
+  },
+  {
+    "id": "56b6d325-a87b-4947-bd8c-0d150f92c759",
+    "UAI": null,
+    "name": "New Oak 2D",
+    "externalId": "a70563c9-49f6-45f9-a181-ec709d6453d9",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": true,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": null,
+    "exports": null,
+    "parents": [
+      {
+        "name": "2D",
+        "id": "5791357b-f205-4590-856a-dfa204f41ded"
+      }
+    ]
+  },
+  {
+    "id": "08d04246-975f-4ad0-8bb1-8f38a05b5c06",
+    "UAI": "0160004T",
+    "name": "LGT-CHARLES A COULOMB-ANGOULEME",
+    "externalId": "POITIERS-2610",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées Général Technique",
+        "id": "17090d90-bac8-47de-adfc-deaf6cb5d622"
+      }
+    ]
+  },
+  {
+    "id": "f65b75c9-2a3c-432f-b86b-a7da4c0e2f61",
+    "UAI": "5551628K",
+    "name": "LYCEE PAUL MARTIN",
+    "externalId": "5554483",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": null,
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées",
+        "id": "37741991-20a0-4884-9a80-c0d1daedc100"
+      },
+      {
+        "name": "DRAAF",
+        "id": "ee071fda-356a-4d6e-b40e-08cc87dad502"
+      }
+    ]
+  },
+  {
+    "id": "56c214d5-c00c-4890-9864-8940c4ce14c5",
+    "UAI": "9910000A",
+    "name": "Colegio del Valle Primaria",
+    "externalId": "3d8d2500-0dc4-4b42-9c4b-a646725d080e",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": false,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": true,
+    "feederName": "Colegio del Valle Primaria",
+    "source": "CSV",
+    "exports": null,
+    "parents": [
+      {
+        "name": "1D",
+        "id": "d4efe3a7-fa6a-4af7-b4ac-efbc51f32bc3"
+      }
+    ]
+  },
+  {
+    "id": "2cc1a3f2-403e-41a3-9111-485b00f69b7d",
+    "UAI": "0042236U",
+    "name": "Z - CHARG. MISSION-IA D'ILLE ET VILAINE-RENNES",
+    "externalId": "RENNES-451895",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": false,
+    "ignoreMFA": false,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": true,
+    "feederName": "CHARG. MISSION-IA D'ILLE ET VILAINE-RENNES",
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "RENNES",
+        "id": "08483640-3ea8-4490-bea6-43c1b5ce0a61"
+      }
+    ]
+  },
+  {
+    "id": "770778b9-86ad-4bf7-9fe0-b9bd12e82d98",
+    "UAI": "0870003F",
+    "name": "LGT-JEAN GIRAUDOUX-BELLAC",
+    "externalId": "LIMOGES-930",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées Général Technique",
+        "id": "17090d90-bac8-47de-adfc-deaf6cb5d622"
+      }
+    ]
+  },
+  {
+    "id": "ae24a2ab-f714-4e93-8f92-64dba16f9aa5",
+    "UAI": "0230030H",
+    "name": "LEGTPA-D'AHUN-AHUN",
+    "externalId": "LIMOGES-862",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées d'enseignement général et technologique agricole",
+        "id": "e9f324b4-7285-4f95-bf34-681fbddc3979"
+      }
+    ]
+  },
+  {
+    "id": "c4a5437c-0efa-4bdc-ac36-5ff7ac6a9925",
+    "UAI": "0190011J",
+    "name": "LG-D ARSONVAL-BRIVE-LA-GAILLARDE",
+    "externalId": "LIMOGES-693",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycée Général",
+        "id": "0b9fe7d5-20b7-40d9-b202-b7de7dc26eaf"
+      }
+    ]
+  },
+  {
+    "id": "2d853428-47c5-48da-9522-adadf7e13181",
+    "UAI": "0040915A",
+    "name": "Z - MED SCO-IA D'ILLE ET VILAINE-RENNES",
+    "externalId": "RENNES-143171",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": false,
+    "ignoreMFA": false,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": true,
+    "feederName": "MED SCO-IA D'ILLE ET VILAINE-RENNES",
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "RENNES",
+        "id": "08483640-3ea8-4490-bea6-43c1b5ce0a61"
+      }
+    ]
+  },
+  {
+    "id": "3bf94385-f2ee-44e1-a1c5-5c3d194b38d6",
+    "UAI": "0190032G",
+    "name": "LGT-EDMOND PERRIER-TULLE",
+    "externalId": "LIMOGES-705",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées Général Technique",
+        "id": "17090d90-bac8-47de-adfc-deaf6cb5d622"
+      }
+    ]
+  },
+  {
+    "id": "67c75704-6dba-4c83-ab3e-b6c217b63d19",
+    "UAI": "0230018V",
+    "name": "LT-DES METIERS DU BATIMENT-FELLETIN",
+    "externalId": "LIMOGES-855",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées Technique",
+        "id": "465d70c3-00f8-4c2d-a51d-569c7d03c8d2"
+      }
+    ]
+  },
+  {
+    "id": "8e5e7de8-9ee2-4097-9260-e013f25596e2",
+    "UAI": "0043124G",
+    "name": "Z - IEN CIRCO-IA MORBIHAN-VANNES",
+    "externalId": "RENNES-817144",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": false,
+    "ignoreMFA": false,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": true,
+    "feederName": "IEN CIRCO-IA MORBIHAN-VANNES",
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "RENNES",
+        "id": "08483640-3ea8-4490-bea6-43c1b5ce0a61"
+      }
+    ]
+  },
+  {
+    "id": "3b0ac5b7-2c3c-4cd3-b5ef-04623e9d8a17",
+    "UAI": null,
+    "name": "Escola Estrela do Mar 2D",
+    "externalId": "800d34a8-ce21-48ee-81ee-c44a58de7890",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": true,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": null,
+    "exports": null,
+    "parents": [
+      {
+        "name": "2D",
+        "id": "5791357b-f205-4590-856a-dfa204f41ded"
+      }
+    ]
+  },
+  {
+    "id": "575a48b3-ad24-4359-b034-4cb2cd67a6f3",
+    "UAI": "0048699K",
+    "name": "CLG-RENE CASSIN-CANCALE",
+    "externalId": "RENNES-692393",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": false,
+    "ignoreMFA": true,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": false,
+    "feederName": "CLG-RENE CASSIN-CANCALE",
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "RENNES",
+        "id": "08483640-3ea8-4490-bea6-43c1b5ce0a61"
+      }
+    ]
+  },
+  {
+    "id": "94e6ea42-975f-47cd-85fc-592f1e9ea7ef",
+    "UAI": null,
+    "name": "International",
+    "externalId": "fe771392-8766-4967-9150-d45879bdec9c",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": null,
+    "exports": null,
+    "parents": null
+  },
+  {
+    "id": "0c216913-5bf5-4172-8415-9dc7a546896c",
+    "UAI": "0190010H",
+    "name": "LGT-GEORGES CABANIS-BRIVE-LA-GAILLARDE",
+    "externalId": "LIMOGES-692",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées Général Technique",
+        "id": "17090d90-bac8-47de-adfc-deaf6cb5d622"
+      }
+    ]
+  },
+  {
+    "id": "54071119-6c97-4f7a-9e26-42ee4c303dfe",
+    "UAI": "0190609J",
+    "name": "LEGTPA-DE MEYMAC-MEYMAC",
+    "externalId": "LIMOGES-732",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées d'enseignement général et technologique agricole",
+        "id": "e9f324b4-7285-4f95-bf34-681fbddc3979"
+      }
+    ]
+  },
+  {
+    "id": "be5bbe63-95bb-4bde-bc0e-271e1f75c15c",
+    "UAI": "1062514A",
+    "name": "Collège Saint Vincent",
+    "externalId": "4465",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": false,
+    "ignoreMFA": true,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": false,
+    "feederName": "Collège Saint Vincent",
+    "source": "CSV",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Privé",
+        "id": "23d1bf63-25be-4734-aa60-277882810398"
+      }
+    ]
+  },
+  {
+    "id": "e9f324b4-7285-4f95-bf34-681fbddc3979",
+    "UAI": null,
+    "name": "Lycées d'enseignement général et technologique agricole",
+    "externalId": "ec872344-eaf8-48d5-a4ab-6ad8c5527f72",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": null,
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées",
+        "id": "37741991-20a0-4884-9a80-c0d1daedc100"
+      }
+    ]
+  },
+  {
+    "id": "84fa9f9e-bb5f-43c4-9451-a54aa6aa37f1",
+    "UAI": "0190056H",
+    "name": "LG PR-INST JEANNE D ARC-ARGENTAT-SUR-DORDOGNE",
+    "externalId": "LIMOGES-717",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Privé",
+        "id": "23d1bf63-25be-4734-aa60-277882810398"
+      }
+    ]
+  },
+  {
+    "id": "96d4d883-d58b-405c-89c7-c91a84e55952",
+    "UAI": "0805432C",
+    "name": "CLG-DENIS POISSON",
+    "externalId": "55567",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": true,
+    "ignoreMFA": true,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": false,
+    "feederName": null,
+    "source": null,
+    "exports": null,
+    "parents": [
+      {
+        "name": "Département 76",
+        "id": "c5c05afe-21f2-4e7a-991b-9c1c4d5d26b5"
+      },
+      {
+        "name": "Collèges",
+        "id": "3eaa6850-3518-4cf5-aebf-ec97be57967f"
+      }
+    ]
+  },
+  {
+    "id": "9c4f4406-a43f-414b-9d51-bd147cc4d0d7",
+    "UAI": null,
+    "name": "Lycée",
+    "externalId": "b2000840-325b-4652-8598-023a78a67b6d",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": null,
+    "exports": null,
+    "parents": [
+      {
+        "name": "International",
+        "id": "94e6ea42-975f-47cd-85fc-592f1e9ea7ef"
+      }
+    ]
+  },
+  {
+    "id": "ab9ed8ec-d66e-4575-90cc-63d002819fdd",
+    "UAI": "0190018S",
+    "name": "LPO LYC METIER-PIERRE CARAMINOT-EGLETONS",
+    "externalId": "LIMOGES-698",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées Polyvalent",
+        "id": "1c34d8e9-70ab-4ea1-8711-88c8604d0d59"
+      }
+    ]
+  },
+  {
+    "id": "2452a397-2ad6-454e-8aff-76f5de0f1bfd",
+    "UAI": null,
+    "name": "Ecole italienne",
+    "externalId": "b07a511054280fb75692f8ba0c3d10c16cd45b9e",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": null,
+    "exports": null,
+    "parents": [
+      {
+        "name": "1D",
+        "id": "d4efe3a7-fa6a-4af7-b4ac-efbc51f32bc3"
+      }
+    ]
+  },
+  {
+    "id": "ac0f3bb6-9101-4323-90cc-439cdefb6043",
+    "UAI": "0047217Q",
+    "name": "Z - SERIA-D35-IA D'ILLE ET VILAINE-RENNES",
+    "externalId": "RENNES-148273",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": false,
+    "ignoreMFA": false,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": true,
+    "feederName": "SERIA-D35-IA D'ILLE ET VILAINE-RENNES",
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "RENNES",
+        "id": "08483640-3ea8-4490-bea6-43c1b5ce0a61"
+      }
+    ]
+  },
+  {
+    "id": "c5c05afe-21f2-4e7a-991b-9c1c4d5d26b5",
+    "UAI": null,
+    "name": "Département 76",
+    "externalId": "a67a258d-db2b-4e7a-9d01-48d1b2683323",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": false,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": false,
+    "feederName": null,
+    "source": null,
+    "exports": null,
+    "parents": null
+  },
+  {
+    "id": "090851b2-d9a5-4424-83a5-f876dd84ff24",
+    "UAI": "5555041U",
+    "name": "LP LYC METIER-MARTINE DUPUIS",
+    "externalId": "55553750",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": false,
+    "ignoreMFA": true,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": false,
+    "feederName": null,
+    "source": null,
+    "exports": null,
+    "parents": [
+      {
+        "name": "LGT LYC METIER-MATHIEU DUPONT",
+        "id": "00448c7d-e607-4fbd-8760-2c48c99bbfe6"
+      }
+    ]
+  },
+  {
+    "id": "0ef056a9-31fe-4b4a-898a-691d8cdf9d1e",
+    "UAI": "0190083M",
+    "name": "LPO PR-MARGUERITE BAHUET-BRIVE-LA-GAILLARDE",
+    "externalId": "LIMOGES-724",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées Polyvalent",
+        "id": "1c34d8e9-70ab-4ea1-8711-88c8604d0d59"
+      }
+    ]
+  },
+  {
+    "id": "0ba3a8ab-ef2b-4ebd-981d-82603f65f258",
+    "UAI": "9900000B",
+    "name": "Buena Fuente 2D",
+    "externalId": "b6f39ab9-7418-44b3-8187-9da4203129db",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": true,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": null,
+    "exports": null,
+    "parents": [
+      {
+        "name": "2D",
+        "id": "5791357b-f205-4590-856a-dfa204f41ded"
+      }
+    ]
+  },
+  {
+    "id": "f99dbf27-9935-4931-9cfd-930ba7a0b987",
+    "UAI": "1027689B",
+    "name": "Collège Formations ODE",
+    "externalId": "2ec139c9-f856-4ea0-92a9-e46632ad91d5",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": true,
+    "ignoreMFA": true,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": false,
+    "feederName": "Collège Formations ODE",
+    "source": "CSV",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Collèges",
+        "id": "3eaa6850-3518-4cf5-aebf-ec97be57967f"
+      }
+    ]
+  },
+  {
+    "id": "4967fb65-3e78-4b72-bf0b-d500db8e5d08",
+    "UAI": "9900000A",
+    "name": "Buena Fuente 1D",
+    "externalId": "4f98d6b9-5634-4496-9e02-1794bf3bf053",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": true,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": null,
+    "exports": null,
+    "parents": [
+      {
+        "name": "1D",
+        "id": "d4efe3a7-fa6a-4af7-b4ac-efbc51f32bc3"
+      }
+    ]
+  },
+  {
+    "id": "8b1d4ebb-03f5-4070-8b0d-460875915349",
+    "UAI": "1025927A",
+    "name": "Collège Rousseau",
+    "externalId": "8046",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": true,
+    "ignoreMFA": true,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": false,
+    "feederName": "Collège Rousseau",
+    "source": "CSV",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Département 27",
+        "id": "9ea2b53c-a9d8-4a48-aa09-9decc3905f0f"
+      },
+      {
+        "name": "Bassin (collèges et lycées)",
+        "id": "bc6ffa3e-008e-4ae2-bb73-3eaa14629175"
+      }
+    ]
+  },
+  {
+    "id": "fa868c91-554f-4131-ab84-7fa53864b9d5",
+    "UAI": "3562816A",
+    "name": "TestActu2",
+    "externalId": "57122ae8-4f92-464c-b91b-f9dc558d5fd7",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": true,
+    "ignoreMFA": true,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": false,
+    "feederName": null,
+    "source": null,
+    "exports": null,
+    "parents": [
+      {
+        "name": "0 TEST QA",
+        "id": "04cce716-c1cf-4e94-b282-b1b61749e61d"
+      }
+    ]
+  },
+  {
+    "id": "8818c28e-7b93-44ef-ac69-d573dd82eac1",
+    "UAI": "0044713F",
+    "name": "Z - DIV1D-DSDEN DES COTES D'ARMOR-SAINT-BRIEUC",
+    "externalId": "RENNES-726622",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": false,
+    "ignoreMFA": false,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": true,
+    "feederName": "DIV1D-DSDEN DES COTES D'ARMOR-SAINT-BRIEUC",
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "RENNES",
+        "id": "08483640-3ea8-4490-bea6-43c1b5ce0a61"
+      }
+    ]
+  },
+  {
+    "id": "136e1315-8294-4cfd-91be-a50030ade668",
+    "UAI": null,
+    "name": "2 - IT Positions - NEtab 1724828918622",
+    "externalId": "ce88c629-bcf0-4ae4-bf16-3c9a2d15211d",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": "2 - IT Positions - NEtab 1724828918622",
+    "source": "CSV",
+    "exports": null,
+    "parents": null
+  },
+  {
+    "id": "4bac9f7c-74fc-4e5d-81cb-880a33f4db5a",
+    "UAI": "9999991Q",
+    "name": "0 MOBILE POUDLARD",
+    "externalId": "e068cd04-4f82-47cd-b242-344a25040975",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": true,
+    "ignoreMFA": true,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": false,
+    "feederName": "0 MOBILE POUDLARD",
+    "source": "CSV",
+    "exports": null,
+    "parents": [
+      {
+        "name": "0 MOBILE",
+        "id": "b6191a4d-2a9e-48cb-a977-58273ccb9dfc"
+      }
+    ]
+  },
+  {
+    "id": "96e7efd4-850c-40e7-a923-393701835c13",
+    "UAI": "1020369A",
+    "name": "Etablissement Formation 36704",
+    "externalId": "331963",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": "Etablissement Formation 36704",
+    "source": "CSV",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Collèges",
+        "id": "3eaa6850-3518-4cf5-aebf-ec97be57967f"
+      }
+    ]
+  },
+  {
+    "id": "d8fce519-a3d0-4c88-a204-9de329341c2d",
+    "UAI": "1236780Z",
+    "name": "Crèche des petits pandas",
+    "externalId": "9f4a0c39-85fc-4916-82ae-272e69dababe",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": true,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": null,
+    "exports": null,
+    "parents": [
+      {
+        "name": "Ville de Neuville",
+        "id": "1216e1f6-3031-45e4-b6cc-7fd215a599ad"
+      }
+    ]
+  },
+  {
+    "id": "a970c055-b6da-4389-aca1-f44fd1b9f827",
+    "UAI": null,
+    "name": "Ecole Notre Dame",
+    "externalId": "c6e3a8694410365c7ceef2b3d581bf5e653330c5",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": false,
+    "ignoreMFA": true,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": false,
+    "feederName": null,
+    "source": null,
+    "exports": null,
+    "parents": [
+      {
+        "name": "Privé",
+        "id": "23d1bf63-25be-4734-aa60-277882810398"
+      }
+    ]
+  },
+  {
+    "id": "c82df58d-b036-465c-ab11-fddf6826e8cd",
+    "UAI": null,
+    "name": "Autres structures",
+    "externalId": "fe47bf14a891f7ccae123685d11431ce9f28a477",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "CSV",
+    "exports": null,
+    "parents": null
+  },
+  {
+    "id": "17090d90-bac8-47de-adfc-deaf6cb5d622",
+    "UAI": null,
+    "name": "Lycées Général Technique",
+    "externalId": "b6ced419-20c2-4895-806b-97d27cbe1260",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": null,
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées",
+        "id": "37741991-20a0-4884-9a80-c0d1daedc100"
+      }
+    ]
+  },
+  {
+    "id": "c7e2d263-98c0-497a-aa85-e9e21ae8dd4f",
+    "UAI": null,
+    "name": "1 - IT Positions - NEtab 1724829317896",
+    "externalId": "1d2abe41-6d26-451b-9a66-374e7bf6662e",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": "1 - IT Positions - NEtab 1724829317896",
+    "source": "CSV",
+    "exports": null,
+    "parents": null
+  },
+  {
+    "id": "5791357b-f205-4590-856a-dfa204f41ded",
+    "UAI": null,
+    "name": "2D",
+    "externalId": "814246d6-1173-4209-b74a-9fb1db8349d9",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": false,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": true,
+    "feederName": null,
+    "source": null,
+    "exports": null,
+    "parents": [
+      {
+        "name": "International",
+        "id": "94e6ea42-975f-47cd-85fc-592f1e9ea7ef"
+      }
+    ]
+  },
+  {
+    "id": "991ee7f1-ac0c-42ec-9e5c-4699ccfc3fc8",
+    "UAI": "0043250N",
+    "name": "Z - RECTORAT-ACADEMIE DE RENNES-RENNES",
+    "externalId": "RENNES-80704",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": false,
+    "ignoreMFA": false,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": true,
+    "feederName": "RECTORAT-ACADEMIE DE RENNES-RENNES",
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "RENNES",
+        "id": "08483640-3ea8-4490-bea6-43c1b5ce0a61"
+      }
+    ]
+  },
+  {
+    "id": "71edbf75-afa5-4536-8fb6-25a4ea9dd44f",
+    "UAI": "0190012K",
+    "name": "LPO-DANTON-BRIVE-LA-GAILLARDE",
+    "externalId": "LIMOGES-694",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées Polyvalent",
+        "id": "1c34d8e9-70ab-4ea1-8711-88c8604d0d59"
+      }
+    ]
+  },
+  {
+    "id": "759b4e32-ebcc-431c-8164-1171cba67e19",
+    "UAI": "1111888G",
+    "name": "Ecole Arthur Rimbaud",
+    "externalId": "d1f5ecd1cd12320ad81778997f8b13de0419540d",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": true,
+    "ignoreMFA": true,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": false,
+    "feederName": "Ecole Arthur Rimbaud",
+    "source": "CSV",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Circonscription de Neuville",
+        "id": "5e4b29f2-4145-4ee1-8a31-a655a5d1497a"
+      },
+      {
+        "name": "Ville de Neuville",
+        "id": "1216e1f6-3031-45e4-b6cc-7fd215a599ad"
+      }
+    ]
+  },
+  {
+    "id": "16a7f859-8d42-460a-81ad-6c41e9457bdb",
+    "UAI": "2222222S",
+    "name": "QA - 2D - Start",
+    "externalId": "bbc1eb4f-6005-458b-9e2c-78c55bf121c0",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": true,
+    "ignoreMFA": true,
+    "levelsOfEducation": [2],
+    "distributions": [],
+    "manualName": false,
+    "feederName": null,
+    "source": null,
+    "exports": null,
+    "parents": [
+      {
+        "name": "QA - 2D",
+        "id": "a26f03e6-117f-439a-ac93-a065d4b1004a"
+      }
+    ]
+  },
+  {
+    "id": "d4efe3a7-fa6a-4af7-b4ac-efbc51f32bc3",
+    "UAI": null,
+    "name": "1D",
+    "externalId": "db5043ad-77e5-4257-bd8d-92e8fc1c4746",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": false,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": true,
+    "feederName": null,
+    "source": null,
+    "exports": null,
+    "parents": [
+      {
+        "name": "International",
+        "id": "94e6ea42-975f-47cd-85fc-592f1e9ea7ef"
+      }
+    ]
+  },
+  {
+    "id": "4be454ea-7f73-475f-835b-ce332f918d22",
+    "UAI": "1027688A",
+    "name": "Collège Charlemagne",
+    "externalId": "4841",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": true,
+    "ignoreMFA": true,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": false,
+    "feederName": "Collège Charlemagne",
+    "source": "CSV",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Département 27",
+        "id": "9ea2b53c-a9d8-4a48-aa09-9decc3905f0f"
+      },
+      {
+        "name": "Bassin (collèges et lycées)",
+        "id": "bc6ffa3e-008e-4ae2-bb73-3eaa14629175"
+      }
+    ]
+  },
+  {
+    "id": "646e5ea1-4f31-405e-9af1-0c562c86997a",
+    "UAI": null,
+    "name": "TO DELETE",
+    "externalId": "dd84992a-abbf-4a16-b619-c730e7f62031",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": true,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": "TO DELETE",
+    "source": "CSV",
+    "exports": null,
+    "parents": null
+  },
+  {
+    "id": "a26f03e6-117f-439a-ac93-a065d4b1004a",
+    "UAI": null,
+    "name": "QA - 2D",
+    "externalId": "1bde5621-e8ba-4511-af8e-d04ecf05542c",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": true,
+    "ignoreMFA": null,
+    "levelsOfEducation": [2],
+    "distributions": [],
+    "manualName": false,
+    "feederName": null,
+    "source": null,
+    "exports": null,
+    "parents": [
+      {
+        "name": "0 TEST QA",
+        "id": "04cce716-c1cf-4e94-b282-b1b61749e61d"
+      }
+    ]
+  },
+  {
+    "id": "bf3db3fe-9b34-4ff6-b697-44fb9047fe17",
+    "UAI": null,
+    "name": "Région",
+    "externalId": "f7ae7cbb-a15c-4bf9-b059-4483b834b5fb",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": null,
+    "exports": null,
+    "parents": null
+  },
+  {
+    "id": "9ea2b53c-a9d8-4a48-aa09-9decc3905f0f",
+    "UAI": null,
+    "name": "Département 27",
+    "externalId": "b63397e6-93ba-402a-be6c-7978064843e3",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": false,
+    "ignoreMFA": true,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": false,
+    "feederName": null,
+    "source": null,
+    "exports": null,
+    "parents": null
+  },
+  {
+    "id": "ad97b3c7-287a-4a60-9e8f-31f34918cb44",
+    "UAI": null,
+    "name": "Académie",
+    "externalId": "615a6471-6e1a-4f02-b09c-296d5a38bde5",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": true,
+    "ignoreMFA": true,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": false,
+    "feederName": null,
+    "source": null,
+    "exports": null,
+    "parents": null
+  },
+  {
+    "id": "d80e471d-9c08-40e9-9ccc-a7b25cd1eb4e",
+    "UAI": null,
+    "name": "Chapeau - IT Positions - NEtab 1724829317896",
+    "externalId": "a169a6c5-84a1-42f4-9a7d-39944f41d784",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": false,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": null,
+    "exports": null,
+    "parents": null
+  },
+  {
+    "id": "5901e695-2514-47e5-9b96-6a5f8c52e902",
+    "UAI": "9898989B",
+    "name": "Édifice - Alpha  Test - Clients",
+    "externalId": "74e87819-b60e-4c48-ac47-0dc142973249",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": true,
+    "ignoreMFA": true,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": false,
+    "feederName": null,
+    "source": null,
+    "exports": null,
+    "parents": [
+      {
+        "name": "00-Edifice",
+        "id": "02b1de42-581b-4f4b-91f7-14223f1d7309"
+      }
+    ]
+  },
+  {
+    "id": "83ead8c4-4314-4308-815c-660ccbefbe3d",
+    "UAI": "0049280S",
+    "name": "Z - CT ASS.SOC.PER-DSDEN DES COTES D'ARMOR-SAINT-BRIEUC",
+    "externalId": "RENNES-191786",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": false,
+    "ignoreMFA": false,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": true,
+    "feederName": "CT ASS.SOC.PER-DSDEN DES COTES D'ARMOR-SAINT-BRIEUC",
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "RENNES",
+        "id": "08483640-3ea8-4490-bea6-43c1b5ce0a61"
+      }
+    ]
+  },
+  {
+    "id": "95a57b7b-9073-4572-a1d6-86da7634b8c6",
+    "UAI": null,
+    "name": "Paul Klee Gymnasium",
+    "externalId": "b453a73639601db70e90209cf51d7714a0721850",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": null,
+    "exports": null,
+    "parents": [
+      {
+        "name": "2D",
+        "id": "5791357b-f205-4590-856a-dfa204f41ded"
+      }
+    ]
+  },
+  {
+    "id": "8910a1f9-e3cd-4c47-8732-ef67cb65cf6f",
+    "UAI": "2222222U",
+    "name": "QA - 2D - Ultima",
+    "externalId": "73f3afed-807b-427d-a7c8-cf61a5d7ec11",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": true,
+    "ignoreMFA": true,
+    "levelsOfEducation": [2],
+    "distributions": [],
+    "manualName": false,
+    "feederName": null,
+    "source": null,
+    "exports": null,
+    "parents": [
+      {
+        "name": "QA - 2D",
+        "id": "a26f03e6-117f-439a-ac93-a065d4b1004a"
+      }
+    ]
+  },
+  {
+    "id": "d21b7db6-517e-4a0e-8415-c3b7904db11f",
+    "UAI": "0041550W",
+    "name": "Z - CPD-DSDEN DES COTES D'ARMOR-SAINT-BRIEUC",
+    "externalId": "RENNES-630027",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": false,
+    "ignoreMFA": false,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": true,
+    "feederName": "CPD-DSDEN DES COTES D'ARMOR-SAINT-BRIEUC",
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "RENNES",
+        "id": "08483640-3ea8-4490-bea6-43c1b5ce0a61"
+      }
+    ]
+  },
+  {
+    "id": "20baf801-de45-4042-a31c-ed70a4a19e5f",
+    "UAI": "0040336N",
+    "name": "Z - CASNAV-CASNAV-RENNES",
+    "externalId": "RENNES-704641",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": false,
+    "ignoreMFA": false,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": true,
+    "feederName": "CASNAV-CASNAV-RENNES",
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "RENNES",
+        "id": "08483640-3ea8-4490-bea6-43c1b5ce0a61"
+      }
+    ]
+  },
+  {
+    "id": "d58fd23d-9183-4756-9756-ad5273fff485",
+    "UAI": "2222222P",
+    "name": "QA - 2D - Premium",
+    "externalId": "0c570001-f63d-4f3e-8ad4-317b203e87ac",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": true,
+    "ignoreMFA": true,
+    "levelsOfEducation": [2],
+    "distributions": [],
+    "manualName": false,
+    "feederName": null,
+    "source": null,
+    "exports": null,
+    "parents": [
+      {
+        "name": "QA - 2D",
+        "id": "a26f03e6-117f-439a-ac93-a065d4b1004a"
+      }
+    ]
+  },
+  {
+    "id": "c04fbbd5-384a-4ea6-b7d5-eea061af181b",
+    "UAI": "0043070J",
+    "name": "Z - CT SOC-DSDEN DES COTES D'ARMOR-SAINT-BRIEUC",
+    "externalId": "RENNES-691595",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": false,
+    "ignoreMFA": false,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": true,
+    "feederName": "CT SOC-DSDEN DES COTES D'ARMOR-SAINT-BRIEUC",
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "RENNES",
+        "id": "08483640-3ea8-4490-bea6-43c1b5ce0a61"
+      }
+    ]
+  },
+  {
+    "id": "a38f3f58-8a0b-475c-b9e7-dbee2ef6bf16",
+    "UAI": "0045033D",
+    "name": "Z - SERV.SOC.ELEVE-IA D'ILLE ET VILAINE-RENNES",
+    "externalId": "RENNES-110796",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": false,
+    "ignoreMFA": false,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": true,
+    "feederName": "SERV.SOC.ELEVE-IA D'ILLE ET VILAINE-RENNES",
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "RENNES",
+        "id": "08483640-3ea8-4490-bea6-43c1b5ce0a61"
+      }
+    ]
+  },
+  {
+    "id": "660abd55-4ff4-4aac-b133-6990905c04d5",
+    "UAI": "0041035Y",
+    "name": "Z - DSD-IA MORBIHAN-VANNES",
+    "externalId": "RENNES-450507",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": false,
+    "ignoreMFA": false,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": true,
+    "feederName": "DSD-IA MORBIHAN-VANNES",
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "RENNES",
+        "id": "08483640-3ea8-4490-bea6-43c1b5ce0a61"
+      }
+    ]
+  },
+  {
+    "id": "fbfab0cf-a8e6-47ae-9683-aa65d5cf3a19",
+    "UAI": null,
+    "name": "Formations",
+    "externalId": "056c9035-5fdd-4010-814f-e1289f1c4e7f",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": null,
+    "exports": null,
+    "parents": null
+  },
+  {
+    "id": "8e38c748-bac4-4c35-8ac5-3c3d530cd1ee",
+    "UAI": null,
+    "name": "QA - 1D - Découverte",
+    "externalId": "2ea103ca-9d34-43d6-9be6-fc904b864902",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": true,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1],
+    "distributions": [],
+    "manualName": false,
+    "feederName": null,
+    "source": null,
+    "exports": null,
+    "parents": [
+      {
+        "name": "QA - 1D",
+        "id": "e306b64e-99d6-4b50-8e0e-cfc01a500267"
+      }
+    ]
+  },
+  {
+    "id": "77169496-d1d4-49ac-8ba0-cd1a9358234b",
+    "UAI": "1111111A",
+    "name": "Ecole Jacques Cartier",
+    "externalId": "456e3758-3ebf-40ae-80db-551ea956dda6",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": true,
+    "ignoreMFA": true,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": false,
+    "feederName": "Ecole Jacques Cartier",
+    "source": "CSV",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Ville de Neuville",
+        "id": "1216e1f6-3031-45e4-b6cc-7fd215a599ad"
+      },
+      {
+        "name": "1D",
+        "id": "d4efe3a7-fa6a-4af7-b4ac-efbc51f32bc3"
+      },
+      {
+        "name": "Ecoles",
+        "id": "466352f6-b7a6-4f66-ad81-380ea58887e2"
+      }
+    ]
+  },
+  {
+    "id": "ff28a7da-06d8-4675-8c3c-1e305d11d69f",
+    "UAI": "9999990A",
+    "name": "Canopé Formations",
+    "externalId": "782547d2-9e97-44a5-8cfb-5691ff39bbfa",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": false,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": null,
+    "exports": null,
+    "parents": null
+  },
+  {
+    "id": "c9fd7783-d783-4a12-ae75-af4b17bad4f5",
+    "UAI": null,
+    "name": "General3",
+    "externalId": "dea9ef48-d52a-4a9d-89fa-976409eec5ae",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": "General3",
+    "source": "CSV",
+    "exports": null,
+    "parents": null
+  },
+  {
+    "id": "0b9fe7d5-20b7-40d9-b202-b7de7dc26eaf",
+    "UAI": null,
+    "name": "Lycée Général",
+    "externalId": "81fc4c0b-fb39-41b6-9c65-98515e99ba10",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": null,
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées",
+        "id": "37741991-20a0-4884-9a80-c0d1daedc100"
+      }
+    ]
+  },
+  {
+    "id": "41c224f0-7c28-4590-8123-cd44169656ec",
+    "UAI": "7896726A",
+    "name": "Test QA 1500 Student",
+    "externalId": "58f64f05-ef92-4cc2-9e0b-08765b12ec10",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": true,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": "Test QA 1500 Student",
+    "source": "CSV",
+    "exports": null,
+    "parents": [
+      {
+        "name": "0 TEST QA",
+        "id": "04cce716-c1cf-4e94-b282-b1b61749e61d"
+      }
+    ]
+  },
+  {
+    "id": "803b137d-5d5a-4a52-98d9-6cdb7386fcd2",
+    "UAI": "0049494T",
+    "name": "Z - DIV1-IA D'ILLE ET VILAINE-RENNES",
+    "externalId": "RENNES-601622",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": false,
+    "ignoreMFA": false,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": true,
+    "feederName": "DIV1-IA D'ILLE ET VILAINE-RENNES",
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "RENNES",
+        "id": "08483640-3ea8-4490-bea6-43c1b5ce0a61"
+      }
+    ]
+  },
+  {
+    "id": "12454568-7bb5-4381-8d9a-e11cbd6cc6ec",
+    "UAI": null,
+    "name": "Lycées",
+    "externalId": "4840241b-7091-469c-afc2-cf94c704b938",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": null,
+    "exports": null,
+    "parents": null
+  },
+  {
+    "id": "26b749ce-f5e9-4441-924c-06e018a56a0c",
+    "UAI": "0048176A",
+    "name": "Z - SAGAS-IA ILLE ET VILAINE SAGAS-RENNES",
+    "externalId": "RENNES-525828",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": false,
+    "ignoreMFA": false,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": true,
+    "feederName": "SAGAS-IA ILLE ET VILAINE SAGAS-RENNES",
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "RENNES",
+        "id": "08483640-3ea8-4490-bea6-43c1b5ce0a61"
+      }
+    ]
+  },
+  {
+    "id": "08fa0aee-8bd1-4733-8666-6ac2844f0675",
+    "UAI": "0043488X",
+    "name": "LGT-BEAUMONT-REDON",
+    "externalId": "RENNES-324113",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": false,
+    "ignoreMFA": true,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": false,
+    "feederName": "LGT-BEAUMONT-REDON",
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "RENNES",
+        "id": "08483640-3ea8-4490-bea6-43c1b5ce0a61"
+      }
+    ]
+  },
+  {
+    "id": "6f6372a6-ea0f-4490-8445-0a29017f0aca",
+    "UAI": "0042231Z",
+    "name": "Z - CONSEIL. TECHN-IA D'ILLE ET VILAINE-RENNES",
+    "externalId": "RENNES-430243",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": false,
+    "ignoreMFA": false,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": true,
+    "feederName": "CONSEIL. TECHN-IA D'ILLE ET VILAINE-RENNES",
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "RENNES",
+        "id": "08483640-3ea8-4490-bea6-43c1b5ce0a61"
+      }
+    ]
+  },
+  {
+    "id": "e668cfe6-b033-48dd-a895-9d92e12747c3",
+    "UAI": "0045481I",
+    "name": "Z - DIV2D-DSDEN DES COTES D'ARMOR-SAINT-BRIEUC",
+    "externalId": "RENNES-530238",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": false,
+    "ignoreMFA": false,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": true,
+    "feederName": "DIV2D-DSDEN DES COTES D'ARMOR-SAINT-BRIEUC",
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "RENNES",
+        "id": "08483640-3ea8-4490-bea6-43c1b5ce0a61"
+      }
+    ]
+  },
+  {
+    "id": "465d70c3-00f8-4c2d-a51d-569c7d03c8d2",
+    "UAI": null,
+    "name": "Lycées Technique",
+    "externalId": "c66bde99-3da6-4bc7-bae9-200e646bf973",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": null,
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées",
+        "id": "37741991-20a0-4884-9a80-c0d1daedc100"
+      }
+    ]
+  },
+  {
+    "id": "37741991-20a0-4884-9a80-c0d1daedc100",
+    "UAI": null,
+    "name": "Lycées",
+    "externalId": "2c7cd4cc-d343-4dd1-972b-dda8b4107107",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": null,
+    "exports": null,
+    "parents": [
+      {
+        "name": "Académie",
+        "id": "ad97b3c7-287a-4a60-9e8f-31f34918cb44"
+      },
+      {
+        "name": "Autres structures",
+        "id": "c82df58d-b036-465c-ab11-fddf6826e8cd"
+      }
+    ]
+  },
+  {
+    "id": "fbc61d61-569b-441b-b81c-9a85e848f442",
+    "UAI": "0040268G",
+    "name": "Z - CDOEA-IA D'ILLE ET VILAINE-RENNES",
+    "externalId": "RENNES-309090",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": false,
+    "ignoreMFA": false,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": true,
+    "feederName": "CDOEA-IA D'ILLE ET VILAINE-RENNES",
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "RENNES",
+        "id": "08483640-3ea8-4490-bea6-43c1b5ce0a61"
+      }
+    ]
+  },
+  {
+    "id": "3eaa6850-3518-4cf5-aebf-ec97be57967f",
+    "UAI": null,
+    "name": "Collèges",
+    "externalId": "b386a48d-5a6e-4af5-b9c4-5bed6a7ae8fb",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": false,
+    "ignoreMFA": true,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": false,
+    "feederName": null,
+    "source": null,
+    "exports": null,
+    "parents": [
+      {
+        "name": "Académie",
+        "id": "ad97b3c7-287a-4a60-9e8f-31f34918cb44"
+      },
+      {
+        "name": "Autres structures",
+        "id": "c82df58d-b036-465c-ab11-fddf6826e8cd"
+      }
+    ]
+  },
+  {
+    "id": "44cf4df9-19c6-435c-b730-62de534289d4",
+    "UAI": "0041462F",
+    "name": "Z - D.S.D.E.N.-DU FINISTERE-QUIMPER",
+    "externalId": "RENNES-660839",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": false,
+    "ignoreMFA": false,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": true,
+    "feederName": "D.S.D.E.N.-DU FINISTERE-QUIMPER",
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "RENNES",
+        "id": "08483640-3ea8-4490-bea6-43c1b5ce0a61"
+      }
+    ]
+  },
+  {
+    "id": "e390debe-202e-484b-ab07-f2a2c8bc30b4",
+    "UAI": "0860755D",
+    "name": "LGT PR-ISAAC DE L'ETOILE (FEUILLANTS)-POITIERS",
+    "externalId": "POITIERS-3740",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées Général Technique",
+        "id": "17090d90-bac8-47de-adfc-deaf6cb5d622"
+      }
+    ]
+  },
+  {
+    "id": "dc1a0ea3-c747-40b9-9d32-afd61771b29d",
+    "UAI": "0171630E",
+    "name": "ECG PR-ECOLE DEMOCRATIQUE RESPIRE-LA JARRIE",
+    "externalId": "POITIERS-75004",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Ecoles",
+        "id": "466352f6-b7a6-4f66-ad81-380ea58887e2"
+      }
+    ]
+  },
+  {
+    "id": "1104cb00-b782-4444-92a0-645db08ef01e",
+    "UAI": "0861228T",
+    "name": "LGT-DU BOIS D'AMOUR-POITIERS",
+    "externalId": "POITIERS-3930",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées Général Technique",
+        "id": "17090d90-bac8-47de-adfc-deaf6cb5d622"
+      }
+    ]
+  },
+  {
+    "id": "b6191a4d-2a9e-48cb-a977-58273ccb9dfc",
+    "UAI": null,
+    "name": "0 MOBILE",
+    "externalId": "d12b79d8-8021-4520-b58d-ae1a3d3a1a68",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": true,
+    "ignoreMFA": true,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": false,
+    "feederName": "0 MOBILE",
+    "source": "CSV",
+    "exports": null,
+    "parents": [
+      {
+        "name": "00-Edifice",
+        "id": "02b1de42-581b-4f4b-91f7-14223f1d7309"
+      }
+    ]
+  },
+  {
+    "id": "054f5117-2519-4c47-8dca-380a1c6ead99",
+    "UAI": "0049815W",
+    "name": "Z - CT INF-DSDEN DES COTES D'ARMOR-SAINT-BRIEUC",
+    "externalId": "RENNES-361183",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": false,
+    "ignoreMFA": false,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": true,
+    "feederName": "CT INF-DSDEN DES COTES D'ARMOR-SAINT-BRIEUC",
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "RENNES",
+        "id": "08483640-3ea8-4490-bea6-43c1b5ce0a61"
+      }
+    ]
+  },
+  {
+    "id": "78543077-0b03-4dc2-9781-7cb51f693fb8",
+    "UAI": "0860903P",
+    "name": "LGT PR-UNION CHRETIENNE-POITIERS",
+    "externalId": "POITIERS-3809",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées Général Technique",
+        "id": "17090d90-bac8-47de-adfc-deaf6cb5d622"
+      }
+    ]
+  },
+  {
+    "id": "87437ffd-098f-4905-a0b8-01a8cd78a5cc",
+    "UAI": null,
+    "name": "2 - IT Positions - NEtab 1724829317896",
+    "externalId": "da10ebb2-486c-4fb9-8caa-2a75b00ba19b",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": "2 - IT Positions - NEtab 1724829317896",
+    "source": "CSV",
+    "exports": null,
+    "parents": null
+  },
+  {
+    "id": "861cad35-9dc4-43ed-b63b-793c7b9c89af",
+    "UAI": "1111111S",
+    "name": "QA - 1D - Start",
+    "externalId": "c752aefc-4a7c-4547-a808-29ed99534859",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": true,
+    "ignoreMFA": true,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": true,
+    "feederName": "QA - 1D - Ultima",
+    "source": "CSV",
+    "exports": null,
+    "parents": [
+      {
+        "name": "QA - 1D",
+        "id": "e306b64e-99d6-4b50-8e0e-cfc01a500267"
+      }
+    ]
+  },
+  {
+    "id": "19785365-e159-41b0-872a-3fbde2a2a353",
+    "UAI": "0860005N",
+    "name": "LGT-CITE TECHNIQUE EDOUARD BRANLY-CHATELLERAULT",
+    "externalId": "POITIERS-3656",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées Général Technique",
+        "id": "17090d90-bac8-47de-adfc-deaf6cb5d622"
+      }
+    ]
+  },
+  {
+    "id": "b23b4888-1903-4624-b81b-cc7e68b85aea",
+    "UAI": "0860789R",
+    "name": "LPO PR-ISAAC DE L'ETOILE (LE PORTEAU)-POITIERS",
+    "externalId": "POITIERS-3757",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées Polyvalent",
+        "id": "1c34d8e9-70ab-4ea1-8711-88c8604d0d59"
+      }
+    ]
+  },
+  {
+    "id": "3747491a-5ea6-4fba-be88-9d031022c894",
+    "UAI": null,
+    "name": "Deutsche Schule",
+    "externalId": "b5333d1ba7ccac42c6a6ce3dc27d78441ef477e9",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": null,
+    "exports": null,
+    "parents": [
+      {
+        "name": "1D",
+        "id": "d4efe3a7-fa6a-4af7-b4ac-efbc51f32bc3"
+      }
+    ]
+  },
+  {
+    "id": "e9d75d79-26c9-4ff3-b794-992d91ae4798",
+    "UAI": "1111111P",
+    "name": "QA - 1D - Premium",
+    "externalId": "ebc666ef-de90-44ea-9a37-123bad1576e0",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": true,
+    "ignoreMFA": true,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": false,
+    "feederName": "QA - 1D - Premium",
+    "source": "CSV",
+    "exports": null,
+    "parents": [
+      {
+        "name": "QA - 1D",
+        "id": "e306b64e-99d6-4b50-8e0e-cfc01a500267"
+      }
+    ]
+  },
+  {
+    "id": "55e22d45-04eb-47ec-8af2-78d97237aadf",
+    "UAI": "0860718N",
+    "name": "LEGTA-DE POITIERS VENOURS-ROUILLE",
+    "externalId": "POITIERS-3721",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées d'enseignement général et technologique agricole",
+        "id": "e9f324b4-7285-4f95-bf34-681fbddc3979"
+      }
+    ]
+  },
+  {
+    "id": "06f8343e-ba9a-45d9-a6c6-df66f729cc2d",
+    "UAI": null,
+    "name": "Edifice",
+    "externalId": "94c9fa03-a91b-4301-86b9-b2c7bc8b3b07",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": false,
+    "ignoreMFA": true,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": false,
+    "feederName": null,
+    "source": null,
+    "exports": null,
+    "parents": null
+  },
+  {
+    "id": "08483640-3ea8-4490-bea6-43c1b5ce0a61",
+    "UAI": null,
+    "name": "RENNES",
+    "externalId": "5739ed49-ca93-423e-9f0c-241193bd8711",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": false,
+    "ignoreMFA": true,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": false,
+    "feederName": null,
+    "source": null,
+    "exports": null,
+    "parents": null
+  },
+  {
+    "id": "83d3c83a-3e11-4f66-a737-97efb91c4bc8",
+    "UAI": "0861223M",
+    "name": "LGT-PILOTE INNOVANT INTERNATIONAL-JAUNAY-MARIGNY",
+    "externalId": "POITIERS-3925",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées Général Technique",
+        "id": "17090d90-bac8-47de-adfc-deaf6cb5d622"
+      }
+    ]
+  },
+  {
+    "id": "466352f6-b7a6-4f66-ad81-380ea58887e2",
+    "UAI": null,
+    "name": "Ecoles",
+    "externalId": "e93118ff-2ceb-4c93-bae4-085ba18e3b9b",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": null,
+    "exports": null,
+    "parents": [
+      {
+        "name": "Académie",
+        "id": "ad97b3c7-287a-4a60-9e8f-31f34918cb44"
+      },
+      {
+        "name": "Autres structures",
+        "id": "c82df58d-b036-465c-ab11-fddf6826e8cd"
+      }
+    ]
+  },
+  {
+    "id": "4b70f6c7-c1bf-45ed-85fd-cd6ab1b3dfc2",
+    "UAI": "0860037Y",
+    "name": "LPO-NELSON MANDELA-POITIERS",
+    "externalId": "POITIERS-3677",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées Polyvalent",
+        "id": "1c34d8e9-70ab-4ea1-8711-88c8604d0d59"
+      }
+    ]
+  },
+  {
+    "id": "dcc3a715-4ab4-4c75-abef-e609cc4432ff",
+    "UAI": "0044860X",
+    "name": "Z - DIAGE-DSDEN DES COTES D'ARMOR-SAINT-BRIEUC",
+    "externalId": "RENNES-173719",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": false,
+    "ignoreMFA": false,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": true,
+    "feederName": "DIAGE-DSDEN DES COTES D'ARMOR-SAINT-BRIEUC",
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "RENNES",
+        "id": "08483640-3ea8-4490-bea6-43c1b5ce0a61"
+      }
+    ]
+  },
+  {
+    "id": "d71bdfeb-5660-4e94-98d9-f48e5651ab17",
+    "UAI": "0861408N",
+    "name": "LPO-LPO KYOTO-POITIERS",
+    "externalId": "POITIERS-7000",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées Polyvalent",
+        "id": "1c34d8e9-70ab-4ea1-8711-88c8604d0d59"
+      }
+    ]
+  },
+  {
+    "id": "ab1987c4-4f5e-4c8b-a934-6e17002b83cf",
+    "UAI": "0860028N",
+    "name": "LGT-JEAN MOULIN-MONTMORILLON",
+    "externalId": "POITIERS-3671",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées Général Technique",
+        "id": "17090d90-bac8-47de-adfc-deaf6cb5d622"
+      }
+    ]
+  },
+  {
+    "id": "65fbd0b4-a16b-4a20-99b0-a44df559080d",
+    "UAI": "0860035W",
+    "name": "LGT-CAMILLE GUERIN-POITIERS",
+    "externalId": "POITIERS-3676",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées Général Technique",
+        "id": "17090d90-bac8-47de-adfc-deaf6cb5d622"
+      }
+    ]
+  },
+  {
+    "id": "e306b64e-99d6-4b50-8e0e-cfc01a500267",
+    "UAI": null,
+    "name": "QA - 1D",
+    "externalId": "e1941313-8251-401f-8aa7-62a5dd1edfaa",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": true,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1],
+    "distributions": [],
+    "manualName": false,
+    "feederName": null,
+    "source": null,
+    "exports": null,
+    "parents": [
+      {
+        "name": "0 TEST QA",
+        "id": "04cce716-c1cf-4e94-b282-b1b61749e61d"
+      }
+    ]
+  },
+  {
+    "id": "fad66b82-8c68-49c6-9aa2-72c8fa097d2a",
+    "UAI": "0790031E",
+    "name": "LPO LYC METIER-DU HAUT VAL DE SEVRE-SAINT-MAIXENT-L'ECOLE",
+    "externalId": "POITIERS-3389",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées Polyvalent",
+        "id": "1c34d8e9-70ab-4ea1-8711-88c8604d0d59"
+      }
+    ]
+  },
+  {
+    "id": "31f8a04a-17ee-433c-8c57-4541dada9005",
+    "UAI": "0860021F",
+    "name": "LGT-GUY CHAUVET-LOUDUN",
+    "externalId": "POITIERS-3666",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées Général Technique",
+        "id": "17090d90-bac8-47de-adfc-deaf6cb5d622"
+      }
+    ]
+  },
+  {
+    "id": "dfa64402-b0bf-48b7-a479-60527770eb25",
+    "UAI": "0045574I",
+    "name": "Z - D.S.D.E.N.-DU MORBIHAN-VANNES",
+    "externalId": "RENNES-585903",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": false,
+    "ignoreMFA": false,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": true,
+    "feederName": "D.S.D.E.N.-DU MORBIHAN-VANNES",
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "RENNES",
+        "id": "08483640-3ea8-4490-bea6-43c1b5ce0a61"
+      }
+    ]
+  },
+  {
+    "id": "ab4d0c68-1537-48fe-b26d-b81cc0ef7e0a",
+    "UAI": "0869999B",
+    "name": "DSDEN-DE LA VIENNE-POITIERS",
+    "externalId": "POITIERS-4092",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Autres",
+        "id": "68d0b145-86f4-4619-a10d-ca5cabe348f3"
+      }
+    ]
+  },
+  {
+    "id": "ccad83ce-bc6b-48ba-a927-3fb3431629d0",
+    "UAI": "0044632W",
+    "name": "Z - CHARG. MISSION-DSDEN DES COTES D'ARMOR-SAINT-BRIEUC",
+    "externalId": "RENNES-425907",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": false,
+    "ignoreMFA": false,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": true,
+    "feederName": "CHARG. MISSION-DSDEN DES COTES D'ARMOR-SAINT-BRIEUC",
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "RENNES",
+        "id": "08483640-3ea8-4490-bea6-43c1b5ce0a61"
+      }
+    ]
+  },
+  {
+    "id": "c2fd68a5-2204-4e5b-94f6-9ad3df2df277",
+    "UAI": "0790768F",
+    "name": "LEGTA-DE MELLE-MELLE",
+    "externalId": "POITIERS-3463",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées d'enseignement général et technologique agricole",
+        "id": "e9f324b4-7285-4f95-bf34-681fbddc3979"
+      }
+    ]
+  },
+  {
+    "id": "37aba195-b112-4e1d-af79-0f7ab04b291a",
+    "UAI": "0860054S",
+    "name": "RECTORAT - DSD-ACADEMIE DE POITIERS-POITIERS",
+    "externalId": "POITIERS-3692",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Autres",
+        "id": "68d0b145-86f4-4619-a10d-ca5cabe348f3"
+      }
+    ]
+  },
+  {
+    "id": "7349c02d-1156-4e1d-ae68-a1418d7b72f5",
+    "UAI": "0861216E",
+    "name": "ECG PR-ST THOMAS D AQUIN-ROMAGNE",
+    "externalId": "POITIERS-3919",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Ecoles",
+        "id": "466352f6-b7a6-4f66-ad81-380ea58887e2"
+      }
+    ]
+  },
+  {
+    "id": "41489eb3-5bdb-4422-82eb-63b763fea4aa",
+    "UAI": "0790078F",
+    "name": "LPO PR-SAINT ANDRE-NIORT",
+    "externalId": "POITIERS-3429",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées Polyvalent",
+        "id": "1c34d8e9-70ab-4ea1-8711-88c8604d0d59"
+      }
+    ]
+  },
+  {
+    "id": "42963e3d-84b5-4473-aea0-ca1ae78a333e",
+    "UAI": null,
+    "name": "QA - 1D - Connecteurs",
+    "externalId": "388fb932-ee2f-43c4-95b0-f479ca6e27bb",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": true,
+    "ignoreMFA": false,
+    "levelsOfEducation": [1],
+    "distributions": [],
+    "manualName": false,
+    "feederName": null,
+    "source": null,
+    "exports": null,
+    "parents": [
+      {
+        "name": "QA - 1D",
+        "id": "e306b64e-99d6-4b50-8e0e-cfc01a500267"
+      }
+    ]
+  },
+  {
+    "id": "e014864b-f086-4821-af26-212757682eb9",
+    "UAI": "0047593E",
+    "name": "Z - DIVEL-IA D'ILLE ET VILAINE-RENNES",
+    "externalId": "RENNES-524453",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": false,
+    "ignoreMFA": false,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": true,
+    "feederName": "DIVEL-IA D'ILLE ET VILAINE-RENNES",
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "RENNES",
+        "id": "08483640-3ea8-4490-bea6-43c1b5ce0a61"
+      }
+    ]
+  },
+  {
+    "id": "28a0cd8f-74b1-4674-85fc-984e338225b7",
+    "UAI": null,
+    "name": "Ecole Estrela do Mar 1D",
+    "externalId": "5972668181c215bedd21ee35d5e2dfb5565c2e03",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": true,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": null,
+    "exports": null,
+    "parents": [
+      {
+        "name": "1D",
+        "id": "d4efe3a7-fa6a-4af7-b4ac-efbc51f32bc3"
+      }
+    ]
+  },
+  {
+    "id": "6ada72c9-20d3-4799-8b17-76f5207531b0",
+    "UAI": "0860003L",
+    "name": "LGT-MARCELIN BERTHELOT-CHATELLERAULT",
+    "externalId": "POITIERS-3655",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées Général Technique",
+        "id": "17090d90-bac8-47de-adfc-deaf6cb5d622"
+      }
+    ]
+  },
+  {
+    "id": "e5fc83f0-8c45-40eb-9deb-2d36c4db54d0",
+    "UAI": "0860774Z",
+    "name": "LPO PR METIER-ST JACQUES DE COMPOSTELLE-POITIERS",
+    "externalId": "POITIERS-3752",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées Polyvalent",
+        "id": "1c34d8e9-70ab-4ea1-8711-88c8604d0d59"
+      }
+    ]
+  },
+  {
+    "id": "d8a926c8-d314-44c9-96cd-b9617d171a6b",
+    "UAI": "0171455P",
+    "name": "LPO LYC METIER-MARCEL DASSAULT-ROCHEFORT",
+    "externalId": "POITIERS-3235",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": false,
+    "ignoreMFA": true,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": false,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées Polyvalent",
+        "id": "1c34d8e9-70ab-4ea1-8711-88c8604d0d59"
+      }
+    ]
+  },
+  {
+    "id": "1c34d8e9-70ab-4ea1-8711-88c8604d0d59",
+    "UAI": null,
+    "name": "Lycées Polyvalent",
+    "externalId": "56885c37-564e-4b17-88ad-280327dc0c69",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": null,
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées",
+        "id": "37741991-20a0-4884-9a80-c0d1daedc100"
+      }
+    ]
+  },
+  {
+    "id": "eda8a874-1f00-4665-8ccd-034d9bce7386",
+    "UAI": "0790029C",
+    "name": "LGT-ERNEST PEROCHON-PARTHENAY",
+    "externalId": "POITIERS-3387",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées Général Technique",
+        "id": "17090d90-bac8-47de-adfc-deaf6cb5d622"
+      }
+    ]
+  },
+  {
+    "id": "849657aa-b073-452e-ba7c-ded282207105",
+    "UAI": "0860009T",
+    "name": "LGT-ANDRE THEURIET-CIVRAY",
+    "externalId": "POITIERS-3658",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées Général Technique",
+        "id": "17090d90-bac8-47de-adfc-deaf6cb5d622"
+      }
+    ]
+  },
+  {
+    "id": "a2f40086-33d8-417b-a221-9f2d283f59c4",
+    "UAI": "0860038Z",
+    "name": "LGT-ALIENOR D AQUITAINE-POITIERS",
+    "externalId": "POITIERS-3678",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées Général Technique",
+        "id": "17090d90-bac8-47de-adfc-deaf6cb5d622"
+      }
+    ]
+  },
+  {
+    "id": "7e46e6dc-4dfe-46e5-82bf-c5915bf160f2",
+    "UAI": "0043083I",
+    "name": "Z - EATICE 35-ENSEIGTS ANIMATEURS EATICE 35-RENNES",
+    "externalId": "RENNES-186467",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": false,
+    "ignoreMFA": false,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": true,
+    "feederName": "EATICE 35-ENSEIGTS ANIMATEURS EATICE 35-RENNES",
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "RENNES",
+        "id": "08483640-3ea8-4490-bea6-43c1b5ce0a61"
+      }
+    ]
+  },
+  {
+    "id": "63efffd1-883b-4fdb-9a69-8c54c7db284a",
+    "UAI": "0171405K",
+    "name": "LPO-HOTELIER-LA ROCHELLE",
+    "externalId": "POITIERS-3192",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées Polyvalent",
+        "id": "1c34d8e9-70ab-4ea1-8711-88c8604d0d59"
+      }
+    ]
+  },
+  {
+    "id": "3d820d89-b995-4e5c-9749-72d1a75d3865",
+    "UAI": "0790019S",
+    "name": "LGT-JOSEPH DESFONTAINES-MELLE",
+    "externalId": "POITIERS-3380",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées Général Technique",
+        "id": "17090d90-bac8-47de-adfc-deaf6cb5d622"
+      }
+    ]
+  },
+  {
+    "id": "b65b5660-2bb6-4c5c-bb7f-7a929034661b",
+    "UAI": "0047671X",
+    "name": "Z - DIRECTION-IA ILLE ET VILAINE-RENNES",
+    "externalId": "RENNES-350121",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": false,
+    "ignoreMFA": false,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": true,
+    "feederName": "DIRECTION-IA ILLE ET VILAINE-RENNES",
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "RENNES",
+        "id": "08483640-3ea8-4490-bea6-43c1b5ce0a61"
+      }
+    ]
+  },
+  {
+    "id": "7d999553-79f5-4bde-b6d6-bd47c536e6f4",
+    "UAI": "0799999P",
+    "name": "DSDEN-DES DEUX-SEVRES-NIORT",
+    "externalId": "POITIERS-3653",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Autres",
+        "id": "68d0b145-86f4-4619-a10d-ca5cabe348f3"
+      }
+    ]
+  },
+  {
+    "id": "b564f203-d209-4016-8644-382c28c3f49f",
+    "UAI": "0790706N",
+    "name": "LEGTA-DE BRESSUIRE-BRESSUIRE",
+    "externalId": "POITIERS-3447",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées d'enseignement général et technologique agricole",
+        "id": "e9f324b4-7285-4f95-bf34-681fbddc3979"
+      }
+    ]
+  },
+  {
+    "id": "1216e1f6-3031-45e4-b6cc-7fd215a599ad",
+    "UAI": null,
+    "name": "Ville de Neuville",
+    "externalId": "01d5ef08-9efa-4b7b-a61a-faf593f5c6b1",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": null,
+    "exports": null,
+    "parents": null
+  },
+  {
+    "id": "5e4b29f2-4145-4ee1-8a31-a655a5d1497a",
+    "UAI": null,
+    "name": "Circonscription de Neuville",
+    "externalId": "25ed4b35-7d53-498e-aaaf-b344adc8729c",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": null,
+    "exports": null,
+    "parents": [
+      {
+        "name": "Académie",
+        "id": "ad97b3c7-287a-4a60-9e8f-31f34918cb44"
+      }
+    ]
+  },
+  {
+    "id": "616c90cc-efbb-4c44-a465-159393d0604e",
+    "UAI": "0790058J",
+    "name": "LGT PR-SAINT CHARLES-THOUARS",
+    "externalId": "POITIERS-3414",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées Général Technique",
+        "id": "17090d90-bac8-47de-adfc-deaf6cb5d622"
+      }
+    ]
+  },
+  {
+    "id": "d338d876-e831-4dcc-bc3f-e09794391b2e",
+    "UAI": "0044767T",
+    "name": "Z - CPD-IA D'ILLE ET VILAINE-RENNES",
+    "externalId": "RENNES-50602",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": false,
+    "ignoreMFA": false,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": true,
+    "feederName": "CPD-IA D'ILLE ET VILAINE-RENNES",
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "RENNES",
+        "id": "08483640-3ea8-4490-bea6-43c1b5ce0a61"
+      }
+    ]
+  },
+  {
+    "id": "3704120a-b61a-4296-99f0-8c6b6c6587fc",
+    "UAI": "0860034V",
+    "name": "LGT-VICTOR HUGO-POITIERS",
+    "externalId": "POITIERS-3675",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": "LGT-VICTOR HUGO-POITIERS",
+    "source": "CSV",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées Général Technique",
+        "id": "17090d90-bac8-47de-adfc-deaf6cb5d622"
+      }
+    ]
+  },
+  {
+    "id": "90cc1a99-091d-44e7-914c-9d7b330b3211",
+    "UAI": "5551699K",
+    "name": "Collège  Jean de La Fontaine",
+    "externalId": "5554499",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": false,
+    "ignoreMFA": true,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": false,
+    "feederName": null,
+    "source": null,
+    "exports": null,
+    "parents": [
+      {
+        "name": "Département 76",
+        "id": "c5c05afe-21f2-4e7a-991b-9c1c4d5d26b5"
+      },
+      {
+        "name": "Collèges",
+        "id": "3eaa6850-3518-4cf5-aebf-ec97be57967f"
+      }
+    ]
+  },
+  {
+    "id": "d935baa9-3a70-4576-bc8a-932a9a238689",
+    "UAI": "0048329X",
+    "name": "Z - D.S.D.E.N.-DES COTES D'ARMOR-SAINT-BRIEUC",
+    "externalId": "RENNES-782052",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": false,
+    "ignoreMFA": false,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": true,
+    "feederName": "D.S.D.E.N.-DES COTES D'ARMOR-SAINT-BRIEUC",
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "RENNES",
+        "id": "08483640-3ea8-4490-bea6-43c1b5ce0a61"
+      }
+    ]
+  },
+  {
+    "id": "9b189ff4-1bda-454c-bd42-739cb320cc35",
+    "UAI": "0170098P",
+    "name": "LGT PR-LA SALLE SAINT LOUIS-PONT-L'ABBE-D'ARNOULT",
+    "externalId": "POITIERS-2951",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées Général Technique",
+        "id": "17090d90-bac8-47de-adfc-deaf6cb5d622"
+      }
+    ]
+  },
+  {
+    "id": "bc6ffa3e-008e-4ae2-bb73-3eaa14629175",
+    "UAI": null,
+    "name": "Bassin (collèges et lycées)",
+    "externalId": "83b0a626-fb7b-4b33-b31f-6f498dd18ba3",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": false,
+    "ignoreMFA": true,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": false,
+    "feederName": null,
+    "source": null,
+    "exports": null,
+    "parents": [
+      {
+        "name": "Académie",
+        "id": "ad97b3c7-287a-4a60-9e8f-31f34918cb44"
+      }
+    ]
+  },
+  {
+    "id": "6d8364e0-4d9e-453a-8a81-bf8b194ac691",
+    "UAI": null,
+    "name": "Centre de loisirs municipal",
+    "externalId": "a1280bda-0a31-48be-900c-e821dbdd115c",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": null,
+    "exports": null,
+    "parents": [
+      {
+        "name": "Ville de Neuville",
+        "id": "1216e1f6-3031-45e4-b6cc-7fd215a599ad"
+      },
+      {
+        "name": "Ville  de Maran",
+        "id": "47fbffdb-b21f-4692-ad8b-71995c976ea3"
+      }
+    ]
+  },
+  {
+    "id": "77b96970-0067-4095-a4ad-7b67e42a9ce6",
+    "UAI": "0170058W",
+    "name": "LGT-BELLEVUE-SAINTES",
+    "externalId": "POITIERS-2924",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées Général Technique",
+        "id": "17090d90-bac8-47de-adfc-deaf6cb5d622"
+      }
+    ]
+  },
+  {
+    "id": "ee071fda-356a-4d6e-b40e-08cc87dad502",
+    "UAI": null,
+    "name": "DRAAF",
+    "externalId": "41b89d79-5555-4c2d-98a1-81112cf72860",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": null,
+    "exports": null,
+    "parents": null
+  },
+  {
+    "id": "e8e3d8cc-c257-49d2-a7d8-df910ecf213d",
+    "UAI": "0170135E",
+    "name": "LPO LYC METIER-JEAN HYPPOLITE-JONZAC",
+    "externalId": "POITIERS-2975",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées Polyvalent",
+        "id": "1c34d8e9-70ab-4ea1-8711-88c8604d0d59"
+      }
+    ]
+  },
+  {
+    "id": "5f6f2ddd-cee8-4532-8847-62821dc82d23",
+    "UAI": null,
+    "name": "Ecole Gutemberg",
+    "externalId": "f7e7eaa1-8b25-41ff-9123-6472efaac032",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": false,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1],
+    "distributions": ["Bibliothèque"],
+    "manualName": null,
+    "feederName": "Ecole Gutemberg",
+    "source": "CSV",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Ville de Neuville",
+        "id": "1216e1f6-3031-45e4-b6cc-7fd215a599ad"
+      }
+    ]
+  },
+  {
+    "id": "5dd0a75f-5655-46e2-bf8c-e53e1d518bb2",
+    "UAI": "0790024X",
+    "name": "LGT-PAUL GUERIN-NIORT",
+    "externalId": "POITIERS-3384",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées Général Technique",
+        "id": "17090d90-bac8-47de-adfc-deaf6cb5d622"
+      }
+    ]
+  },
+  {
+    "id": "2b31a81d-1340-48e9-98b2-d7071cc84a34",
+    "UAI": null,
+    "name": "Secondaire italien",
+    "externalId": "c94ff18fb246725f04160472ba4b19f64870e972",
+    "timetable": "NOP",
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": null,
+    "exports": null,
+    "parents": [
+      {
+        "name": "2D",
+        "id": "5791357b-f205-4590-856a-dfa204f41ded"
+      }
+    ]
+  },
+  {
+    "id": "5f2679ae-db60-49a6-b81a-8302febe9591",
+    "UAI": null,
+    "name": "Tests Audience",
+    "externalId": "692893be-acb1-4ea8-b81b-6c9b2272e8df",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": "Tests Audience",
+    "source": "CSV",
+    "exports": null,
+    "parents": null
+  },
+  {
+    "id": "9d5c2ad8-ac1a-4c3e-8194-e82299c86a96",
+    "UAI": "0045248F",
+    "name": "Z - SERV. SOC. PER-IA D'ILLE ET VILAINE-RENNES",
+    "externalId": "RENNES-625592",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": false,
+    "ignoreMFA": false,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": true,
+    "feederName": "SERV. SOC. PER-IA D'ILLE ET VILAINE-RENNES",
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "RENNES",
+        "id": "08483640-3ea8-4490-bea6-43c1b5ce0a61"
+      }
+    ]
+  },
+  {
+    "id": "04cce716-c1cf-4e94-b282-b1b61749e61d",
+    "UAI": "1092022C",
+    "name": "0 TEST QA",
+    "externalId": "bbb54a78-06ff-4e7d-b766-fdcb3c5254fc",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": true,
+    "ignoreMFA": true,
+    "levelsOfEducation": [1],
+    "distributions": [],
+    "manualName": false,
+    "feederName": "0 TEST QA",
+    "source": "CSV",
+    "exports": null,
+    "parents": [
+      {
+        "name": "00-Edifice",
+        "id": "02b1de42-581b-4f4b-91f7-14223f1d7309"
+      }
+    ]
+  },
+  {
+    "id": "de8743c1-97f0-408c-b5ec-ec735ad65fd8",
+    "UAI": "1000001H",
+    "name": "Ecole Emile Zola",
+    "externalId": "f70271151d6abf49208582276fcbdc46e3fb742d",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": true,
+    "ignoreMFA": true,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": false,
+    "feederName": "Ecole Emile Zola",
+    "source": "CSV",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Ville de Neuville",
+        "id": "1216e1f6-3031-45e4-b6cc-7fd215a599ad"
+      },
+      {
+        "name": "Circonscription de Maran",
+        "id": "c22eb061-326b-4f46-a05e-fd850c39be71"
+      },
+      {
+        "name": "Ville  de Maran",
+        "id": "47fbffdb-b21f-4692-ad8b-71995c976ea3"
+      }
+    ]
+  },
+  {
+    "id": "68d0b145-86f4-4619-a10d-ca5cabe348f3",
+    "UAI": null,
+    "name": "Autres",
+    "externalId": "8cf8f82c-2a55-47c0-a965-0c9a59420abc",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": null,
+    "exports": null,
+    "parents": [
+      {
+        "name": "Autres structures",
+        "id": "c82df58d-b036-465c-ab11-fddf6826e8cd"
+      }
+    ]
+  },
+  {
+    "id": "39f608ad-6b4e-4491-aa37-fc61a4e7ed09",
+    "UAI": null,
+    "name": "Tests d'intégration",
+    "externalId": "78cd1e0e-9c60-4af5-9533-ec2060c0d8b0",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": true,
+    "ignoreMFA": true,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": false,
+    "feederName": null,
+    "source": null,
+    "exports": null,
+    "parents": null
+  },
+  {
+    "id": "add6f28e-caa2-49a2-9e52-f0ea0fe3c750",
+    "UAI": "0875086F",
+    "name": "ECOLE TECHNIQU-FORMA2C-LIMOGES",
+    "externalId": "LIMOGES-21000",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Ecoles",
+        "id": "466352f6-b7a6-4f66-ad81-380ea58887e2"
+      }
+    ]
+  },
+  {
+    "id": "23d1bf63-25be-4734-aa60-277882810398",
+    "UAI": null,
+    "name": "Privé",
+    "externalId": "86639d08-5a2b-41af-b39b-994f2a9d356c",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": null,
+    "exports": null,
+    "parents": null
+  },
+  {
+    "id": "6e0c9830-ef51-4c55-9b1e-092316f13299",
+    "UAI": "0871030X",
+    "name": "LPO LYC METIER-JEAN MONNET-LIMOGES",
+    "externalId": "LIMOGES-1089",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées Polyvalent",
+        "id": "1c34d8e9-70ab-4ea1-8711-88c8604d0d59"
+      }
+    ]
+  },
+  {
+    "id": "f02b56f1-9825-4fa1-989c-3d449bc7a292",
+    "UAI": "0870581J",
+    "name": "LEGTPA-DE LIMOGES LES VASEIX-VERNEUIL-SUR-VIENNE",
+    "externalId": "LIMOGES-988",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées d'enseignement général et technologique agricole",
+        "id": "e9f324b4-7285-4f95-bf34-681fbddc3979"
+      }
+    ]
+  },
+  {
+    "id": "fa05132b-f3fe-4316-a260-43ba7f5cd430",
+    "UAI": "0790007D",
+    "name": "LGT-MAURICE GENEVOIX-BRESSUIRE",
+    "externalId": "POITIERS-3372",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées Général Technique",
+        "id": "17090d90-bac8-47de-adfc-deaf6cb5d622"
+      }
+    ]
+  },
+  {
+    "id": "c652cc82-0565-4a61-ba64-27e5a9093d3a",
+    "UAI": null,
+    "name": "1 - IT Positions - NEtab 1724828918622",
+    "externalId": "42ea417f-1358-4196-82a2-8e71c1348dda",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": "1 - IT Positions - NEtab 1724828918622",
+    "source": "CSV",
+    "exports": null,
+    "parents": null
+  },
+  {
+    "id": "433943c2-05bb-41ab-ba36-7de681fda1d6",
+    "UAI": "0791062A",
+    "name": "LGT-VENISE VERTE-NIORT",
+    "externalId": "POITIERS-3556",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées Général Technique",
+        "id": "17090d90-bac8-47de-adfc-deaf6cb5d622"
+      }
+    ]
+  },
+  {
+    "id": "ba9da005-63b8-4d2e-a8fc-5cf09756cdfe",
+    "UAI": "0042228Z",
+    "name": "Z - D.S.D.E.N.-D'ILLE ET VILAINE-RENNES",
+    "externalId": "RENNES-288613",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": false,
+    "ignoreMFA": false,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": true,
+    "feederName": "D.S.D.E.N.-D'ILLE ET VILAINE-RENNES",
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "RENNES",
+        "id": "08483640-3ea8-4490-bea6-43c1b5ce0a61"
+      }
+    ]
+  },
+  {
+    "id": "2f8e892c-455f-49ee-a6f2-e06563a950e2",
+    "UAI": "0171428K",
+    "name": "LT-LYCEE DE LA MER ET DU LITTORAL-BOURCEFRANC-LE-CHAPUS",
+    "externalId": "POITIERS-3211",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées Technique",
+        "id": "465d70c3-00f8-4c2d-a51d-569c7d03c8d2"
+      }
+    ]
+  },
+  {
+    "id": "3f774332-5bb0-4ac4-bd32-a188cc8506d2",
+    "UAI": "0171333G",
+    "name": "EMP--ROCHEFORT",
+    "externalId": "POITIERS-3135",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": false,
+    "ignoreMFA": true,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": false,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Ecoles",
+        "id": "466352f6-b7a6-4f66-ad81-380ea58887e2"
+      }
+    ]
+  },
+  {
+    "id": "3869e655-33b9-4409-8c84-34419df298f4",
+    "UAI": "0790080H",
+    "name": "LPO PR-SAINT JOSEPH-BRESSUIRE",
+    "externalId": "POITIERS-3430",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées Polyvalent",
+        "id": "1c34d8e9-70ab-4ea1-8711-88c8604d0d59"
+      }
+    ]
+  },
+  {
+    "id": "c939cdcf-e7b1-4f39-858f-daf5f2fae585",
+    "UAI": "0790036K",
+    "name": "LGT-CITE SCOLAIRE JEAN MOULIN-THOUARS",
+    "externalId": "POITIERS-3395",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées Général Technique",
+        "id": "17090d90-bac8-47de-adfc-deaf6cb5d622"
+      }
+    ]
+  },
+  {
+    "id": "e664bd83-98cd-4a5e-b536-a0a6283dd4e6",
+    "UAI": "0870118F",
+    "name": "LGT-RAOUL DAUTRY-LIMOGES",
+    "externalId": "LIMOGES-983",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées Général Technique",
+        "id": "17090d90-bac8-47de-adfc-deaf6cb5d622"
+      }
+    ]
+  },
+  {
+    "id": "db4be7c2-f08d-4d7d-adeb-59a73d419461",
+    "UAI": "0170051N",
+    "name": "LPO-LOUIS AUDOUIN DUBREUIL-SAINT-JEAN-D'ANGELY",
+    "externalId": "POITIERS-2920",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées Polyvalent",
+        "id": "1c34d8e9-70ab-4ea1-8711-88c8604d0d59"
+      }
+    ]
+  },
+  {
+    "id": "71e8d0e0-bbe4-486a-9946-3cb657286bee",
+    "UAI": "0870059S",
+    "name": "RECTORAT-ACADEMIE DE LIMOGES-LIMOGES",
+    "externalId": "LIMOGES-961",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Autres",
+        "id": "68d0b145-86f4-4619-a10d-ca5cabe348f3"
+      }
+    ]
+  },
+  {
+    "id": "a5d610ea-8861-46b9-97ff-79880266c360",
+    "UAI": "0171418Z",
+    "name": "LGT-SAINT-EXUPERY-LA ROCHELLE",
+    "externalId": "POITIERS-3203",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées Général Technique",
+        "id": "17090d90-bac8-47de-adfc-deaf6cb5d622"
+      }
+    ]
+  },
+  {
+    "id": "923f9e3a-7849-4f6a-ae60-b999c395caf9",
+    "UAI": "0040092U",
+    "name": "LPO-YVON BOURGES-DINARD",
+    "externalId": "RENNES-833865",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": false,
+    "ignoreMFA": true,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": false,
+    "feederName": "LPO-YVON BOURGES-DINARD",
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "RENNES",
+        "id": "08483640-3ea8-4490-bea6-43c1b5ce0a61"
+      }
+    ]
+  },
+  {
+    "id": "bdc34f26-3e0e-4aa5-b7c7-31b2331eba6c",
+    "UAI": "0161095D",
+    "name": "LGT-IMAGE ET SON-ANGOULEME",
+    "externalId": "POITIERS-2812",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées Général Technique",
+        "id": "17090d90-bac8-47de-adfc-deaf6cb5d622"
+      }
+    ]
+  },
+  {
+    "id": "ef3a486d-6ff2-4499-b899-414626d26ed3",
+    "UAI": "0870045B",
+    "name": "Lycée Hugues Capet",
+    "externalId": "LIMOGES-953",
+    "timetable": "EDT",
+    "punctualTimetable": null,
+    "hasApp": true,
+    "ignoreMFA": true,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": false,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Bassin (collèges et lycées)",
+        "id": "bc6ffa3e-008e-4ae2-bb73-3eaa14629175"
+      },
+      {
+        "name": "Région",
+        "id": "bf3db3fe-9b34-4ff6-b697-44fb9047fe17"
+      }
+    ]
+  },
+  {
+    "id": "c22eb061-326b-4f46-a05e-fd850c39be71",
+    "UAI": null,
+    "name": "Circonscription de Maran",
+    "externalId": "e972a1e9-3e58-48ea-8c30-aca11cb8aa8e",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": null,
+    "exports": null,
+    "parents": [
+      {
+        "name": "Académie",
+        "id": "ad97b3c7-287a-4a60-9e8f-31f34918cb44"
+      }
+    ]
+  },
+  {
+    "id": "a44c220c-ee3d-4584-92ef-619d4a3be205",
+    "UAI": "0170103V",
+    "name": "LGT PR-NOTRE DAME DE RECOUVRANCE-SAINTES",
+    "externalId": "POITIERS-2955",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées Général Technique",
+        "id": "17090d90-bac8-47de-adfc-deaf6cb5d622"
+      }
+    ]
+  },
+  {
+    "id": "ea08a9cc-4744-4466-bf21-9746d73a3262",
+    "UAI": "0790023W",
+    "name": "LGT-JEAN MACE-NIORT",
+    "externalId": "POITIERS-3383",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées Général Technique",
+        "id": "17090d90-bac8-47de-adfc-deaf6cb5d622"
+      }
+    ]
+  },
+  {
+    "id": "f1c35b64-61c2-45c6-a43e-65de4e9d8b3c",
+    "UAI": "0170087C",
+    "name": "LEGTA-DE SAINTES - G. DESCLAUDE-SAINTES",
+    "externalId": "POITIERS-2941",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées d'enseignement général et technologique agricole",
+        "id": "e9f324b4-7285-4f95-bf34-681fbddc3979"
+      }
+    ]
+  },
+  {
+    "id": "c5839540-fbff-45f0-8b01-4fb6170459dc",
+    "UAI": "0049824Y",
+    "name": "Z - SERIA D22-DSDEN DES COTES D'ARMOR-SAINT-BRIEUC",
+    "externalId": "RENNES-327056",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": false,
+    "ignoreMFA": false,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": true,
+    "feederName": "SERIA D22-DSDEN DES COTES D'ARMOR-SAINT-BRIEUC",
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "RENNES",
+        "id": "08483640-3ea8-4490-bea6-43c1b5ce0a61"
+      }
+    ]
+  },
+  {
+    "id": "2d57fd64-3c33-40db-894e-7b91ee93f585",
+    "UAI": null,
+    "name": "Canopé",
+    "externalId": "666eb642-b2b7-4d4e-b8d9-dc11f0673776",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": false,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": null,
+    "exports": null,
+    "parents": null
+  },
+  {
+    "id": "350b0014-680d-43ad-9080-3e1bbab10c23",
+    "UAI": "0170020E",
+    "name": "LPO LYC METIER-EMILE COMBES-PONS",
+    "externalId": "POITIERS-2901",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées Polyvalent",
+        "id": "1c34d8e9-70ab-4ea1-8711-88c8604d0d59"
+      }
+    ]
+  },
+  {
+    "id": "e5b29f99-d8aa-414b-a559-7e0ab3b2970e",
+    "UAI": "0170028N",
+    "name": "LGT-JEAN DAUTET-LA ROCHELLE",
+    "externalId": "POITIERS-2907",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées Général Technique",
+        "id": "17090d90-bac8-47de-adfc-deaf6cb5d622"
+      }
+    ]
+  },
+  {
+    "id": "1abe480f-2ab4-4c65-8c34-ef703c61a5bc",
+    "UAI": "9970017W",
+    "name": "LGT - Thomas Edison",
+    "externalId": "LIMOGES-940",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": false,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées Général Technique",
+        "id": "17090d90-bac8-47de-adfc-deaf6cb5d622"
+      }
+    ]
+  },
+  {
+    "id": "47fbffdb-b21f-4692-ad8b-71995c976ea3",
+    "UAI": null,
+    "name": "Ville  de Maran",
+    "externalId": "4bb9cd39-b5ab-418f-a3c6-3deaefb99a6c",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": null,
+    "exports": null,
+    "parents": null
+  },
+  {
+    "id": "f49511d4-ff81-42a6-a2d2-ff428fc550bb",
+    "UAI": "1033819A",
+    "name": "Etablissement Formation 9466",
+    "externalId": "4969",
+    "timetable": "NOP",
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Formations",
+        "id": "fbfab0cf-a8e6-47ae-9683-aa65d5cf3a19"
+      }
+    ]
+  },
+  {
+    "id": "7930a5de-8920-4a02-96b0-17a5849dc88f",
+    "UAI": "0171157R",
+    "name": "EETAA-DE L'ARMEE DE L'AIR-SAINTES",
+    "externalId": "POITIERS-3056",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Ecoles",
+        "id": "466352f6-b7a6-4f66-ad81-380ea58887e2"
+      }
+    ]
+  },
+  {
+    "id": "6fb48421-249e-41c1-ae44-f5e70eba00de",
+    "UAI": "0879999W",
+    "name": "D.S.D.E.N.-DE LA HAUTE VIENNE-LIMOGES",
+    "externalId": "LIMOGES-1158",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Autres",
+        "id": "68d0b145-86f4-4619-a10d-ca5cabe348f3"
+      }
+    ]
+  },
+  {
+    "id": "ec1758ed-af49-43b7-88c5-945a137dd9e0",
+    "UAI": null,
+    "name": "Chapeau - General3",
+    "externalId": "1672ccd6-571a-409e-9ca7-efdf7648b6a9",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": false,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": null,
+    "exports": null,
+    "parents": null
+  },
+  {
+    "id": "47b5f12f-33b9-4d70-aa3f-c9f8db00657f",
+    "UAI": null,
+    "name": "New Oak 1D",
+    "externalId": "735236c5ae720e69891df57473e3f59ec11b3b70",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": true,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": null,
+    "exports": null,
+    "parents": [
+      {
+        "name": "1D",
+        "id": "d4efe3a7-fa6a-4af7-b4ac-efbc51f32bc3"
+      }
+    ]
+  },
+  {
+    "id": "16e0a2d0-b098-49d9-be96-c8b118e6b09e",
+    "UAI": "0870864S",
+    "name": "LG PR-ST JEAN-LIMOGES",
+    "externalId": "LIMOGES-1052",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Privé",
+        "id": "23d1bf63-25be-4734-aa60-277882810398"
+      }
+    ]
+  },
+  {
+    "id": "4690d949-8a03-422b-bd1e-57d370a28c5e",
+    "UAI": null,
+    "name": "Lycée d'Enseignement Général, Technologique et Professionnel Agricole",
+    "externalId": "5a02ddfd-a223-4d88-a3ca-ed2d7c1eb73c",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": null,
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées",
+        "id": "37741991-20a0-4884-9a80-c0d1daedc100"
+      }
+    ]
+  },
+  {
+    "id": "0ea779e5-fcf6-4385-bf68-bd90328d3025",
+    "UAI": "0179999B",
+    "name": "DSDEN-DE LA CHARENTE MARITIME-LA ROCHELLE",
+    "externalId": "POITIERS-3368",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Autres",
+        "id": "68d0b145-86f4-4619-a10d-ca5cabe348f3"
+      }
+    ]
+  },
+  {
+    "id": "618a9b68-9d6e-4895-bd42-8c8ae93738ef",
+    "UAI": null,
+    "name": "Chapeau - IT Positions - NEtab 1724828918622",
+    "externalId": "9f5f05a7-71fe-4530-a76f-070a29ceb8bb",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": false,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": null,
+    "exports": null,
+    "parents": null
+  },
+  {
+    "id": "3be63d10-0680-4059-ba03-723400ddb942",
+    "UAI": "0169999G",
+    "name": "DSDEN-DE LA CHARENTE-ANGOULEME",
+    "externalId": "POITIERS-2890",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Autres",
+        "id": "68d0b145-86f4-4619-a10d-ca5cabe348f3"
+      }
+    ]
+  },
+  {
+    "id": "9fc70c65-1c2e-4e97-8462-7243fc26a3c9",
+    "UAI": "0870590U",
+    "name": "LEGTPA-DE MAGNAC LAVAL-MAGNAC-LAVAL",
+    "externalId": "LIMOGES-991",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées d'enseignement général et technologique agricole",
+        "id": "e9f324b4-7285-4f95-bf34-681fbddc3979"
+      }
+    ]
+  },
+  {
+    "id": "7b447fc4-b922-4097-b2ec-e7129b6be306",
+    "UAI": "0160010Z",
+    "name": "LGT-ELIE VINET-BARBEZIEUX-SAINT-HILAIRE",
+    "externalId": "POITIERS-2613",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées Général Technique",
+        "id": "17090d90-bac8-47de-adfc-deaf6cb5d622"
+      }
+    ]
+  },
+  {
+    "id": "330f0bd9-6ad3-44a2-a621-76d30c3dddc2",
+    "UAI": "0875089J",
+    "name": "ECGT PR--CIEUX",
+    "externalId": "LIMOGES-23001",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Ecoles",
+        "id": "466352f6-b7a6-4f66-ad81-380ea58887e2"
+      }
+    ]
+  },
+  {
+    "id": "23ebf4d0-1d84-4b6b-aca1-c13c6f7e16dd",
+    "UAI": "0230002C",
+    "name": "LGT-EUGENE JAMOT-AUBUSSON",
+    "externalId": "LIMOGES-843",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées Général Technique",
+        "id": "17090d90-bac8-47de-adfc-deaf6cb5d622"
+      }
+    ]
+  },
+  {
+    "id": "17b04b30-be97-453f-ab52-c07825931c0e",
+    "UAI": "1111111U",
+    "name": "QA - 1D - Ultima",
+    "externalId": "4b388833-8436-4a5f-adc0-10d4ba1cf6d9",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": true,
+    "ignoreMFA": true,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": true,
+    "feederName": "QA - 1D - Ultima",
+    "source": "CSV",
+    "exports": null,
+    "parents": [
+      {
+        "name": "QA - 1D",
+        "id": "e306b64e-99d6-4b50-8e0e-cfc01a500267"
+      }
+    ]
+  },
+  {
+    "id": "c196e1bc-6c98-4eca-86bc-4e6af517d4dd",
+    "UAI": "0239999U",
+    "name": "D.S.D.E.N.-DE LA CREUSE-GUERET",
+    "externalId": "LIMOGES-928",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Autres",
+        "id": "68d0b145-86f4-4619-a10d-ca5cabe348f3"
+      }
+    ]
+  },
+  {
+    "id": "10ca2a88-ee8d-43c4-8da1-f21be625734c",
+    "UAI": "0870097H",
+    "name": "LPO PR-POLARIS FORMATION-LIMOGES",
+    "externalId": "LIMOGES-980",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées Polyvalent",
+        "id": "1c34d8e9-70ab-4ea1-8711-88c8604d0d59"
+      }
+    ]
+  },
+  {
+    "id": "7d429ed4-41a5-42fe-8d90-ac57cb958b5c",
+    "UAI": "0170027M",
+    "name": "LGT-RENE JOSUE VALIN-LA ROCHELLE",
+    "externalId": "POITIERS-2906",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées Général Technique",
+        "id": "17090d90-bac8-47de-adfc-deaf6cb5d622"
+      }
+    ]
+  },
+  {
+    "id": "e5f246b0-7cfc-429c-95ce-ae4c6c60cfad",
+    "UAI": "9970040W",
+    "name": "LGT - PAUL CLAUDEL",
+    "externalId": "LIMOGES-950",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": false,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées Général Technique",
+        "id": "17090d90-bac8-47de-adfc-deaf6cb5d622"
+      }
+    ]
+  },
+  {
+    "id": "a0ac7445-5ded-4ac9-8f09-855bc547edbc",
+    "UAI": "0170393K",
+    "name": "LEGTA-DE SURGERES-SURGERES",
+    "externalId": "POITIERS-2988",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées d'enseignement général et technologique agricole",
+        "id": "e9f324b4-7285-4f95-bf34-681fbddc3979"
+      }
+    ]
+  },
+  {
+    "id": "f3e41445-b5c7-46df-b4e9-046649cce2dd",
+    "UAI": "0045541T",
+    "name": "Z - DIR-DSDEN DES COTES D'ARMOR-SAINT-BRIEUC",
+    "externalId": "RENNES-681200",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": false,
+    "ignoreMFA": false,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": true,
+    "feederName": "DIR-DSDEN DES COTES D'ARMOR-SAINT-BRIEUC",
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "RENNES",
+        "id": "08483640-3ea8-4490-bea6-43c1b5ce0a61"
+      }
+    ]
+  },
+  {
+    "id": "6fe42332-6072-4373-86f8-315c6a2d31a1",
+    "UAI": "0875023M",
+    "name": "LPO-MARYSE BASTIE-LIMOGES",
+    "externalId": "LIMOGES-1126",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées Polyvalent",
+        "id": "1c34d8e9-70ab-4ea1-8711-88c8604d0d59"
+      }
+    ]
+  },
+  {
+    "id": "db697b05-3335-41d3-8de7-84b20bd0a242",
+    "UAI": "0170100S",
+    "name": "LPO PR-FENELON NOTRE-DAME-LA ROCHELLE",
+    "externalId": "POITIERS-2953",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées Polyvalent",
+        "id": "1c34d8e9-70ab-4ea1-8711-88c8604d0d59"
+      }
+    ]
+  },
+  {
+    "id": "9168080e-9b8b-465d-bf4a-98ecede92a9f",
+    "UAI": "0160062F",
+    "name": "LGT PR-SAINT PAUL-ANGOULEME",
+    "externalId": "POITIERS-2644",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées Général Technique",
+        "id": "17090d90-bac8-47de-adfc-deaf6cb5d622"
+      }
+    ]
+  },
+  {
+    "id": "15d6a931-cc8a-44ee-a6a6-55d619ff4da3",
+    "UAI": "9970016V",
+    "name": "LG - Socrate",
+    "externalId": "LIMOGES-939",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": false,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycée Général",
+        "id": "0b9fe7d5-20b7-40d9-b202-b7de7dc26eaf"
+      }
+    ]
+  },
+  {
+    "id": "ad3cd533-e233-4477-85e8-bb37bd8a252f",
+    "UAI": "0160083D",
+    "name": "LPO PR-SAINT JOSEPH L'AMANDIER-SAINT-YRIEIX-SUR-CHARENTE",
+    "externalId": "POITIERS-2655",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées Polyvalent",
+        "id": "1c34d8e9-70ab-4ea1-8711-88c8604d0d59"
+      }
+    ]
+  },
+  {
+    "id": "66593d18-d948-4625-8499-7e6f52906793",
+    "UAI": "8739278F",
+    "name": "TestActu3",
+    "externalId": "90abf6e2-46b6-454a-b582-6fbe5d88d0bd",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": true,
+    "ignoreMFA": true,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": false,
+    "feederName": "TestActu3",
+    "source": "CSV",
+    "exports": null,
+    "parents": [
+      {
+        "name": "0 TEST QA",
+        "id": "04cce716-c1cf-4e94-b282-b1b61749e61d"
+      }
+    ]
+  },
+  {
+    "id": "f6bac3ed-160a-450a-8c2a-38ea2b005c84",
+    "UAI": "0170060Y",
+    "name": "LGT-BERNARD PALISSY-SAINTES",
+    "externalId": "POITIERS-2926",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées Général Technique",
+        "id": "17090d90-bac8-47de-adfc-deaf6cb5d622"
+      }
+    ]
+  },
+  {
+    "id": "2b4358f0-51ab-4844-a616-07261dd88934",
+    "UAI": "0043502U",
+    "name": "Z - DIVEL-DSDEN DES COTES D'ARMOR-SAINT-BRIEUC",
+    "externalId": "RENNES-528702",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": false,
+    "ignoreMFA": false,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": true,
+    "feederName": "DIVEL-DSDEN DES COTES D'ARMOR-SAINT-BRIEUC",
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "RENNES",
+        "id": "08483640-3ea8-4490-bea6-43c1b5ce0a61"
+      }
+    ]
+  },
+  {
+    "id": "902dca44-fa08-4851-9794-62ae9b28925d",
+    "UAI": null,
+    "name": "Canopé TNE",
+    "externalId": "b84007c8-eab8-4807-b4b2-7bd8456fe125",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": false,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": null,
+    "exports": null,
+    "parents": null
+  },
+  {
+    "id": "919e1302-94be-4077-bbbb-1fe3223ae864",
+    "UAI": "0160003S",
+    "name": "LGT-MARGUERITE DE VALOIS-ANGOULEME",
+    "externalId": "POITIERS-2609",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées Général Technique",
+        "id": "17090d90-bac8-47de-adfc-deaf6cb5d622"
+      }
+    ]
+  },
+  {
+    "id": "7500fa6f-20c7-4468-a380-052b84c66d18",
+    "UAI": "0230025C",
+    "name": "LGT-RAYMOND LOEWY-LA SOUTERRAINE",
+    "externalId": "LIMOGES-859",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées Général Technique",
+        "id": "17090d90-bac8-47de-adfc-deaf6cb5d622"
+      }
+    ]
+  },
+  {
+    "id": "e257ef50-38cb-407a-8d1c-98c06ef7c596",
+    "UAI": "0170042D",
+    "name": "LGT LYC METIER-CORDOUAN-ROYAN",
+    "externalId": "POITIERS-2913",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées Général Technique",
+        "id": "17090d90-bac8-47de-adfc-deaf6cb5d622"
+      }
+    ]
+  },
+  {
+    "id": "a0add3c6-426a-41b2-a2cf-f35f18a642df",
+    "UAI": "1064222A",
+    "name": "Etablissement Formation 17664",
+    "externalId": "5474",
+    "timetable": "EDT",
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Formations",
+        "id": "fbfab0cf-a8e6-47ae-9683-aa65d5cf3a19"
+      }
+    ]
+  },
+  {
+    "id": "02b1de42-581b-4f4b-91f7-14223f1d7309",
+    "UAI": "1234567U",
+    "name": "00-Edifice",
+    "externalId": "99b6d6a6-b0dc-4304-b5a1-d70027ec055e",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": true,
+    "ignoreMFA": true,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": false,
+    "feederName": "00-Edifice",
+    "source": "CSV",
+    "exports": null,
+    "parents": null
+  },
+  {
+    "id": "89432413-e771-4978-88c6-a175f8817013",
+    "UAI": "0870056N",
+    "name": "LPO-TURGOT-LIMOGES",
+    "externalId": "LIMOGES-959",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées Polyvalent",
+        "id": "1c34d8e9-70ab-4ea1-8711-88c8604d0d59"
+      }
+    ]
+  },
+  {
+    "id": "180359ae-3004-4d21-9a61-21d86e9009f7",
+    "UAI": "0160022M",
+    "name": "LPO-EMILE ROUX-CONFOLENS",
+    "externalId": "POITIERS-2617",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées Polyvalent",
+        "id": "1c34d8e9-70ab-4ea1-8711-88c8604d0d59"
+      }
+    ]
+  },
+  {
+    "id": "a05c14d0-c383-49ab-ba81-e336c854c56e",
+    "UAI": "0170029P",
+    "name": "LGT-LEONCE VIELJEUX-LA ROCHELLE",
+    "externalId": "POITIERS-2908",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées Général Technique",
+        "id": "17090d90-bac8-47de-adfc-deaf6cb5d622"
+      }
+    ]
+  },
+  {
+    "id": "7cb8500e-9c60-4384-8f23-1654573770cf",
+    "UAI": "9910000B",
+    "name": "Colegio del Valle Preparatoria",
+    "externalId": "9275874b-8cd9-465a-b227-a1920a51fc4f",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": false,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": true,
+    "feederName": "CSTEC Bachillerato",
+    "source": "CSV",
+    "exports": null,
+    "parents": [
+      {
+        "name": "2D",
+        "id": "5791357b-f205-4590-856a-dfa204f41ded"
+      }
+    ]
+  },
+  {
+    "id": "72169c69-f175-478f-9f5f-ffb2718f96ac",
+    "UAI": "0048211E",
+    "name": "Z - CT MED-DSDEN DES COTES D'ARMOR-SAINT-BRIEUC",
+    "externalId": "RENNES-102556",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": false,
+    "ignoreMFA": false,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": true,
+    "feederName": "CT MED-DSDEN DES COTES D'ARMOR-SAINT-BRIEUC",
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "RENNES",
+        "id": "08483640-3ea8-4490-bea6-43c1b5ce0a61"
+      }
+    ]
+  },
+  {
+    "id": "422108e2-25e5-42f9-ad28-1c4b5c801a7d",
+    "UAI": "1234567P",
+    "name": "test import RGEN 01",
+    "externalId": "bb4cee2a-071c-420d-a302-417b177a389e",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": false,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": "test import RGEN 01",
+    "source": "CSV",
+    "exports": null,
+    "parents": null
+  },
+  {
+    "id": "3e7b379d-4330-4270-afd6-a562a31103bf",
+    "UAI": "0049451V",
+    "name": "Z - DIV2-IA D'ILLE ET VILAINE-RENNES",
+    "externalId": "RENNES-828912",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": false,
+    "ignoreMFA": false,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": true,
+    "feederName": "DIV2-IA D'ILLE ET VILAINE-RENNES",
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "RENNES",
+        "id": "08483640-3ea8-4490-bea6-43c1b5ce0a61"
+      }
+    ]
+  },
+  {
+    "id": "096607da-0581-4b49-b778-c688463c2734",
+    "UAI": "0160006V",
+    "name": "LEGTA-D'ANGOULEME-LA COURONNE",
+    "externalId": "POITIERS-2612",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées d'enseignement général et technologique agricole",
+        "id": "e9f324b4-7285-4f95-bf34-681fbddc3979"
+      }
+    ]
+  },
+  {
+    "id": "00448c7d-e607-4fbd-8760-2c48c99bbfe6",
+    "UAI": "5555040T",
+    "name": "LGT LYC METIER-MATHIEU DUPONT",
+    "externalId": "55553749",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": false,
+    "ignoreMFA": true,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": false,
+    "feederName": null,
+    "source": null,
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées Général Technique",
+        "id": "17090d90-bac8-47de-adfc-deaf6cb5d622"
+      }
+    ]
+  },
+  {
+    "id": "32e1c68a-4b97-43a6-8f7e-bcdd845c690c",
+    "UAI": "0160002R",
+    "name": "LGT-GUEZ DE BALZAC-ANGOULEME",
+    "externalId": "POITIERS-2608",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées Général Technique",
+        "id": "17090d90-bac8-47de-adfc-deaf6cb5d622"
+      }
+    ]
+  },
+  {
+    "id": "dd11b5bd-7846-4bb1-9805-6b63c39b69b0",
+    "UAI": "9970019Y",
+    "name": "LPO - Marie Curie",
+    "externalId": "LIMOGES-941",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": false,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées Polyvalent",
+        "id": "1c34d8e9-70ab-4ea1-8711-88c8604d0d59"
+      }
+    ]
+  },
+  {
+    "id": "4a17e947-7642-4246-89eb-8009d0be5cda",
+    "UAI": "1016024A",
+    "name": "Etablissement Formation 17430",
+    "externalId": "6002",
+    "timetable": "NOP",
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Formations",
+        "id": "fbfab0cf-a8e6-47ae-9683-aa65d5cf3a19"
+      }
+    ]
+  },
+  {
+    "id": "f5cb70f4-7fa5-4d35-a1f6-467d75a96432",
+    "UAI": "0190038N",
+    "name": "LGT-BERNART DE VENTADOUR-USSEL",
+    "externalId": "LIMOGES-707",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées Général Technique",
+        "id": "17090d90-bac8-47de-adfc-deaf6cb5d622"
+      }
+    ]
+  },
+  {
+    "id": "12282c6f-0558-423f-94b4-4ed1ced5294d",
+    "UAI": "0160079Z",
+    "name": "LGT PR --SAINTE MARTHE CHAVAGNES-ANGOULEME",
+    "externalId": "POITIERS-2652",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées Général Technique",
+        "id": "17090d90-bac8-47de-adfc-deaf6cb5d622"
+      }
+    ]
+  },
+  {
+    "id": "7da56907-3240-4914-9c81-05e472617538",
+    "UAI": "0230051F",
+    "name": "LPO-JEAN FAVARD-GUERET",
+    "externalId": "LIMOGES-870",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées Polyvalent",
+        "id": "1c34d8e9-70ab-4ea1-8711-88c8604d0d59"
+      }
+    ]
+  },
+  {
+    "id": "3634d199-8778-43cb-b173-288b0b93b02d",
+    "UAI": "0870081R",
+    "name": "LGT PR-BEAUPEYRAT-LIMOGES",
+    "externalId": "LIMOGES-976",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées Général Technique",
+        "id": "17090d90-bac8-47de-adfc-deaf6cb5d622"
+      }
+    ]
+  },
+  {
+    "id": "862a74f2-c69d-43cb-afdf-f6f18a96336f",
+    "UAI": "0230020X",
+    "name": "LGT-PIERRE BOURDAN-GUERET",
+    "externalId": "LIMOGES-857",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées Général Technique",
+        "id": "17090d90-bac8-47de-adfc-deaf6cb5d622"
+      }
+    ]
+  },
+  {
+    "id": "da317247-cc1e-4b0c-8175-320c5a258655",
+    "UAI": "1111111D",
+    "name": "1D - Découverte",
+    "externalId": "2bdf519a-7306-4c98-a856-1c195dae790b",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": true,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": null,
+    "exports": null,
+    "parents": null
+  },
+  {
+    "id": "856167cb-b5fd-411e-8a45-a33af3c9ecbd",
+    "UAI": "0870050G",
+    "name": "LGT-JEAN BAPTISTE DARNET-SAINT-YRIEIX-LA-PERCHE",
+    "externalId": "LIMOGES-957",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées Général Technique",
+        "id": "17090d90-bac8-47de-adfc-deaf6cb5d622"
+      }
+    ]
+  },
+  {
+    "id": "5d7d7e24-ca40-4a10-8b63-9c316d10ead4",
+    "UAI": "0199999R",
+    "name": "D.S.D.E.N.-DE LA CORREZE-TULLE",
+    "externalId": "LIMOGES-841",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Autres",
+        "id": "68d0b145-86f4-4619-a10d-ca5cabe348f3"
+      }
+    ]
+  },
+  {
+    "id": "abf5fa7c-ea36-44d5-a5ec-1f1fe91ba368",
+    "UAI": "0170022G",
+    "name": "LGT-MAURICE MERLEAU-PONTY-ROCHEFORT",
+    "externalId": "POITIERS-2903",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": false,
+    "ignoreMFA": true,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": false,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées Général Technique",
+        "id": "17090d90-bac8-47de-adfc-deaf6cb5d622"
+      }
+    ]
+  },
+  {
+    "id": "ee8543f2-db24-47b3-98c4-7e2c43bd720b",
+    "UAI": "3526173A",
+    "name": "TestActu1",
+    "externalId": "9c718402-e1cd-490a-aaf7-6cd44f5ad0f4",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": true,
+    "ignoreMFA": true,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": false,
+    "feederName": "TestActu1",
+    "source": "CSV",
+    "exports": null,
+    "parents": [
+      {
+        "name": "0 TEST QA",
+        "id": "04cce716-c1cf-4e94-b282-b1b61749e61d"
+      }
+    ]
+  },
+  {
+    "id": "de9d1925-ef11-4199-a1bf-6da2fa439ff5",
+    "UAI": "0190062P",
+    "name": "LPO PR-NOTRE DAME DE LA PROVIDENCE-USSEL",
+    "externalId": "LIMOGES-720",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées Polyvalent",
+        "id": "1c34d8e9-70ab-4ea1-8711-88c8604d0d59"
+      }
+    ]
+  },
+  {
+    "id": "7c31c5e6-07b2-4a4d-a85c-aa1abdf02866",
+    "UAI": "0190244M",
+    "name": "LEGTPA-DE VOUTEZAC-VOUTEZAC",
+    "externalId": "LIMOGES-728",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycées d'enseignement général et technologique agricole",
+        "id": "e9f324b4-7285-4f95-bf34-681fbddc3979"
+      }
+    ]
+  },
+  {
+    "id": "527de13b-8db4-4e79-b7fe-c593915d834e",
+    "UAI": "0161158X",
+    "name": "EPAA-DE L'ARMEE DE L'AIR-COGNAC",
+    "externalId": "POITIERS-2860",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Ecoles",
+        "id": "466352f6-b7a6-4f66-ad81-380ea58887e2"
+      }
+    ]
+  },
+  {
+    "id": "5852c91b-e29b-42a7-bd54-fc2c35507184",
+    "UAI": "0044899X",
+    "name": "Z - BUDG-IA ILL ET VIL SERV DU BUDGET-RENNES",
+    "externalId": "RENNES-508514",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": false,
+    "ignoreMFA": false,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": true,
+    "feederName": "BUDG-IA ILL ET VIL SERV DU BUDGET-RENNES",
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "RENNES",
+        "id": "08483640-3ea8-4490-bea6-43c1b5ce0a61"
+      }
+    ]
+  },
+  {
+    "id": "f0311e56-c128-445e-9128-21e4be1e5dc8",
+    "UAI": "0870015U",
+    "name": "LG-GAY LUSSAC-LIMOGES",
+    "externalId": "LIMOGES-938",
+    "timetable": null,
+    "punctualTimetable": null,
+    "hasApp": null,
+    "ignoreMFA": null,
+    "levelsOfEducation": [1, 2],
+    "distributions": [],
+    "manualName": null,
+    "feederName": null,
+    "source": "AAF",
+    "exports": null,
+    "parents": [
+      {
+        "name": "Lycée Général",
+        "id": "0b9fe7d5-20b7-40d9-b202-b7de7dc26eaf"
+      }
+    ]
+  }
+]

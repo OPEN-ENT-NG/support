@@ -1,0 +1,58 @@
+    {
+      "name": "net.atos~support~${supportVersion}",
+      "config": {
+        "main" : "net.atos.entng.support.Support",
+        "port" : 8027,
+        "sql" : true,
+        "mongodb" : true,
+        "neo4j" : true,
+        "app-name" : "Aide et support",
+        "app-address" : "/support",
+        "app-displayName": "support",
+        "app-icon" : "support-large",
+        "app-type" : "END_USER",
+        "host": "${host}",
+        "ssl" : $ssl,
+        "auto-redeploy": false,
+        "userbook-host": "${host}",
+        "integration-mode" : "HTTP",
+        "mode" : "${mode}",
+        "nbTicketsPerPage" : 25,
+        "external-service-name" : "$PivotExternalServiceName",
+        "activate-escalation" : $activateEscalation,
+        "bug-tracker-name" : "$SupportBugTrackername",
+        "bug-tracker-host" : "support.web-education.net",
+        "bug-tracker-port" : 80,
+        "bug-tracker-api-key" : "f8ffdbfb0ee9bae2448713d70172b7df0142d270",
+        "bug-tracker-projectid" : 39,
+        "bug-tracker-resolved-statusid" : 3,
+        "bug-tracker-closed-statusid" : 5,
+        "escalation-httpclient-maxpoolsize" : 16,
+        "escalation-httpclient-keepalive" : false,
+        "escalation-httpclient-tryusecompression" : true,
+        "threshold-direct-export-tickets": "$supportThresholdDirectExportTickets",
+        <% if (SupportBugTrackername != null && "PIVOT".equals(SupportBugTrackername)) { %>
+         "user-iws-id" : "$SupportUserIwsId",
+         "user-iws-name" : "$SupportUserIwsName",
+         "status_iws":{
+               "STATUS_NEW":"Ouvert",
+               "STATUS_OPENED":"En cours",
+               "STATUS_WAITING":"En attente de réponse utilisateur",
+               "STATUS_RESOLVED":"Résolu",
+               "STATUS_CLOSED":"Fermé"
+          },
+
+		<% } %>
+        "refresh-period" : 15,
+      <% if (swiftUri != null && !swiftUri.trim().isEmpty()) { %>
+          "swift" : {
+              "uri" : "${swiftUri}",
+              "container" : "${swiftContainer}",
+              "user" : "${swiftUser}",
+              "key" : "${swiftKey}"
+          }
+      <% } else { %>
+            "gridfs-address" : "wse.gridfs.persistor"
+      <% } %>
+      }
+    }

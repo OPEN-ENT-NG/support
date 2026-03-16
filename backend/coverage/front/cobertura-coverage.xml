@@ -1,0 +1,36 @@
+<?xml version="1.0" ?>
+<!DOCTYPE coverage SYSTEM "http://cobertura.sourceforge.net/xml/coverage-04.dtd">
+<coverage lines-valid="6" lines-covered="6" line-rate="1" branches-valid="0" branches-covered="0" branch-rate="1" timestamp="1627570172858" complexity="0" version="0.1">
+  <sources>
+    <source>/home/node/app</source>
+  </sources>
+  <packages>
+    <class name="attachment.service.ts" filename="src/main/resources/public/ts/services/attachment.service.ts" line-rate="1" branch-rate="1">
+      <methods>
+        <method name="(anonymous_12)" hits="1" signature="()V">
+          <lines>
+            <line number="16" hits="1"/>
+          </lines>
+        </method>
+        <method name="(anonymous_13)" hits="1" signature="()V">
+          <lines>
+            <line number="16" hits="1"/>
+          </lines>
+        </method>
+        <method name="(anonymous_15)" hits="0" signature="()V">
+          <lines>
+            <line number="20" hits="0"/>
+          </lines>
+        </method>
+      </methods>
+      <lines>
+        <line number="1" hits="2" branch="false"/>
+        <line number="2" hits="1" branch="false"/>
+        <line number="8" hits="1" branch="false"/>
+        <line number="16" hits="1" branch="false"/>
+        <line number="17" hits="1" branch="false"/>
+        <line number="20" hits="1" branch="false"/>
+      </lines>
+    </class>
+  </packages>
+</coverage>

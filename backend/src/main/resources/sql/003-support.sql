@@ -1,0 +1,2 @@
+ALTER TABLE support.tickets 
+ALTER COLUMN category TYPE VARCHAR(255);
