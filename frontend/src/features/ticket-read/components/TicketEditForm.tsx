@@ -60,6 +60,7 @@ function ControlledSelect({
         rules={{ required }}
         render={({ field }) => (
           <Select
+            block
             size="md"
             options={options}
             selectedValue={options.find((o) => o.value === field.value)}
