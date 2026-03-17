@@ -2,7 +2,7 @@ import { TicketApiCode } from './ticket';
 
 export type TicketFiltersState = {
   search: string;
-  status: (TicketApiCode | -1)[];
+  status: TicketApiCode[];
   schools: string[];
   type: 'all' | 'mine' | 'other';
 };

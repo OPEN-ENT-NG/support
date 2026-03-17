@@ -5,31 +5,22 @@ import { TicketsFilters } from './TicketsFilters';
 import TicketsTable from './TicketsTable';
 import { Flex, LoadingScreen } from '@edifice.io/react';
 import { Pagination } from 'antd';
-import { useCallback, useMemo, useState } from 'react';
-import { TicketApiCode, TicketFiltersState } from '~/models';
+import { useCallback, useState } from 'react';
+import { TicketFiltersState } from '~/models';
 import { useFilteredTickets } from '../hooks/useFilteredTickets';
 import { TicketsTypeSelector } from './TicketsTypeSelector';
 
 export function TicketsList() {
   const [filters, setFilters] = useState<TicketFiltersState>({
     search: '',
-    status: [-1],
+    status: [1, 2, 3, 4, 5],
     schools: [],
     type: 'all',
   });
   const [page, setPage] = useState(1);
-  /* Fetch tickets and schools data */
-  // Convert -1 (all) to all status codes for API call
-  const statusForApi = useMemo<TicketApiCode[]>(
-    () =>
-      filters.status.includes(-1)
-        ? ([1, 2, 3, 4, 5] as TicketApiCode[])
-        : (filters.status.filter((s) => s !== -1) as TicketApiCode[]),
-    [filters.status],
-  );
   const { tickets, isPending: ticketsPending } = useTickets(
     page,
-    statusForApi,
+    filters.status,
     filters.type,
     filters.schools,
   );
