@@ -69,7 +69,7 @@ export function Ticket() {
         <Flex direction="column" align="start" gap="8">
           <Flex
             justify="start"
-            className="ps-16 pe-16 pt-12 pb-12 w-100"
+            className="pe-16 pt-12 pb-12 w-100"
             style={{ borderBottom: 'solid 1px #E4E4E4' }}
           >
             <Button
@@ -78,7 +78,6 @@ export function Ticket() {
               leftIcon={<IconArrowLeft />}
               onClick={() => navigate('/')}
               size="md"
-              className="p-0"
             >
               Retour
             </Button>
