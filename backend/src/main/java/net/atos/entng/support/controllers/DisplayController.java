@@ -19,21 +19,19 @@
 
 package net.atos.entng.support.controllers;
 
-import java.util.Map;
-
-import io.vertx.core.json.JsonObject;
-import net.atos.entng.support.Support;
-
-import org.entcore.common.events.EventStore;
-import org.entcore.common.events.EventStoreFactory;
-import io.vertx.core.Vertx;
-import io.vertx.core.http.HttpServerRequest;
-import org.vertx.java.core.http.RouteMatcher;
-
-
 import fr.wseduc.rs.Get;
+import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.http.BaseController;
+import io.vertx.core.Vertx;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonObject;
+import net.atos.entng.support.Support;
+import org.entcore.common.events.EventStore;
+import org.entcore.common.events.EventStoreFactory;
+import org.vertx.java.core.http.RouteMatcher;
+
+import java.util.Map;
 
 public class DisplayController extends BaseController {
 
@@ -47,13 +45,22 @@ public class DisplayController extends BaseController {
 		eventStore = EventStoreFactory.getFactory().getEventStore(Support.class.getSimpleName());
 	}
 
-	@Get("")
-	@SecuredAction("support.view")
-	public void view(final HttpServerRequest request) {
-		renderView(request, new JsonObject(), "index.html", null);
+    @Get(value = "")
+    @SecuredAction("support.view")
+    public void view(final HttpServerRequest request) {
+        renderView(request, new JsonObject(), "index.html", null);
+        eventStore.createAndStoreEvent(SupportEvent.ACCESS.name(), request);
+    }
 
-		// Create event "access to application Support" and store it, for module "statistics"
-		eventStore.createAndStoreEvent(SupportEvent.ACCESS.name(), request);
-	}
+    @Get(value = "/tickets/new")
+    @SecuredAction("support.view")
+    public void newTicket(final HttpServerRequest request) {
+        renderView(request, new JsonObject(), "index.html", null);
+    }
 
+    @Get(value = "/tickets/:ticketId")
+    @SecuredAction("support.view")
+    public void ticketDetails(final HttpServerRequest request) {
+        renderView(request, new JsonObject(), "index.html", null);
+    }
 }
