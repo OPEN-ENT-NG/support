@@ -1,4 +1,4 @@
-import { AddAttachments } from '@edifice.io/react';
+import { AddAttachments, Flex } from '@edifice.io/react';
 import { useState } from 'react';
 import { type TicketAttachment } from '~/models';
 import { uploadAttachment } from '~/services';
@@ -33,12 +33,14 @@ export default function TicketAddAttachment({
   };
 
   return (
-    <AddAttachments
-      attachments={attachments as any}
-      editMode
-      isMutating={isMutating}
-      onFilesSelected={handleFilesSelected}
-      onRemoveAttachment={handleRemoveAttachment}
-    />
+    <Flex style={{ marginLeft: -16 }}>
+      <AddAttachments
+        attachments={attachments as any}
+        editMode
+        isMutating={isMutating}
+        onFilesSelected={handleFilesSelected}
+        onRemoveAttachment={handleRemoveAttachment}
+      />
+    </Flex>
   );
 }

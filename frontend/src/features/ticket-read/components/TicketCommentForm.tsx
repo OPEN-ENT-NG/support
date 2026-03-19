@@ -57,7 +57,7 @@ export default function TicketCommentForm({
   };
 
   return (
-    <Flex gap="16" className="pt-24 pb-24 ps-16 pe-16">
+    <Flex gap="16" className="pt-24 pb-24 ps-24 pe-24">
       <Avatar
         alt={ticket.owner_name}
         src={avatarUrl}
