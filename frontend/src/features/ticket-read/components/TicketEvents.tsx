@@ -25,15 +25,19 @@ export function TicketEvent({ event }: TicketEventProps) {
           <span className="small">{formaterDate(event.event_date)}</span>
         </p>
 
-        {event.status === -1 ? (
-          <Editor content={event.event} mode="read" variant="ghost" />
-        ) : (
+        <Editor content={event.event} mode="read" variant="ghost" />
+        {event.status !== -1 && (
           <p>
-            {event.event} par{' '}
-            <span className="small user-profile-relative">
-              <strong>{event.username}</strong>
-            </span>
-            . Le status est{' '}
+            {event.username && (
+              <>
+                par{' '}
+                <span className="small user-profile-relative">
+                  <strong>{event.username}</strong>
+                </span>
+                .{' '}
+              </>
+            )}
+            Le status est{' '}
             <Badge
               variant={{
                 color: TicketStatusColors[event.status],
