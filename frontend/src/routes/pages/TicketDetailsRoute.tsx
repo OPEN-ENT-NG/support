@@ -10,8 +10,6 @@ import {
   getUserProfile,
 } from '~/services/api';
 import { userQueryKeys } from '~/services/queries';
-import { schoolsQueryFns, schoolsQueryKeys } from '~/services/queries/schools';
-
 /** Prefetch ticket data in React Query cache based on route param */
 export const loader =
   (queryClient: QueryClient) =>
@@ -30,10 +28,6 @@ export const loader =
             queryKey: userQueryKeys.profileById(String(ownerId)),
             queryFn: () => getUserProfile(String(ownerId)),
           }),
-        queryClient.ensureQueryData({
-          queryKey: schoolsQueryKeys.all,
-          queryFn: schoolsQueryFns.all,
-        }),
         queryClient.ensureQueryData({
           queryKey: userQueryKeys.appsByUserId(),
           queryFn: () => getUserInfo(),

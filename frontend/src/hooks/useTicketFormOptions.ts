@@ -7,7 +7,11 @@ export function useTicketFormOptions() {
   const { schools } = useSchools();
 
   const schoolOptions = useMemo(
-    () => schools.map((school) => ({ label: school.name, value: school.id })),
+    () =>
+      schools.map((school) => ({
+        label: school.name,
+        value: school.id,
+      })),
     [schools],
   );
 
