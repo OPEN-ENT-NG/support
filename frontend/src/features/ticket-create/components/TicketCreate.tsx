@@ -1,25 +1,38 @@
 import { Button, Flex } from '@edifice.io/react';
 import { IconArrowLeft } from '@edifice.io/react/icons';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTicketCreateForm } from '../hooks/useTicketCreateForm';
 import { useTicketFormOptions } from '~/hooks';
+import { useTicketCreateForm } from '../hooks/useTicketCreateForm';
+import TicketCancelModal from './TicketCancelModal';
 import TicketCreateActions from './TicketCreateActions';
 import TicketCreateForm from './TicketCreateForm';
 
 export function TicketCreate() {
   const navigate = useNavigate();
+  const [cancelModalVisible, setCancelModalVisible] = useState(false);
+
   const { categories, schoolOptions } = useTicketFormOptions();
   const {
     register,
     setValue,
     errors,
     isValid,
+    isDirty,
     isPending,
     editorRef,
     attachmentsRef,
     onSubmit,
     onSubmitAndEscalate,
   } = useTicketCreateForm();
+
+  const handleCancelClick = () => {
+    if (isDirty) {
+      setCancelModalVisible(true);
+    } else {
+      navigate('/');
+    }
+  };
 
   return (
     <>
@@ -34,7 +47,7 @@ export function TicketCreate() {
             color="tertiary"
             variant="ghost"
             leftIcon={<IconArrowLeft />}
-            onClick={() => navigate('/')}
+            onClick={handleCancelClick}
           >
             Retour
           </Button>
@@ -57,8 +70,18 @@ export function TicketCreate() {
           isValid={isValid}
           onSubmit={onSubmit}
           onSubmitAndEscalate={onSubmitAndEscalate}
+          onCancelClick={handleCancelClick}
         />
       </Flex>
+
+      <TicketCancelModal
+        isOpen={cancelModalVisible}
+        onClose={() => setCancelModalVisible(false)}
+        onConfirm={() => {
+          setCancelModalVisible(false);
+          navigate('/');
+        }}
+      />
     </>
   );
 }
