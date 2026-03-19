@@ -62,7 +62,7 @@ export function TicketCard({
   return (
     <Flex
       direction="column"
-      className="pt-24 pb-24 ps-16 pe-16"
+      className="pt-24 pb-24 ps-24 pe-16"
       style={{ borderBottom: 'solid 1px #E4E4E4' }}
       gap="16"
     >

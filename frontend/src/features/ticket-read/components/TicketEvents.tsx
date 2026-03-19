@@ -15,7 +15,7 @@ export interface TicketEventProps {
 export function TicketEvent({ event }: TicketEventProps) {
   return (
     <Flex
-      className="pt-24 pb-24 ps-32 pe-32"
+      className="pt-24 pb-16 ps-24 pe-32"
       gap="16"
       style={{ borderBottom: 'solid 1px #E4E4E4' }}
     >
