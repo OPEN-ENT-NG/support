@@ -1,4 +1,4 @@
-import { FormControl, Input, Label, Select } from '@edifice.io/react';
+import { Flex, FormControl, Input, Label, Select } from '@edifice.io/react';
 import { Control, Controller, FieldErrors } from 'react-hook-form';
 import {
   ESCALATION_STATUS,
@@ -91,7 +91,7 @@ export default function TicketEditForm({
   isPending,
 }: TicketEditFormProps) {
   return (
-    <div className="ps-16 pe-16 pt-12 pb-12 w-100">
+    <Flex direction="column" gap="8" className="ps-16 pe-16 pt-12 pb-12 w-100">
       <FormControl id="uuid">
         <Label>Identifiant</Label>
         <Input
@@ -196,6 +196,6 @@ export default function TicketEditForm({
             />
           </FormControl>
         )}
-    </div>
+    </Flex>
   );
 }
