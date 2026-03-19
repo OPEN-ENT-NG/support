@@ -110,7 +110,9 @@ export default function TicketCreateForm({
         <input
           type="hidden"
           {...register('description', {
-            required: 'La description est obligatoire',
+            validate: (v) =>
+              v.replace(/<[^>]*>/g, '').trim() !== '' ||
+              'La description est obligatoire',
           })}
         />
         <Editor

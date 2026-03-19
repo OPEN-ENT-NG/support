@@ -11,7 +11,7 @@ import { buildAttachmentsFromEditor } from '~/utils';
 import { TicketCreateForm } from '../components/TicketCreateForm';
 
 export function useTicketCreateForm() {
-  const [isLoading, setIsLoading] = useState(false);
+  const [isPending, setIsPending] = useState(false);
   const attachmentsRef = useRef<TicketAttachment[]>([]);
   const editorRef = useRef<EditorRef>(null);
   const navigate = useNavigate();
@@ -21,15 +21,23 @@ export function useTicketCreateForm() {
   const {
     register,
     setValue,
-    formState: { errors, isValid },
+    formState: { errors, isValid, isDirty },
     handleSubmit,
-  } = useForm<TicketCreateForm>({ mode: 'onTouched' });
+  } = useForm<TicketCreateForm>({
+    mode: 'onTouched',
+    defaultValues: {
+      category: '',
+      school_id: '',
+      subject: '',
+      description: '<p></p>',
+    },
+  });
 
   const handleCreateTicket = async (
     formData: TicketCreateForm,
     escalate = false,
   ) => {
-    setIsLoading(true);
+    setIsPending(true);
 
     const newTicket: CreateTicket = { ...formData };
 
@@ -56,7 +64,7 @@ export function useTicketCreateForm() {
       console.error('Error creating ticket:', error);
       toast.error('Erreur lors de la création du ticket');
     } finally {
-      setIsLoading(false);
+      setIsPending(false);
     }
   };
 
@@ -65,7 +73,8 @@ export function useTicketCreateForm() {
     setValue,
     errors,
     isValid,
-    isLoading,
+    isDirty,
+    isPending,
     editorRef,
     attachmentsRef,
     onSubmit: handleSubmit((data) => handleCreateTicket(data)),
