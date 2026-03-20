@@ -70,17 +70,20 @@ export default function TicketCommentForm({
         gap="16"
         style={{ flex: 1, minWidth: 0 }}
       >
-        <Editor
-          ref={editorRef}
-          content=""
-          mode="edit"
-          visibility="public"
-          onContentChange={({ editor }) => {
-            tiptapRef.current = editor;
-            contentRef.current = editor.getHTML();
-            setIsEmpty(editor.isEmpty);
-          }}
-        />
+        <div className="editor-container">
+          <Editor
+            ref={editorRef}
+            content=""
+            placeholder="Saisissez votre réponse ici"
+            mode="edit"
+            visibility="public"
+            onContentChange={({ editor }) => {
+              tiptapRef.current = editor;
+              contentRef.current = editor.getHTML();
+              setIsEmpty(editor.isEmpty);
+            }}
+          />
+        </div>
         <TicketAddAttachment
           onChange={(attachments) => {
             uploadedAttachmentsRef.current = attachments;

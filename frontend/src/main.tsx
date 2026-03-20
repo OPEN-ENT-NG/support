@@ -7,6 +7,7 @@ import { RouterProvider } from 'react-router-dom';
 import './i18n';
 import { Providers, queryClient } from './providers';
 import { router } from './routes';
+import './styles/index.css';
 
 import '@edifice.io/bootstrap/dist/index.css';
 
