@@ -53,10 +53,6 @@ function TicketsSchoolFilter({
     filters.schools.length === 0 ||
     (filters.schools.length === schools.length && schools.length > 0);
 
-  const dropdownLabel = isAllSelected
-    ? 'Établissements'
-    : `${filters.schools.length} établissement${filters.schools.length > 1 ? 's' : ''}`;
-
   const handleSelectAll = () => {
     onChange({
       ...filters,
@@ -75,7 +71,16 @@ function TicketsSchoolFilter({
 
   return (
     <Dropdown>
-      <Dropdown.Trigger size="md" icon={<IconFilter />} label={dropdownLabel} />
+      <Dropdown.Trigger
+        size="md"
+        icon={<IconFilter />}
+        label="Établissement"
+        badgeContent={
+          filters.schools.length === allSchoolIds.length
+            ? undefined
+            : filters.schools.length
+        }
+      />
       <Dropdown.Menu>
         <Dropdown.CheckboxItem
           model={isAllSelected ? ['all'] : []}
@@ -109,10 +114,6 @@ function TicketsSchoolFilter({
 function TicketsStatusFilter({ filters, onChange }: TicketsStatusFilterProps) {
   const isAllSelected = filters.status.length === ALL_STATUS_CODES.length;
 
-  const dropdownLabel = isAllSelected
-    ? 'Statut du ticket'
-    : `${filters.status.length} statut${filters.status.length > 1 ? 's' : ''}`;
-
   const handleSelectAll = () => {
     onChange({
       ...filters,
@@ -133,7 +134,16 @@ function TicketsStatusFilter({ filters, onChange }: TicketsStatusFilterProps) {
 
   return (
     <Dropdown>
-      <Dropdown.Trigger size="md" icon={<IconFilter />} label={dropdownLabel} />
+      <Dropdown.Trigger
+        size="md"
+        icon={<IconFilter />}
+        label="Statut du ticket"
+        badgeContent={
+          filters.status.length === ALL_STATUS_CODES.length
+            ? undefined
+            : filters.status.length
+        }
+      />
       <Dropdown.Menu>
         <Dropdown.CheckboxItem
           model={isAllSelected ? ['all'] : []}
@@ -181,11 +191,15 @@ export function TicketsFilters({
         value={filters.search}
         data-testid="search-bar"
       />
-      <TicketsSchoolFilter
-        schools={schools}
-        onChange={onChange}
-        filters={filters}
-      />
+
+      {schools.length > 1 && (
+        <TicketsSchoolFilter
+          schools={schools}
+          onChange={onChange}
+          filters={filters}
+        />
+      )}
+
       <TicketsStatusFilter onChange={onChange} filters={filters} />
     </div>
   );
