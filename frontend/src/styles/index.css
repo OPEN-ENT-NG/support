@@ -1,0 +1,3 @@
+.editor-container .ProseMirror[contenteditable='true'] {
+  min-height: 80px;
+}

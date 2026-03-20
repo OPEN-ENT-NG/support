@@ -1,5 +1,5 @@
 import { Flex, FormControl, Input, Label, Select } from '@edifice.io/react';
-import { Editor, EditorRef } from '@edifice.io/react/editor';
+import { Editor, EditorContent, EditorRef } from '@edifice.io/react/editor';
 import { RefObject } from 'react';
 import { FieldErrors, UseFormRegister, UseFormSetValue } from 'react-hook-form';
 import { TicketAttachment } from '~/models';
@@ -115,19 +115,21 @@ export default function TicketCreateForm({
               'La description est obligatoire',
           })}
         />
-        <Editor
-          ref={editorRef}
-          id="description"
-          content=""
-          placeholder="Saisissez votre texte ici"
-          mode={'edit'}
-          onContentChange={({ editor }) => {
-            setValue('description', editor.getHTML(), {
-              shouldValidate: true,
-              shouldDirty: true,
-            });
-          }}
-        />
+        <div className="editor-container">
+          <Editor
+            ref={editorRef}
+            id="description"
+            content=""
+            placeholder="Saisissez votre texte ici"
+            mode={'edit'}
+            onContentChange={({ editor }) => {
+              setValue('description', editor.getHTML(), {
+                shouldValidate: true,
+                shouldDirty: true,
+              });
+            }}
+          />
+        </div>
       </FormControl>
 
       <TicketAddAttachment onChange={onAttachmentsChange} />
