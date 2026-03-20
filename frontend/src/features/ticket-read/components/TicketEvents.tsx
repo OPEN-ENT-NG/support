@@ -6,7 +6,7 @@ import {
   TicketEvent as TicketEventModel,
   TicketStatusColors,
 } from '~/models';
-import { formaterDate } from '~/utils';
+import FormattedDate from './FormattedDate';
 
 export interface TicketEventProps {
   event: TicketEventModel;
@@ -21,10 +21,9 @@ export function TicketEvent({ event }: TicketEventProps) {
     >
       <IconInfoCircle height={36} width={36} />
       <Flex direction="column" gap="4">
-        <p>
-          <span className="small">{formaterDate(event.event_date)}</span>
+        <p className="small">
+          <FormattedDate date={event.event_date} />
         </p>
-
         <Editor content={event.event} mode="read" variant="ghost" />
         {event.status !== -1 && (
           <p>

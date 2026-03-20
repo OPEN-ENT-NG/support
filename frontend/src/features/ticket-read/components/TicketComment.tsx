@@ -1,8 +1,8 @@
 import { Avatar, Flex } from '@edifice.io/react';
 import { Editor } from '@edifice.io/react/editor';
 import { TicketComment as TicketCommentType } from '~/models';
-import { formaterDate } from '~/utils';
 import { getAvatarURL } from '~/utils/getAvatarURL';
+import FormattedDate from './FormattedDate';
 
 type TicketCommentProps = {
   comment: TicketCommentType;
@@ -24,7 +24,9 @@ export default function TicketComment({ comment }: TicketCommentProps) {
 
           <p className="small">|</p>
 
-          <p className="small">{formaterDate(comment.created)}</p>
+          <p className="small">
+            <FormattedDate date={comment.created} />
+          </p>
         </Flex>
 
         <Editor

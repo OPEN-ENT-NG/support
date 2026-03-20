@@ -1,7 +1,7 @@
 import { Avatar, Flex, Heading } from '@edifice.io/react';
 import { Ticket } from '~/models';
-import { formaterDate } from '~/utils';
 import { getAvatarURL } from '~/utils/getAvatarURL';
+import FormattedDate from './FormattedDate';
 
 export type TicketDetailsHeaderProps = {
   /**
@@ -31,7 +31,7 @@ export const TicketDetailsHeader = ({ ticket }: TicketDetailsHeaderProps) => {
             <strong>{ticket.owner_name}</strong>
           </p>
           <p className="small">
-            <em>{formaterDate(ticket.created)}</em>
+            <FormattedDate date={ticket.created} />
           </p>
         </Flex>
       </Flex>
