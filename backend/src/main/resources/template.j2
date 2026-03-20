@@ -2,6 +2,10 @@
   "name": "net.atos~support",
   "config": {
     "main" : "net.atos.entng.support.Support",
+    "probes": [
+      "org.entcore.common.http.health.Neo4jProbe",
+      "org.entcore.common.http.health.MongoProbe"
+    ],
     "port" : 8027,
   	"csrf-token": {{ csrfToken | default('true') }},
     "sql" : true,
