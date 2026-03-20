@@ -29,6 +29,7 @@ export function TicketsList() {
     useTicketsPerPage();
 
   const filteredTickets = useFilteredTickets(tickets, filters);
+  const totalResults = tickets[0]?.total_results ?? 0;
   const isPending = ticketsPending || schoolsPending || ticketsPerPagePending;
   const isTableEmpty =
     !isPending &&
@@ -56,21 +57,21 @@ export function TicketsList() {
       ) : isTableEmpty ? (
         <EmptyTicketsTable />
       ) : (
-        <>
-          <Flex direction="column" gap="4" align="center">
-            <TicketsTable tickets={filteredTickets} schools={schools} />
-            <div className="d-flex justify-content-center mt-4 mb-24">
+        <Flex direction="column" gap="4" align="center">
+          <TicketsTable tickets={filteredTickets} schools={schools} />
+          {ticketsPerPage !== undefined &&
+            totalResults / ticketsPerPage > 1 && (
               <Pagination
                 align="center"
+                className="mt-4 mb-24"
                 current={page}
-                total={tickets[0]?.total_results}
+                total={totalResults}
                 onChange={setPage}
                 showSizeChanger={false}
                 pageSize={ticketsPerPage}
               />
-            </div>
-          </Flex>
-        </>
+            )}
+        </Flex>
       )}
     </Flex>
   );
