@@ -1,4 +1,4 @@
-import { Dropdown, SearchBar } from '@edifice.io/react';
+import { Dropdown, Flex, SearchBar } from '@edifice.io/react';
 import { IconFilter } from '@edifice.io/react/icons';
 import { ChangeEvent } from 'react';
 
@@ -181,8 +181,15 @@ export function TicketsFilters({
   };
 
   return (
-    <div className="d-flex gap-16 align-items-center justify-content-between w-75">
+    <Flex
+      gap="16"
+      align="center"
+      justify="between"
+      wrap="wrap"
+      className="w-75"
+    >
       <SearchBar
+        className="flex-grow-1 w-auto"
         placeholder="Search tickets..."
         onChange={handleSearchChange}
         isVariant={false}
@@ -192,15 +199,16 @@ export function TicketsFilters({
         data-testid="search-bar"
       />
 
-      {schools.length > 1 && (
-        <TicketsSchoolFilter
-          schools={schools}
-          onChange={onChange}
-          filters={filters}
-        />
-      )}
-
-      <TicketsStatusFilter onChange={onChange} filters={filters} />
-    </div>
+      <Flex gap="16" align="center" wrap="wrap">
+        {schools.length > 0 && (
+          <TicketsSchoolFilter
+            schools={schools}
+            onChange={onChange}
+            filters={filters}
+          />
+        )}
+        <TicketsStatusFilter onChange={onChange} filters={filters} />
+      </Flex>
+    </Flex>
   );
 }

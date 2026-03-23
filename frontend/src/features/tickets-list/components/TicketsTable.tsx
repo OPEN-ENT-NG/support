@@ -307,7 +307,7 @@ function TicketsTable({ tickets = [], schools = [] }: TicketsTableProps) {
   }, []);
 
   return (
-    <>
+    <div className="overflow-x-auto w-100">
       <Table>
         <TicketsTableHeader
           columns={columns}
@@ -328,7 +328,7 @@ function TicketsTable({ tickets = [], schools = [] }: TicketsTableProps) {
           ))}
         </Table.Tbody>
       </Table>
-    </>
+    </div>
   );
 }
 
