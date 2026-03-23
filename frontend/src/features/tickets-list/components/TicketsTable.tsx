@@ -173,12 +173,10 @@ type TicketTableHeaderProps = {
   handleSelectAll: () => void;
   selectedTickets: Ticket[];
   totalCount: number;
-  actions: ToolbarAction[];
 };
 
 function TicketsTableHeader(props: TicketTableHeaderProps) {
-  const { columns, handleSelectAll, selectedTickets, totalCount, actions } =
-    props;
+  const { columns, handleSelectAll, selectedTickets, totalCount } = props;
 
   const selectedCount = selectedTickets.length;
   const allSelected = selectedCount === totalCount && totalCount > 0;
@@ -199,12 +197,6 @@ function TicketsTableHeader(props: TicketTableHeaderProps) {
           <Table.Th key={column.accessorKey}>{column.header}</Table.Th>
         ))}
       </Table.Tr>
-      {selectedCount > 0 && (
-        <TicketsTableToolbar
-          selectedTickets={selectedTickets}
-          actions={actions}
-        />
-      )}
     </Table.Thead>
   );
 }
@@ -251,7 +243,7 @@ function TicketsTable({ tickets = [], schools = [] }: TicketsTableProps) {
         onClick: () => {
           exportTickets(selectedTickets.map((t) => t.id.toString()));
         },
-        isVisible: (isAdmc || isAdml) ?? false,
+        isVisible: (selectedTickets.length > 0 && (isAdmc || isAdml)) ?? false,
       },
       {
         id: 'transfer',
@@ -273,6 +265,7 @@ function TicketsTable({ tickets = [], schools = [] }: TicketsTableProps) {
           }
         },
         isVisible:
+          selectedTickets.length > 0 &&
           selectedTickets.every(
             (t) => t.escalation_status === ESCALATION_STATUS.NOT_DONE,
           ) &&
@@ -314,9 +307,14 @@ function TicketsTable({ tickets = [], schools = [] }: TicketsTableProps) {
           handleSelectAll={handleSelectAll}
           selectedTickets={selectedTickets}
           totalCount={tickets.length}
-          actions={actions}
         />
         <Table.Tbody>
+          {selectedTickets.length > 0 && (
+            <TicketsTableToolbar
+              selectedTickets={selectedTickets}
+              actions={actions}
+            />
+          )}
           {tickets.map((ticket) => (
             <TicketsTableRow
               key={ticket.id}
