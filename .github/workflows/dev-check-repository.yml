@@ -5,31 +5,59 @@ on: [push, pull_request]
 jobs:
   build-node-test:
     runs-on: ubuntu-latest
-
-    container:
-      image: opendigitaleducation/node:10-alpine
-      options: --user root -v ${{ github.workspace }}:/home/node/:rw
-
+    defaults:
+      run:
+        working-directory: frontend
     steps:
-      - uses: actions/checkout@v1
-      - name: Run npm install
-        run: npm install
-      - name: Run build node with Gulp
-        run: node_modules/gulp/bin/gulp.js build
-      - name: Run test
-        run: npm test
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: "0"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - uses: pnpm/action-setup@v4
+        id: pnpm-install
+        with:
+          version: 9.4.0
+          run_install: false
+
+      - name: Generate .npmrc
+        run: |
+          pnpm config set @tiptap-pro:registry https://registry.tiptap.dev
+          pnpm config set //registry.tiptap.dev/:_authToken ${{ secrets.TIPTAP_PRO_TOKEN }}
+          pnpm config set auto-install-peers true
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec tsc -p tsconfig.app.json --noEmit
+      - run: pnpm exec nx build
+      - run: pnpm exec nx test
+
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TIPTAP_PRO_TOKEN: ${{ secrets.TIPTAP_PRO_TOKEN }}
 
   build-maven-test:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
 
     container:
       image: maven:3.8.6-jdk-8
-      options: --user root -v ${{ github.workspace }}:/home/maven/:rw
+      options: --user root
 
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v4
+      - name: Cache Maven dependencies
+        uses: actions/cache@v4
+        with:
+          path: /var/maven/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
       - name: Run build maven
         run: mvn -Duser.home=/var/maven clean install
       - name: Run maven test
         run: mvn -Duser.home=/var/maven test
-
