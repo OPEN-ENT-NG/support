@@ -1,6 +1,7 @@
 import {
   AppHeader,
   Breadcrumb,
+  Flex,
   Layout,
   LoadingScreen,
   useEdificeClient,
@@ -8,8 +9,8 @@ import {
 
 import { matchPath, Outlet } from 'react-router-dom';
 
-import { basename } from '..';
 import { AppActionHeader } from '~/features/app/Action/AppActionHeader';
+import { basename } from '..';
 
 /** Check old format URL and redirect if needed */
 export const loader = async () => {
@@ -37,7 +38,7 @@ export const Component = () => {
   if (!init || !currentApp) return <LoadingScreen position={false} />;
 
   return (
-    <div className="d-print-block d-flex flex-column vh-100 flex-grow-1">
+    <Flex className="d-print-block flex-grow-1 vh-100" direction="column">
       <Layout>
         <div className="d-print-none">
           <AppHeader render={AppActionHeader}>
@@ -48,6 +49,6 @@ export const Component = () => {
           <Outlet />
         </div>
       </Layout>
-    </div>
+    </Flex>
   );
 };

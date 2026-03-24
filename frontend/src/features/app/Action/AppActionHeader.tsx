@@ -204,13 +204,13 @@ export const AppActionHeader = () => {
 
   return (
     <>
-      <div className="d-flex flex-fill align-items-center justify-content-end gap-12 align-self-end">
+      <Flex fill align="center" justify="end" gap="12">
         {pageActions
           .filter((action) => action.visibility)
           .map((action) => (
             <div key={action.id}>{action.element}</div>
           ))}
-      </div>
+      </Flex>
 
       <Modal
         id="info-modal-escalate"
