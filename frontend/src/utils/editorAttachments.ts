@@ -17,9 +17,16 @@ export function extractDocumentIds(nodes: EditorNode[]): string[] {
   return nodes.flatMap((node) => {
     const ids: string[] = [];
 
-    if (node.type === 'custom-image' && node.attrs?.src) {
+    if (
+      (node.type === 'custom-image' || node.type === 'audio') &&
+      node.attrs?.src
+    ) {
       const id = node.attrs.src.split('/').pop()?.split('?')[0].split('.')[0];
       if (id) ids.push(id);
+    }
+
+    if (node.type === 'video' && node.attrs?.documentId) {
+      ids.push(node.attrs.documentId);
     }
 
     if (node.type === 'attachments' && node.attrs?.links) {
