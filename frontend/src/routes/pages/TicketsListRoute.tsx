@@ -1,7 +1,8 @@
 import { matchPath } from 'react-router-dom';
 
-import { basename } from '..';
+import { Flex } from '@edifice.io/react';
 import { TicketsList } from '~/features/tickets-list/components/TicketsList';
+import { basename } from '..';
 
 /** Check old format URL and redirect if needed */
 export const loader = async () => {
@@ -25,8 +26,8 @@ export const loader = async () => {
 
 export const Component = () => {
   return (
-    <div className="d-flex flex-column mt-24 ms-md-24 me-md-16">
+    <Flex direction="column" className="mt-24 ms-md-24 me-md-16">
       <TicketsList />
-    </div>
+    </Flex>
   );
 };
