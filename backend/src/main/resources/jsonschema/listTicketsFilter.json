@@ -1,0 +1,53 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "page": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "sortBy": {
+      "type": "string",
+      "enum": [
+        "id",
+        "modified",
+        "status",
+        "category",
+        "category_label",
+        "owner",
+        "event_count",
+        "subject",
+        "school_id",
+        "profile"
+      ]
+    },
+    "order": {
+      "type": "string",
+      "enum": [
+        "ASC",
+        "DESC"
+      ]
+    },
+    "schools": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "statuses": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "applicant": {
+      "type": "string",
+      "enum": [
+        "ME",
+        "OTHER"
+      ]
+    }
+  }
+}

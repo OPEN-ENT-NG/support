@@ -29,7 +29,11 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import net.atos.entng.support.*;
+import net.atos.entng.support.Attachment;
+import net.atos.entng.support.Comment;
+import net.atos.entng.support.Issue;
+import net.atos.entng.support.Ticket;
+import net.atos.entng.support.WorkspaceAttachment;
 import net.atos.entng.support.constants.JiraTicket;
 import net.atos.entng.support.enums.BugTracker;
 import net.atos.entng.support.enums.EscalationStatus;
@@ -57,7 +61,13 @@ import java.text.DateFormat;
 import java.text.Format;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.TimeZone;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -346,6 +356,85 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 				query.append(" ORDER BY arr.ord ");
 			else query.append(String.format(" ORDER BY t.%s", sortBy));
 		}
+	}
+
+	@Override
+	public Future<JsonArray> listFilteredTickets(UserInfos user, Integer page, List<String> statuses,
+												 List<String> applicants, List<String> schoolIds, String sortBy,
+												 String order, Integer nbTicketsPerPage) {
+		Promise<JsonArray> promise = Promise.promise();
+		StringBuilder query = new StringBuilder();
+		JsonArray values = new JsonArray();
+
+		query.append("SELECT t.*, u.username AS owner_name, ")
+				.append("i.content")
+				.append(bugTrackerType.getLastIssueUpdateFromPostgresqlJson())
+				.append(" AS last_issue_update, ")
+				.append(" substring(t.description, 0, 101) as short_desc,")
+				.append(" COUNT(*) OVER() AS total_results")
+				.append(" FROM support.tickets AS t")
+				.append(" INNER JOIN support.users AS u ON t.owner = u.id")
+				.append(" LEFT JOIN support.bug_tracker_issues AS i ON t.id=i.ticket_id");
+
+		boolean oneApplicant = false;
+		boolean applicantIsMe = true;
+		if (applicants != null && applicants.size() == 1) {
+			applicantIsMe = applicants.get(0).equals("ME");
+			oneApplicant = true;
+		}
+
+		Function superAdmin = user.getFunctions().get(DefaultFunctions.SUPER_ADMIN);
+		Function adminLocal = user.getFunctions().get(DefaultFunctions.ADMIN_LOCAL);
+		boolean isAdmin = superAdmin != null || adminLocal != null;
+
+		if (isAdmin) {
+			List<String> scopesList = superAdmin != null ? superAdmin.getScope() : adminLocal.getScope();
+			if (schoolIds != null && !schoolIds.isEmpty()) {
+				query.append(" AND t.school_id IN ").append(Sql.listPrepared(schoolIds));
+				values.addAll(new JsonArray(schoolIds));
+			} else if (scopesList != null && !scopesList.isEmpty()) {
+				query.append(" AND t.school_id IN ").append(Sql.listPrepared(scopesList));
+				values.addAll(new JsonArray(scopesList));
+			}
+
+			if (oneApplicant) {
+				query.append(" AND t.owner").append(applicantIsMe ? "=" : "!=").append("?");
+				values.add(user.getUserId());
+			}
+		} else {
+			query.append(" AND t.owner = ?");
+			values.add(user.getUserId());
+			if (schoolIds != null && !schoolIds.isEmpty()) {
+				query.append(" AND t.school_id IN ").append(Sql.listPrepared(schoolIds));
+				values.addAll(new JsonArray(schoolIds));
+			}
+		}
+
+		if (statuses != null && !statuses.isEmpty()) {
+			query.append(" AND t.status IN ").append(Sql.listPrepared(statuses));
+			values.addAll(new JsonArray(statuses));
+		}
+
+		if (ALLOWED_SORT_BY_COLUMN.contains(sortBy)) {
+			query.append(String.format(" ORDER BY t.%s", sortBy));
+		} else {
+			query.append(" ORDER BY t.modified");
+		}
+
+		if (order != null && (order.equals("ASC") || order.equals("DESC"))) {
+			query.append(" ").append(order);
+		} else {
+			query.append(" DESC");
+		}
+
+		if (page != null && page > 0) {
+			query.append(" LIMIT ?").append(" OFFSET ").append((page - 1) * nbTicketsPerPage);
+			values.add(nbTicketsPerPage);
+		}
+
+		sql.prepared(query.toString().replaceFirst("AND", "WHERE"), values,
+				validResultHandler(PromiseHelper.handler(promise)));
+		return promise.future();
 	}
 
 	@Override

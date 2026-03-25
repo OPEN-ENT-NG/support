@@ -24,27 +24,16 @@ export function getTickets(
   type: TicketType,
   schools: string[],
 ): Promise<ApiTicket[]> {
-  const params = new URLSearchParams();
-  params.set('page', String(page));
-  params.set('sortBy', 'modified');
-  params.set('order', 'DESC');
-
-  status.forEach((s) => params.append('status', String(s)));
-
-  if (type === 'mine') {
-    params.append('applicant', 'ME');
-  } else if (type === 'other') {
-    params.append('applicant', 'OTHER');
+  const body = {
+    page: page,
+    sortBy: 'modified',
+    order: 'DESC',
+    statuses: status.map((s) => String(s)),
+    applicant: type === 'mine' ? 'ME' : type === 'other' ? 'OTHER' : undefined,
+    schools: schools.length > 0 ? schools : ['*'],
   }
 
-  if (schools.length > 0) {
-    schools.forEach((s) => params.append('school', s));
-  } else {
-    params.set('school', '*');
-  }
-
-  const url = `${tickets_api_base_url}/tickets?${params.toString()}`;
-  return odeServices.http().get(url);
+  return odeServices.http().post(`${tickets_api_base_url}/tickets`, body);
 }
 
 export function getTicketById(ticketId: string): Promise<ApiTicket[]> {

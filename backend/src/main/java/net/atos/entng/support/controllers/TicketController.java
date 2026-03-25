@@ -553,7 +553,55 @@ public class TicketController extends ControllerHelper {
                 unauthorized(request);
             }
         });
+    }
 
+    @Post("/tickets")
+    @ApiDoc("List tickets filtered by page, status, applicant, and school.")
+    public void listTicketsFilter(final HttpServerRequest request) {
+        RequestUtils.bodyToJson(request, pathPrefix + "listTicketsFilter", body -> {
+            I18nConfig i18nConfig = new I18nConfig(request);
+            UserUtils.getUserInfos(eb, request, user -> {
+                if (user != null) {
+                    listFilteredTickets(body, user)
+                            .compose(tickets -> ticketService.getProfileFromTickets(tickets, i18nConfig))
+                            .onSuccess(result -> renderJson(request, result))
+                            .onFailure(err -> {
+                                renderError(request, new JsonObject().put(JiraTicket.ERROR, err.getMessage()));
+                            });
+                } else {
+                    log.debug("User not found in session.");
+                    unauthorized(request);
+                }
+            });
+        });
+    }
+
+    private Future<JsonArray> listFilteredTickets(JsonObject body, UserInfos user) {
+        Integer page = body.getInteger(JiraTicket.PAGE);
+        String sortBy = body.getString(JiraTicket.SORT_BY);
+        String order = body.getString(JiraTicket.ORDER);
+        List<String> schools = body.getJsonArray("schools", new JsonArray()).stream()
+                .filter(String.class::isInstance)
+                .map(String.class::cast)
+                .collect(Collectors.toList());
+
+        List<String> statuses = body.getJsonArray("statuses", new JsonArray()).stream()
+                .map(Object::toString)
+                .collect(Collectors.toList());
+
+        String applicantValue = body.getString(JiraTicket.APPLICANT);
+        List<String> applicants = applicantValue != null ? Collections.singletonList(applicantValue) : Collections.emptyList();
+        Integer nbTicketsPerPage = config.getInteger("nbTicketsPerPage", 25);
+
+        boolean allSchools = schools.isEmpty() || schools.contains(JiraTicket.ASTERISK);
+        List<String> structuresToResolve = allSchools ? user.getStructures() : schools;
+
+        return ticketService.listStructureChildren(structuresToResolve)
+                .compose(structureChildren -> {
+                    List<String> resolvedSchoolIds = getStructureIds(structureChildren);
+                    return ticketServiceSql
+                            .listFilteredTickets(user, page, statuses, applicants, resolvedSchoolIds, sortBy, order, nbTicketsPerPage);
+                });
     }
 
     private Future<JsonArray> listTicketOrdered(String isSortBy, UserInfos user, Integer page, List<String> statuses, List<String> applicants,
