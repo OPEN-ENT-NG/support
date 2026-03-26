@@ -40,7 +40,7 @@ const columns: Column[] = [
   { header: 'Statut', accessorKey: 'status' },
   { header: 'Sujet', accessorKey: 'short_desc' },
   { header: 'Catégorie', accessorKey: 'category_label' },
-  { header: 'Structure du demandeur', accessorKey: 'school_id' },
+  { header: 'Établissement', accessorKey: 'school_id' },
   { header: 'Demandeur', accessorKey: 'owner_name' },
   { header: 'Profil', accessorKey: 'profile' },
   { header: 'Dernière modification', accessorKey: 'modified' },
