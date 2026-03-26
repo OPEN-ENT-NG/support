@@ -37,10 +37,9 @@ export function TicketCreate() {
   return (
     <>
       <Flex
-        className="m-auto w-100"
+        className="m-auto w-100 ticket-create-form"
         direction="column"
         gap="16"
-        style={{ maxWidth: '900px' }}
       >
         <Flex direction="row">
           <Button

@@ -81,7 +81,9 @@ export const AppActionHeader = () => {
     try {
       await escalateTickets([ticketId!]);
       toast.success('Ticket escaladé avec succès.');
-      await queryClient.invalidateQueries({ queryKey: [ticketsQueryKeys.all()] });
+      await queryClient.invalidateQueries({
+        queryKey: [ticketsQueryKeys.all()],
+      });
     } catch (e) {
       console.error(e);
       toast.error("Erreur lors de l'escalade du ticket.");
@@ -182,11 +184,7 @@ export const AppActionHeader = () => {
         visibility:
           !isAdmc && isTicketRoute && canEscalate && isTicketEscalated,
         element: (
-          <p
-            style={{
-              color: '#7DBF85',
-            }}
-          >
+          <p className="text-escalated">
             <em>Le ticket a été transmis au support ENT</em>
           </p>
         ),
