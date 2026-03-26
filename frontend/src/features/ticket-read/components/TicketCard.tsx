@@ -62,8 +62,7 @@ export function TicketCard({
   return (
     <Flex
       direction="column"
-      className="pt-24 pb-24 ps-24 pe-16"
-      style={{ borderBottom: 'solid 1px #E4E4E4' }}
+      className="pt-24 pb-24 ps-24 pe-16 border-bottom-light"
       gap="16"
     >
       <TicketDetailsHeader ticket={ticket} />
@@ -73,17 +72,10 @@ export function TicketCard({
         {allAttachments.length > 0 && (
           <Flex
             direction="column"
-            className="pt-8 pb-8 ps-12 pe-12 rounded-4 align-self-start"
+            className="pt-8 pb-8 ps-12 pe-12 rounded-4 align-self-start ticket-attachment-box"
             gap="8"
-            style={{
-              backgroundColor: '#FAFAFA',
-              border: '1px solid #F2F2F2',
-            }}
           >
-            <p
-              className="caption mt-8 pb-8"
-              style={{ borderBottom: '1px solid #E4E4E4' }}
-            >
+            <p className="caption mt-8 pb-8 border-bottom-light">
               <strong>Pièces jointes</strong>
             </p>
             {allAttachments.map((attachment) => (

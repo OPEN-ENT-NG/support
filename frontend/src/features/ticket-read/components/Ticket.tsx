@@ -62,15 +62,11 @@ export function Ticket() {
 
   return (
     <Flex className="w-100 h-100">
-      <div
-        className="d-none d-lg-block border-end position-sticky top-0 h-100 overflow-y-auto"
-        style={{ flex: '0 0 25%' }}
-      >
+      <div className="d-none d-lg-block border-end position-sticky top-0 h-100 overflow-y-auto ticket-sidebar">
         <Flex direction="column" align="start" gap="8">
           <Flex
             justify="start"
-            className="pe-16 pt-12 pb-12 w-100"
-            style={{ borderBottom: 'solid 1px #E4E4E4' }}
+            className="pe-16 pt-12 pb-12 w-100 border-bottom-light"
           >
             <Button
               color="tertiary"
@@ -95,11 +91,7 @@ export function Ticket() {
           />
         </Flex>
       </div>
-      <Flex
-        direction="column"
-        className="overflow-y-auto"
-        style={{ flex: 1, minWidth: 0 }}
-      >
+      <Flex direction="column" className="overflow-y-auto flex-grow-1 min-w-0">
         <TicketCard
           ticket={ticket}
           attachments={attachments}

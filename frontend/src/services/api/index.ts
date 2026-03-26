@@ -31,7 +31,7 @@ export function getTickets(
     statuses: status.map((s) => String(s)),
     applicant: type === 'mine' ? 'ME' : type === 'other' ? 'OTHER' : undefined,
     schools: schools.length > 0 ? schools : ['*'],
-  }
+  };
 
   return odeServices.http().post(`${tickets_api_base_url}/tickets`, body);
 }

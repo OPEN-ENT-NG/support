@@ -10,13 +10,9 @@ type TicketCommentProps = {
 
 export default function TicketComment({ comment }: TicketCommentProps) {
   return (
-    <Flex
-      className="pt-24 pb-16 ps-24 pe-32"
-      gap="16"
-      style={{ borderBottom: 'solid 1px #E4E4E4' }}
-    >
+    <Flex className="pt-24 pb-16 ps-24 pe-32 border-bottom-light" gap="16">
       <Avatar variant="circle" alt="avatar" src={getAvatarURL(comment.owner)} />
-      <Flex direction="column" gap="4" style={{ flex: 1 }}>
+      <Flex direction="column" gap="4" className="flex-grow-1">
         <Flex gap="4">
           <p className="small user-profile-relative">
             <strong>{comment.owner_name}</strong>

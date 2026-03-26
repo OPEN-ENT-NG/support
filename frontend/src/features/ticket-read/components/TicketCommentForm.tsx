@@ -64,12 +64,7 @@ export default function TicketCommentForm({
         variant="circle"
         size="md"
       />
-      <Flex
-        className="mb-48"
-        direction="column"
-        gap="16"
-        style={{ flex: 1, minWidth: 0 }}
-      >
+      <Flex className="mb-48 flex-grow-1 min-w-0" direction="column" gap="16">
         <div className="editor-container">
           <Editor
             ref={editorRef}

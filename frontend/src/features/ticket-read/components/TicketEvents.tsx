@@ -14,11 +14,7 @@ export interface TicketEventProps {
 
 export function TicketEvent({ event }: TicketEventProps) {
   return (
-    <Flex
-      className="pt-24 pb-16 ps-24 pe-32"
-      gap="16"
-      style={{ borderBottom: 'solid 1px #E4E4E4' }}
-    >
+    <Flex className="pt-24 pb-16 ps-24 pe-32 border-bottom-light" gap="16">
       <IconInfoCircle height={36} width={36} />
       <Flex direction="column" gap="4">
         <p className="small">
