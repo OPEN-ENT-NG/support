@@ -190,7 +190,7 @@ export function TicketsFilters({
     >
       <SearchBar
         className="flex-grow-1 w-auto"
-        placeholder="Search tickets..."
+        placeholder="Rechercher par numéro de ticket"
         onChange={handleSearchChange}
         isVariant={false}
         onClick={() => {}}
