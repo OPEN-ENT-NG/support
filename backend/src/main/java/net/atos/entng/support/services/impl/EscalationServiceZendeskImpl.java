@@ -1272,7 +1272,7 @@ public class EscalationServiceZendeskImpl implements EscalationService {
 
 							JsonObject params = new JsonObject();
 							params.put("issueId", issue.id.get()).put("ticketId", ticket.id.get());
-							params.put("ticketUri", "/support#/ticket/" + ticket.id.get());
+							params.put("ticketUri", "/support/tickets/" + ticket.id.get());
 							params.put("resourceUri", params.getString("ticketUri"));
 
 							String supportName = I18n.getInstance()

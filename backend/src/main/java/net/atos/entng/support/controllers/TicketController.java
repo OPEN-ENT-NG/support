@@ -332,7 +332,7 @@ public class TicketController extends ControllerHelper {
                     if (!recipients.isEmpty()) {
                         JsonObject params = new JsonObject();
                         params.put("uri", "/userbook/annuaire#" + user.getUserId() + "#" + user.getType());
-                        params.put("ticketUri", "/support#/ticket/" + ticketId)
+                        params.put("ticketUri", "/support/tickets/" + ticketId)
                                 .put("username", user.getUsername())
                                 .put("ticketid", ticketId)
                                 .put("ticketsubject", shortenSubject(ticketSubject));
@@ -464,7 +464,7 @@ public class TicketController extends ControllerHelper {
                     if (!recipients.isEmpty()) {
                         JsonObject params = new JsonObject();
                         params.put("uri", "/userbook/annuaire#" + user.getUserId() + "#" + user.getType());
-                        params.put("ticketUri", "/support#/ticket/" + ticketId)
+                        params.put("ticketUri", "/support/tickets/" + ticketId)
                                 .put("username", user.getUsername())
                                 .put("ticketid", ticketId)
                                 .put("ticketsubject", shortenSubject(ticketSubject));
