@@ -57,7 +57,7 @@ export function useTicketCreateForm() {
         toast.success('Ticket créé avec succès');
       }
       await queryClient.invalidateQueries({
-        queryKey: ticketsQueryKeys.list(),
+        queryKey: [ticketsQueryKeys.all(), 'list'],
       });
       navigate(`/tickets/${newTicketResult?.id}`);
     } catch (error) {
