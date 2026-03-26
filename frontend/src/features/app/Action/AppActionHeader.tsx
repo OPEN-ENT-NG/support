@@ -7,6 +7,7 @@ import {
   useIsAdmc,
   useToast,
 } from '@edifice.io/react';
+import { useQueryClient } from '@tanstack/react-query';
 import {
   IconDownload,
   IconInfoCircle,
@@ -29,6 +30,7 @@ import {
   refreshTicket,
   workerExportTickets,
 } from '~/services/api';
+import { ticketsQueryKeys } from '~/services/queries/tickets';
 
 export type PageAction = {
   id: string;
@@ -42,6 +44,7 @@ export const AppActionHeader = () => {
 
   const navigate = useNavigate();
   const toast = useToast();
+  const queryClient = useQueryClient();
   const location = useLocation();
   const canEscalate = useCanEscalate();
   const isTicketEscalated = useIsTicketEscalated();
@@ -78,13 +81,14 @@ export const AppActionHeader = () => {
     try {
       await escalateTickets([ticketId!]);
       toast.success('Ticket escaladé avec succès.');
+      await queryClient.invalidateQueries({ queryKey: [ticketsQueryKeys.all()] });
     } catch (e) {
       console.error(e);
       toast.error("Erreur lors de l'escalade du ticket.");
     } finally {
       setIsLoading(false);
     }
-  }, [ticketId, toast]);
+  }, [ticketId, toast, queryClient]);
 
   const updateTicket = useCallback(async () => {
     setIsLoading(true);
