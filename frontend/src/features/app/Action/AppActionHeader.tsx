@@ -45,7 +45,7 @@ export const AppActionHeader = () => {
   const location = useLocation();
   const canEscalate = useCanEscalate();
   const isTicketEscalated = useIsTicketEscalated();
-  const isAdmc = useIsAdmc();
+  const { isAdmc } = useIsAdmc();
 
   const { ticketId } = useParams();
 
