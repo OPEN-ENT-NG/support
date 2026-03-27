@@ -3,8 +3,8 @@ import { Editor } from '@edifice.io/react/editor';
 import { IconInfoCircle } from '@edifice.io/react/icons';
 import {
   getTicketStatusText,
+  TICKET_STATUS_CLASS,
   TicketEvent as TicketEventModel,
-  TicketStatusColors,
 } from '~/models';
 import FormattedDate from './FormattedDate';
 
@@ -39,8 +39,8 @@ export function TicketEvent({ event }: TicketEventProps) {
             )}
             Le status est{' '}
             <Badge
+              className={TICKET_STATUS_CLASS[event.status]}
               variant={{
-                color: TicketStatusColors[event.status],
                 type: 'beta',
               }}
             >

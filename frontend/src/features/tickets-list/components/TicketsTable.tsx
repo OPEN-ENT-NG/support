@@ -20,7 +20,7 @@ import {
   ESCALATION_STATUS,
   School,
   Ticket,
-  TicketStatusColors,
+  TICKET_STATUS_CLASS,
   getTicketStatusText,
   mapApiProfileToProfile,
 } from '~/models';
@@ -69,8 +69,8 @@ const ticketTableColumns: TicketTableColumn[] = [
     cell: (ticket: Ticket) => {
       return (
         <Badge
+          className={TICKET_STATUS_CLASS[ticket.status]}
           variant={{
-            color: TicketStatusColors[ticket.status],
             type: 'beta',
           }}
         >

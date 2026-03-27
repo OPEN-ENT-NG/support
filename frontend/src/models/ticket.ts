@@ -193,14 +193,14 @@ export type TicketStatusText =
   | 'en_attente';
 
 /**
- * Mapping of ticket statuses to their corresponding color variants.
+ * Mapping of ticket statuses to their corresponding classnames.
  */
-export const TicketStatusColors: Record<TicketApiCode, string> = {
-  1: '#4bafd5',
-  2: '#f79256',
-  3: '#7dbf85',
-  4: '#7dbf85',
-  5: '#e13a3a',
+export const TICKET_STATUS_CLASS: Record<TicketApiCode, string> = {
+  1: 'ticket-status-info',
+  2: 'ticket-status-warning',
+  3: 'ticket-status-success',
+  4: 'ticket-status-success',
+  5: 'ticket-status-warning',
 };
 
 export const TICKET_STATUS_BY_CODE: Record<TicketApiCode, { label: string }> = {
