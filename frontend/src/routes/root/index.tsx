@@ -7,7 +7,7 @@ import {
   useEdificeClient,
 } from '@edifice.io/react';
 
-import { matchPath, Outlet } from 'react-router-dom';
+import { matchPath, Outlet, useMatch } from 'react-router-dom';
 
 import { AppActionHeader } from '~/features/app/Action/AppActionHeader';
 import { basename } from '..';
@@ -34,6 +34,7 @@ export const loader = async () => {
 
 export const Component = () => {
   const { init, currentApp } = useEdificeClient();
+  const isTicketDetails = useMatch('tickets/:ticketId');
 
   if (!init || !currentApp) return <LoadingScreen position={false} />;
 
@@ -45,7 +46,9 @@ export const Component = () => {
             <Breadcrumb app={currentApp!} />
           </AppHeader>
         </div>
-        <div className="flex-fill overflow-y-auto position-relative">
+        <div
+          className={`flex-fill overflow-y-auto position-relative ${isTicketDetails ? ' mx-n16' : ''}`}
+        >
           <Outlet />
         </div>
       </Layout>
