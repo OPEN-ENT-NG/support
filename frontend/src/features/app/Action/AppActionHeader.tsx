@@ -223,7 +223,13 @@ export const AppActionHeader = () => {
           Transmettre au support ENT
         </ModalHeader>
         <ModalBody>
-          <p>Dessin, blabla pour expliquer le principe de l'escalade !</p>
+          <p>
+            En tant qu’administrateur, vous assurez l’assistance de proximité
+            pour les utilisateurs de votre établissement. Si une demande dépasse
+            vos compétences techniques ou nécessite une investigation plus
+            poussée, vous avez la possibilité de solliciter l’assistance de
+            l’ENT pour prendre le relais.
+          </p>
         </ModalBody>
         <ModalFooter>
           <Flex justify="end">
@@ -241,7 +247,10 @@ export const AppActionHeader = () => {
           Synchronisation avec le ticket escaladé
         </ModalHeader>
         <ModalBody>
-          <p>Dessin, blabla pour expliquer le principe des 15 minutes</p>
+          <p>
+            Si jamais la synchronisation entre Zendesk et Assistance ENT a été
+            interrompue, ce bouton permet de la relancer.
+          </p>
         </ModalBody>
         <ModalFooter>
           <Flex justify="end">
