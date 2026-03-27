@@ -66,14 +66,14 @@ export function Ticket() {
         <Flex direction="column" align="start" gap="8">
           <Flex
             justify="start"
-            className="pe-16 pt-12 pb-12 w-100 border-bottom-light"
+            className="ps-16 pe-16 pt-12 pb-12 w-100 border-bottom-light"
           >
             <Button
               color="tertiary"
               variant="ghost"
               leftIcon={<IconArrowLeft />}
               onClick={() => navigate('/')}
-              size="md"
+              size="sm"
             >
               Retour
             </Button>
