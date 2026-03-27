@@ -189,7 +189,7 @@ export function TicketsFilters({
       className="w-75"
     >
       <SearchBar
-        className="flex-grow-1 w-auto"
+        className="flex-grow-1 w-auto search-bar"
         placeholder="Rechercher par numéro de ticket"
         onChange={handleSearchChange}
         isVariant={false}
