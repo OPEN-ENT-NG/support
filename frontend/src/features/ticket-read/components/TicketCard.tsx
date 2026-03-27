@@ -48,13 +48,15 @@ export function TicketCard({
         created: attachment.created,
         origin: 'workspace' as const,
       })),
-      ...(bugTrackerIssue?.attachments?.map((attachment) => ({
-        document_id: attachment.gridfs_id,
-        name: attachment.filename,
-        size: attachment.size,
-        created: attachment.created_on,
-        origin: 'gridfs' as const,
-      })) ?? []),
+      ...(bugTrackerIssue?.attachments
+        ?.filter((attachment) => attachment.gridfs_id !== null) // Filter out attachments without gridfs_id to keep only attachments coming from Zendesk
+        .map((attachment) => ({
+          document_id: attachment.gridfs_id,
+          name: attachment.filename,
+          size: attachment.size,
+          created: attachment.created_on,
+          origin: 'gridfs' as const,
+        })) ?? []),
     ],
     [attachments, bugTrackerIssue?.attachments],
   );
