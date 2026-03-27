@@ -20,7 +20,12 @@ export function TicketEvent({ event }: TicketEventProps) {
         <p className="small">
           <FormattedDate date={event.event_date} />
         </p>
-        <Editor content={event.event} mode="read" variant="ghost" />
+        {/*
+          We are using `dangerouslySetInnerHTML` here because using Editor causes comment layout shift.
+          Even though this is not the cleanest nor the safest solution,
+          It applies only to comments coming from Zendesk written by our support team, risks are limited.
+        */}
+        <div dangerouslySetInnerHTML={{ __html: event.event }} />
         {event.status !== -1 && (
           <p>
             {event.username && (
