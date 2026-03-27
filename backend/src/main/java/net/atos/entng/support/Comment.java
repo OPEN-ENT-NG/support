@@ -1,9 +1,11 @@
 package net.atos.entng.support;
 
+import io.vertx.core.json.JsonObject;
 import org.entcore.common.utils.Id;
 import org.entcore.common.utils.IdObject;
 
-import io.vertx.core.json.JsonObject;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Comment implements IdObject
 {
@@ -11,6 +13,7 @@ public class Comment implements IdObject
     public String created;
     public String content;
     public String ownerName;
+    public List<Attachment> attachments = new ArrayList<>();
 
     public Comment(String content)
     {

@@ -6,8 +6,6 @@ import io.vertx.core.Promise;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import java.util.ArrayList;
-import java.util.List;
 import net.atos.entng.support.Attachment;
 import net.atos.entng.support.Comment;
 import net.atos.entng.support.Issue;
@@ -21,6 +19,11 @@ import org.entcore.common.json.JSONRename;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.utils.Id;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 // cf. https://developer.zendesk.com/api-reference/ticketing/tickets/tickets/#create-ticket
 @JSONInherit(field="id")
@@ -272,20 +275,40 @@ public class ZendeskIssue extends Issue implements JSONAble
         return newIssue;
     }
 
-    public static Future<ZendeskIssue> fromTicket(Ticket ticket, UserInfos gestionnaireInfos)
-    {
+    public static Future<ZendeskIssue> fromTicket(Ticket ticket, UserInfos gestionnaireInfos) {
         ZendeskIssue issue = new ZendeskIssue(zendeskIssueTemplate);
         Promise<ZendeskIssue> promise = Promise.promise();
 
         issue.subject = ticket.subject;
         issue.comment = new ZendeskComment(ticket.description, ticket.ownerName);
-        issue.comment.uploads = new ArrayList<String>();
-        for(Attachment a : ticket.attachments)
-            issue.comment.uploads.add(a.bugTrackerToken);
 
-        issue.comments = new ArrayList<ZendeskComment>(ticket.comments.size());
-        for(Comment c : ticket.comments)
-            issue.comments.add(new ZendeskComment(c));
+        Set<String> claimedDocIds = new HashSet<>();
+        issue.comments = new ArrayList<>(ticket.comments.size());
+        for (Comment c : ticket.comments) {
+            if (c.content != null) {
+                c.content = cleanContent(c.content);
+            }
+            ZendeskComment zc = new ZendeskComment(c);
+            if (c.attachments != null && !c.attachments.isEmpty()) {
+                zc.uploads = new ArrayList<>();
+                for (Attachment a : c.attachments) {
+                    if (a.bugTrackerToken != null) {
+                        zc.uploads.add(a.bugTrackerToken);
+                        if (a.documentId != null) {
+                            claimedDocIds.add(a.documentId);
+                        }
+                    }
+                }
+            }
+            issue.comments.add(zc);
+        }
+
+        issue.comment.uploads = new ArrayList<>();
+        for (Attachment a : ticket.attachments) {
+            if (a.bugTrackerToken != null && !claimedDocIds.contains(a.documentId)) {
+                issue.comment.uploads.add(a.bugTrackerToken);
+            }
+        }
 
         if(issue.custom_fields == null)
             issue.custom_fields = new ArrayList<CustomField<?>>();
@@ -332,6 +355,12 @@ public class ZendeskIssue extends Issue implements JSONAble
                     return new Id<Ticket, Integer>(Integer.parseInt(f.value.toString()));
 
         return null;
+    }
+
+    private static String cleanContent(String content) {
+        // TipTap embeds <img> tags pointing to /workspace and attachment divs that Zendesk cannot access.
+        return content.replaceAll("<img[^>]*>", "")
+                .replaceAll("(?s)<div class=\"attachments\">.*?</div>", "");
     }
 
     @Override

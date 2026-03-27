@@ -64,6 +64,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -104,7 +105,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 		String returnedFields = "id, subject, school_id, status, created, modified, escalation_status, escalation_date, substring(description, 0, 101)  as short_desc";
 		s.insert(resourceTable, ticket, returnedFields);
 
-		this.insertAttachments(attachments, user, s, null);
+		this.insertAttachments(attachments, user, s, null, false);
 
 		sql.transaction(s.build(), validUniqueResultHandler(1, toTicketHandler(handler)));
 	}
@@ -179,7 +180,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 
 		// 4. Insert attachments
 		JsonArray attachments = data.getJsonArray("attachments", null);
-		this.insertAttachments(attachments, user, s, ticketId);
+		this.insertAttachments(attachments, user, s, ticketId, data.containsKey("newComment"));
 
 		// Send queries to event bus
 		sql.transaction(s.build(), validUniqueResultHandler(index, toTicketHandler(handler, attachments)));
@@ -192,11 +193,12 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 	 * @param ticketId : must be null when creating a ticket, and supplied when updating a ticket
 	 */
 	private void insertAttachments(final JsonArray attachments,
-			final UserInfos user, final SqlStatementsBuilder s, final String ticketId) {
+								   final UserInfos user, final SqlStatementsBuilder s, final String ticketId,
+								   boolean linkToComment) {
 
 		if(attachments != null && attachments.size() > 0) {
 			StringBuilder query = new StringBuilder();
-			query.append("INSERT INTO support.attachments(document_id, name, size, owner, ticket_id)")
+			query.append("INSERT INTO support.attachments(document_id, name, size, owner, ticket_id, comment_id)")
 				.append(" VALUES");
 
 			JsonArray values = new JsonArray();
@@ -210,11 +212,17 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 					.add(user.getUserId());
 
 				if(ticketId == null){
-					query.append("(SELECT currval('support.tickets_id_seq'))),");
+					query.append("(SELECT currval('support.tickets_id_seq')), ");
 				}
 				else {
-					query.append("?),");
+					query.append("?, ");
 					values.add(parseId(ticketId));
+				}
+
+				if (linkToComment) {
+					query.append("(SELECT currval('support.comments_id_seq'))),");
+				} else {
+					query.append("NULL),");
 				}
 			}
 			// remove trailing comma
@@ -592,15 +600,14 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 	private String escalateTicketInfoQuery( String fromTable, String whereClause )  {
 		return "SELECT t.id, t.status, t.subject, t.description, t.category, t.school_id,"
 		+ " u.username AS owner_name, t.owner as owner_id, t.created, t.locale,"
-				+ " CASE WHEN COUNT(a.document_id) = 0 THEN '[]' ELSE json_agg(DISTINCT a.document_id) END AS attachments,"
-				+ " CASE WHEN COUNT(a.name) = 0 THEN '[]' ELSE json_agg(DISTINCT a.name) END AS attachmentsNames,"
+				+ " COALESCE((SELECT json_agg(json_build_object('document_id', a.document_id, 'name', a.name, 'comment_id', a.comment_id))"
+				+ " FROM support.attachments AS a WHERE a.ticket_id = t.id), '[]'::json) AS attachments,"
 		+ " CASE WHEN COUNT(c.id) = 0 THEN '[]' "
 		+ " ELSE json_agg(DISTINCT(date_trunc('second', c.created), c.id, c.content, v.username)::support.comment_tuple"
 		+ " ORDER BY (date_trunc('second', c.created), c.id, c.content, v.username)::support.comment_tuple)"
 		+ " END AS comments"
 		+ " FROM " + fromTable
 		+ " INNER JOIN support.users AS u ON t.owner = u.id"
-		+ " LEFT JOIN support.attachments AS a ON t.id = a.ticket_id"
 		+ " LEFT JOIN support.comments AS c ON t.id = c.ticket_id"
 		+ " LEFT JOIN support.users AS v ON c.owner = v.id"
 		+ " " + whereClause
@@ -630,62 +637,72 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 		return this.toTicketHandler(handler, null);
 	}
 
-	private Handler<Either<String, JsonObject>> toTicketHandler(Handler<Either<String, Ticket>> handler, JsonArray additionalAttachments)
-	{
-		return new Handler<Either<String, JsonObject>>()
-		{
-			@Override
-			public void handle(Either<String, JsonObject> result)
-			{
-				if(result.isLeft() == true)
-					handler.handle(new Either.Left<String, Ticket>(result.left().getValue()));
-				else
-				{
-					JsonObject sqlTicket = result.right().getValue();
+	private Handler<Either<String, JsonObject>> toTicketHandler(Handler<Either<String, Ticket>> handler,
+																JsonArray additionalAttachments) {
+		return result -> {
+			if (result.isLeft()) {
+				handler.handle(new Either.Left<String, Ticket>(result.left().getValue()));
+			} else {
+				JsonObject sqlTicket = result.right().getValue();
 
-					Ticket ticket = new Ticket(sqlTicket.getInteger("id"));
-					ticket.status = TicketStatus.fromStatus(sqlTicket.getInteger("status"));
-					ticket.subject = sqlTicket.getString("subject");
-					ticket.description = sqlTicket.getString("description");
-					ticket.category = sqlTicket.getString("category");
-					ticket.schoolId = sqlTicket.getString("school_id");
-					ticket.ownerId = sqlTicket.getString("owner_id", sqlTicket.getString("owner"));
-					ticket.ownerName = sqlTicket.getString("owner_name");
-					ticket.created = sqlTicket.getString("created");
-					ticket.modified = sqlTicket.getString("modified");
-					ticket.escalationStatus = sqlTicket.getInteger("escalation_status");
-					ticket.escalationDate = sqlTicket.getString("escalation_date");
-					ticket.issueUpdateDate = sqlTicket.getString("issue_update_date");
-					ticket.locale = sqlTicket.getString("locale");
+				Ticket ticket = new Ticket(sqlTicket.getInteger("id"));
+				ticket.status = TicketStatus.fromStatus(sqlTicket.getInteger("status"));
+				ticket.subject = sqlTicket.getString("subject");
+				ticket.description = sqlTicket.getString("description");
+				ticket.category = sqlTicket.getString("category");
+				ticket.schoolId = sqlTicket.getString("school_id");
+				ticket.ownerId = sqlTicket.getString("owner_id", sqlTicket.getString("owner"));
+				ticket.ownerName = sqlTicket.getString("owner_name");
+				ticket.created = sqlTicket.getString("created");
+				ticket.modified = sqlTicket.getString("modified");
+				ticket.escalationStatus = sqlTicket.getInteger("escalation_status");
+				ticket.escalationDate = sqlTicket.getString("escalation_date");
+				ticket.issueUpdateDate = sqlTicket.getString("issue_update_date");
+				ticket.locale = sqlTicket.getString("locale");
 
-					JsonArray attachments = new JsonArray(sqlTicket.getString("attachments", "[]"));
-					JsonArray attachmentsNames = new JsonArray(sqlTicket.getString("attachmentsNames", sqlTicket.getString("attachmentsnames", "[]")));
-					
-					for(int i = 0; i < attachments.size(); ++i) {
-						// check if attachementsNames size and attachmentsNames.getString(i) exits and is not empty
-						if(attachmentsNames.size() > i && attachmentsNames.getString(i) != null && !attachmentsNames.getString(i).isEmpty()) {
-							ticket.attachments.add(new WorkspaceAttachment(null, attachmentsNames.getString(i), attachments.getString(i)));
-						} else {
-							ticket.attachments.add(new WorkspaceAttachment(null, ("Attachement_" + attachments.getString(i)), attachments.getString(i)));
-						}
+				JsonArray attachments = new JsonArray(sqlTicket.getString("attachments", "[]"));
+				Map<Long, List<Attachment>> attachmentsByCommentId = new HashMap<>();
+
+				for (int i = 0; i < attachments.size(); ++i) {
+					JsonObject att = attachments.getJsonObject(i);
+					String documentId = att.getString("document_id");
+					String name = att.getString("name", "Attachment_" + documentId);
+					Long commentId = att.getLong("comment_id");
+					WorkspaceAttachment wa = new WorkspaceAttachment(null, name, documentId);
+					ticket.attachments.add(wa);
+					if (commentId != null) {
+						attachmentsByCommentId.computeIfAbsent(commentId, k -> new ArrayList<>()).add(wa);
 					}
-
-					if(additionalAttachments != null)
-						for(int i = 0; i < additionalAttachments.size(); ++i)
-						{
-							JsonObject att = additionalAttachments.getJsonObject(i);
-							ticket.attachments.add(new WorkspaceAttachment(null, att.getString("name"), null, att.getInteger("size"), att.getString("id")));
-						}
-
-					JsonArray comments = new JsonArray(sqlTicket.getString("comments", "[]"));
-					for(int i = 0; i < comments.size(); ++i)
-					{
-						JsonObject c = comments.getJsonObject(i);
-						ticket.comments.add(new Comment(c.getLong("id"), c.getString("content"), c.getString("owner_name"), c.getString("created")));
-					}
-
-					handler.handle(new Either.Right<String, Ticket>(ticket));
 				}
+
+				if (additionalAttachments != null) {
+					for (int i = 0; i < additionalAttachments.size(); ++i) {
+						JsonObject att = additionalAttachments.getJsonObject(i);
+						ticket.attachments.add(
+								new WorkspaceAttachment(
+										null,
+										att.getString("name"),
+										null,
+										att.getInteger("size"),
+										att.getString("id")
+								)
+						);
+					}
+				}
+
+				JsonArray comments = new JsonArray(sqlTicket.getString("comments", "[]"));
+				for (int i = 0; i < comments.size(); ++i) {
+					JsonObject c = comments.getJsonObject(i);
+					Comment comment = new Comment(c.getLong("id"), c.getString("content"),
+							c.getString("owner_name"), c.getString("created"));
+					List<Attachment> commentAtts = attachmentsByCommentId.get(comment.id.get());
+					if (commentAtts != null) {
+						comment.attachments = commentAtts;
+					}
+					ticket.comments.add(comment);
+				}
+
+				handler.handle(new Either.Right<String, Ticket>(ticket));
 			}
 		};
 	}
