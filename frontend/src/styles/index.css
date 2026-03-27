@@ -28,5 +28,23 @@
 }
 
 .search-bar button {
-    border-radius: 1.2rem;
+  border-radius: 1.2rem;
+}
+
+.ticket-status-info {
+  background-color: var(--edifice-info-200) !important;
+  color: var(--edifice-info-800) !important;
+  border: none !important;
+}
+
+.ticket-status-warning {
+  background-color: var(--edifice-warning-200) !important;
+  color: var(--edifice-warning-800) !important;
+  border: none !important;
+}
+
+.ticket-status-success {
+  background-color: var(--edifice-success-200) !important;
+  color: var(--edifice-success-800) !important;
+  border: none !important;
 }
