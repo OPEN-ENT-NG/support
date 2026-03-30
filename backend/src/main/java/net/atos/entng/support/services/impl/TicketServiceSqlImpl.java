@@ -127,7 +127,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 			// COCO-4341 Update description iif ticket is not already escalated.
 			if("description".equals(attr)) {
 				s.prepared(
-					"UPDATE support.tickets SET description = ? WHERE id = ? AND escalation_status NOT IN (?, ?)", 
+					"UPDATE support.tickets SET description = ? WHERE id = ? AND escalation_status NOT IN (?, ?)",
 					new JsonArray()
 					.add(data.getValue(attr))
 					.add(parseId(ticketId))
@@ -395,14 +395,20 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 		Function adminLocal = user.getFunctions().get(DefaultFunctions.ADMIN_LOCAL);
 		boolean isAdmin = superAdmin != null || adminLocal != null;
 
+		boolean allSchools = schoolIds != null && schoolIds.size() == 1 && schoolIds.get(0).equals("*");
+
 		if (isAdmin) {
 			List<String> scopesList = superAdmin != null ? superAdmin.getScope() : adminLocal.getScope();
-			if (schoolIds != null && !schoolIds.isEmpty()) {
-				query.append(" AND t.school_id IN ").append(Sql.listPrepared(schoolIds));
-				values.addAll(new JsonArray(schoolIds));
-			} else if (scopesList != null && !scopesList.isEmpty()) {
-				query.append(" AND t.school_id IN ").append(Sql.listPrepared(scopesList));
-				values.addAll(new JsonArray(scopesList));
+
+			if (scopesList != null && !scopesList.isEmpty()) {
+				query.append(" AND t.school_id IN ");
+				if (allSchools || schoolIds == null || schoolIds.isEmpty()) {
+					query.append(Sql.listPrepared(scopesList));
+					values.addAll(new JsonArray(scopesList));
+				} else {
+					query.append(Sql.listPrepared(schoolIds));
+					values.addAll(new JsonArray(schoolIds));
+				}
 			}
 
 			if (oneApplicant) {
@@ -412,7 +418,10 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 		} else {
 			query.append(" AND t.owner = ?");
 			values.add(user.getUserId());
-			if (schoolIds != null && !schoolIds.isEmpty()) {
+			if (allSchools) {
+				query.append(" AND t.school_id IN ").append(Sql.listPrepared(user.getStructures()));
+				values.addAll(new JsonArray(user.getStructures()));
+			} else if (schoolIds != null && !schoolIds.isEmpty()) {
 				query.append(" AND t.school_id IN ").append(Sql.listPrepared(schoolIds));
 				values.addAll(new JsonArray(schoolIds));
 			}
@@ -457,30 +466,20 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 				.append(" LEFT JOIN support.bug_tracker_issues AS i ON t.id=i.ticket_id");
 
 		JsonArray values = new JsonArray();
+		Function superAdmin = user.getFunctions().get(DefaultFunctions.SUPER_ADMIN);
 		Function adminLocal = user.getFunctions().get(DefaultFunctions.ADMIN_LOCAL);
-		if (adminLocal != null) {
-			List<String> scopesList = adminLocal.getScope();
-			if(scopesList != null && !scopesList.isEmpty()) {
-				query.append(" WHERE ((t.school_id IN (");
-				for (String scope : scopesList) {
-					query.append("?,");
-					values.add(scope);
-				}
-				query.deleteCharAt(query.length() - 1);
-				query.append("))");
+		List<String> scopesList = superAdmin != null ? superAdmin.getScope() : (adminLocal != null ? adminLocal.getScope() : null);
 
-				query.append(" OR t.owner = ?");
-				values.add(user.getUserId());
-				query.append(")");
-			}
-		}
-		else {
-			query.append(" WHERE t.school_id IN (?)");
-			values.add(user.getStructures().get(0)); // SUPER_ADMIN, has only 1 structure.
-		}
-
-		query.append(" AND t.id = ?");
-		values.add(id);
+		if (scopesList != null && !scopesList.isEmpty()) {
+            query.append(" WHERE (t.school_id IN ").append(Sql.listPrepared(scopesList));
+            values.addAll(new JsonArray(scopesList));
+            query.append(" OR t.owner = ?");
+            values.add(user.getUserId());
+            query.append(") AND t.id = ?");
+        } else {
+            query.append(" WHERE t.id = ?");
+        }
+        values.add(id);
 
 		sql.prepared(query.toString(), values, validResultHandler(handler));
 	}
@@ -949,7 +948,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 					}
 					handler.handle(new Either.Right<String, List<Issue>>(existing));
 				}
-			}	
+			}
 		}));
 	}
 
