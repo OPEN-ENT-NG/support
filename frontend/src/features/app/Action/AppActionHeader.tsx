@@ -5,6 +5,7 @@ import {
   Loading,
   Modal,
   useIsAdmc,
+  useIsAdml,
   useToast,
 } from '@edifice.io/react';
 import { useQueryClient } from '@tanstack/react-query';
@@ -51,6 +52,7 @@ export const AppActionHeader = () => {
   const canEscalate = useCanEscalate();
   const isTicketEscalated = useIsTicketEscalated();
   const { isAdmc } = useIsAdmc();
+  const { isAdml } = useIsAdml();
 
   const { ticketId } = useParams();
 
@@ -116,7 +118,7 @@ export const AppActionHeader = () => {
     () => [
       {
         id: 'export',
-        visibility: isListRoute,
+        visibility: isListRoute && (isAdml || isAdmc),
         element: (
           <Button
             leftIcon={<IconDownload />}
