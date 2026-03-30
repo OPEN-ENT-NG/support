@@ -20,7 +20,7 @@ type TicketCreateFormProps = {
   errors: FieldErrors<TicketCreateForm>;
   categories: SelectOption[];
   schoolOptions: SelectOption[];
-  editorRef: RefObject<EditorRef | null>;
+  editorRef: RefObject<EditorRef> | undefined;
   onAttachmentsChange: (attachments: TicketAttachment[]) => void;
 };
 

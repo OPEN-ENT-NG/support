@@ -1,5 +1,4 @@
 import { Badge, Flex } from '@edifice.io/react';
-import { Editor } from '@edifice.io/react/editor';
 import { IconInfoCircle } from '@edifice.io/react/icons';
 import {
   getTicketStatusText,
