@@ -105,6 +105,7 @@ export default ({ mode }: { mode: string }) => {
     test: {
       watch: false,
       globals: true,
+      passWithNoTests: true,
       environment: 'jsdom',
       include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
       setupFiles: ['./src/mocks/setup.ts'],
