@@ -38,9 +38,11 @@ export type PageAction = {
   element: ReactNode;
 };
 
+type InfoModalType = 'escalate' | 'sync' | null;
+
 export const AppActionHeader = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [infoModal, setInfoModal] = useState<'escalate' | 'sync' | null>(null);
+  const [infoModal, setInfoModal] = useState<InfoModalType>(null);
 
   const navigate = useNavigate();
   const toast = useToast();
@@ -105,6 +107,10 @@ export const AppActionHeader = () => {
       setIsLoading(false);
     }
   }, [ticketId, toast]);
+
+  const closeInfoModal = useCallback(() => {
+    setInfoModal(null);
+  }, []);
 
   const pageActions = useMemo<PageAction[]>(
     () => [
@@ -217,9 +223,9 @@ export const AppActionHeader = () => {
       <Modal
         id="info-modal-escalate"
         isOpen={infoModal === 'escalate'}
-        onModalClose={() => setInfoModal(null)}
+        onModalClose={closeInfoModal}
       >
-        <ModalHeader onModalClose={() => setInfoModal(null)}>
+        <ModalHeader onModalClose={closeInfoModal}>
           Transmettre au support ENT
         </ModalHeader>
         <ModalBody>
@@ -233,7 +239,7 @@ export const AppActionHeader = () => {
         </ModalBody>
         <ModalFooter>
           <Flex justify="end">
-            <Button onClick={() => setInfoModal(null)}>Fermer</Button>
+            <Button onClick={closeInfoModal}>Fermer</Button>
           </Flex>
         </ModalFooter>
       </Modal>
@@ -241,9 +247,9 @@ export const AppActionHeader = () => {
       <Modal
         id="info-modal-sync"
         isOpen={infoModal === 'sync'}
-        onModalClose={() => setInfoModal(null)}
+        onModalClose={closeInfoModal}
       >
-        <ModalHeader onModalClose={() => setInfoModal(null)}>
+        <ModalHeader onModalClose={closeInfoModal}>
           Synchronisation avec le ticket escaladé
         </ModalHeader>
         <ModalBody>
@@ -254,7 +260,7 @@ export const AppActionHeader = () => {
         </ModalBody>
         <ModalFooter>
           <Flex justify="end">
-            <Button onClick={() => setInfoModal(null)}>Fermer</Button>
+            <Button onClick={closeInfoModal}>Fermer</Button>
           </Flex>
         </ModalFooter>
       </Modal>
