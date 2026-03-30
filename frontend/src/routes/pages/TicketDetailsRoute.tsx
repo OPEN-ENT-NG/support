@@ -1,6 +1,6 @@
 import { Flex, LoadingScreen, useEdificeClient } from '@edifice.io/react';
 import { QueryClient } from '@tanstack/react-query';
-import { Ticket } from '~/features/ticket-read/components/Ticket';
+import { TicketRead } from '~/features/ticket-read/TicketRead';
 
 import { ticketsQueryKeys } from '~/services/queries/tickets';
 import {
@@ -48,7 +48,7 @@ export const Component = () => {
 
   return (
     <Flex direction="column" className="h-100">
-      <Ticket />
+      <TicketRead />
     </Flex>
   );
 };

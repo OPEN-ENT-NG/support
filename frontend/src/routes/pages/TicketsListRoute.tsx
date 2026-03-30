@@ -1,7 +1,7 @@
 import { matchPath } from 'react-router-dom';
 
 import { Flex } from '@edifice.io/react';
-import { TicketsList } from '~/features/tickets-list/components/TicketsList';
+import { TicketsList } from '~/features/tickets-list/TicketsList';
 import { basename } from '..';
 
 /** Check old format URL and redirect if needed */
