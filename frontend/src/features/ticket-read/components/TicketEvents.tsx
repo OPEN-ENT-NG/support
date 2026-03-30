@@ -36,7 +36,7 @@ export function TicketEvent({ event }: TicketEventProps) {
                 .{' '}
               </>
             )}
-            Le status est{' '}
+            Le statut est{' '}
             <Badge
               className={TICKET_STATUS_CLASS[event.status]}
               variant={{
