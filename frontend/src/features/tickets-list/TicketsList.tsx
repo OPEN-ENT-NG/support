@@ -1,14 +1,14 @@
 import { useSchools } from '~/services/queries/schools';
 import { useTickets, useTicketsPerPage } from '~/services/queries/tickets';
-import EmptyTicketsTable from './EmptyTicketsTable';
-import { TicketsFilters } from './TicketsFilters';
-import TicketsTable from './TicketsTable';
+import EmptyTicketsTable from './components/EmptyTicketsTable';
+import { TicketsFilters } from './components/TicketsFilters';
+import TicketsTable from './components/TicketsTable';
 import { Flex, LoadingScreen } from '@edifice.io/react';
 import { Pagination } from 'antd';
 import { useCallback, useState } from 'react';
 import { TicketFiltersState } from '~/models';
-import { useFilteredTickets } from '../hooks/useFilteredTickets';
-import { TicketsTypeSelector } from './TicketsTypeSelector';
+import { useFilteredTickets } from './hooks/useFilteredTickets';
+import { TicketsTypeSelector } from './components/TicketsTypeSelector';
 
 export function TicketsList() {
   const [filters, setFilters] = useState<TicketFiltersState>({

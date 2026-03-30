@@ -1,4 +1,4 @@
-import { TimelineItem } from './Ticket';
+import { TimelineItem } from '../TicketRead';
 import { TicketEvent } from './TicketEvents';
 import TicketComment from './TicketComment';
 

@@ -1,5 +1,5 @@
 import { Flex, LoadingScreen, useEdificeClient } from '@edifice.io/react';
-import { TicketCreate } from '~/features/ticket-create/components/TicketCreate';
+import { TicketCreate } from '~/features/ticket-create/TicketCreate';
 
 export const loader = async () => {
   return null;

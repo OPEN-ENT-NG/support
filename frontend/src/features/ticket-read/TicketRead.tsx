@@ -12,11 +12,11 @@ import {
   useTicketEvents,
 } from '~/services/queries/tickets';
 import { getAvatarURL } from '~/utils/getAvatarURL';
-import { useTicketEditForm } from '../hooks/useTicketEditForm';
-import { TicketCard } from './TicketCard';
-import TicketCommentForm from './TicketCommentForm';
-import TicketEditForm from './TicketEditForm';
-import TicketTimeline from './TicketTimeline';
+import { useTicketEditForm } from './hooks/useTicketEditForm';
+import { TicketCard } from './components/TicketCard';
+import TicketCommentForm from './components/TicketCommentForm';
+import TicketEditForm from './components/TicketEditForm';
+import TicketTimeline from './components/TicketTimeline';
 
 export type TimelineItem =
   | { type: 'event'; date: string; data: TicketEvent }
@@ -40,7 +40,7 @@ function sortTimelineItems(
   ].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 }
 
-export function Ticket() {
+export function TicketRead() {
   const { ticketId } = useParams();
   const ticket = useTicket(ticketId);
   const userProfile = useUserProfile(ticket?.owner);
