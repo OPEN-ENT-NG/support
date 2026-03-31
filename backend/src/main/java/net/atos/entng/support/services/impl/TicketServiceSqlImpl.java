@@ -368,8 +368,8 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 
 	@Override
 	public Future<JsonArray> listFilteredTickets(UserInfos user, Integer page, List<String> statuses,
-												 List<String> applicants, List<String> schoolIds, String sortBy,
-												 String order, Integer nbTicketsPerPage) {
+												 List<String> applicants, List<String> schoolIds, boolean allSchools,
+												 String sortBy, String order, Integer nbTicketsPerPage) {
 		Promise<JsonArray> promise = Promise.promise();
 		StringBuilder query = new StringBuilder();
 		JsonArray values = new JsonArray();
@@ -395,20 +395,16 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 		Function adminLocal = user.getFunctions().get(DefaultFunctions.ADMIN_LOCAL);
 		boolean isAdmin = superAdmin != null || adminLocal != null;
 
-		boolean allSchools = schoolIds != null && schoolIds.size() == 1 && schoolIds.get(0).equals("*");
-
 		if (isAdmin) {
 			List<String> scopesList = superAdmin != null ? superAdmin.getScope() : adminLocal.getScope();
+			boolean hasScope = scopesList != null && !scopesList.isEmpty();
 
-			if (scopesList != null && !scopesList.isEmpty()) {
-				query.append(" AND t.school_id IN ");
-				if (allSchools || schoolIds == null || schoolIds.isEmpty()) {
-					query.append(Sql.listPrepared(scopesList));
-					values.addAll(new JsonArray(scopesList));
-				} else {
-					query.append(Sql.listPrepared(schoolIds));
-					values.addAll(new JsonArray(schoolIds));
-				}
+			if (!allSchools && schoolIds != null && !schoolIds.isEmpty()) {
+				query.append(" AND t.school_id IN ").append(Sql.listPrepared(schoolIds));
+				values.addAll(new JsonArray(schoolIds));
+			} else if (hasScope) {
+				query.append(" AND t.school_id IN ").append(Sql.listPrepared(scopesList));
+				values.addAll(new JsonArray(scopesList));
 			}
 
 			if (oneApplicant) {

@@ -1,6 +1,6 @@
 import { Dropdown, Flex, SearchBar } from '@edifice.io/react';
 import { IconFilter } from '@edifice.io/react/icons';
-import { ChangeEvent } from 'react';
+import { ChangeEvent, useState } from 'react';
 
 import {
   School,
@@ -26,10 +26,6 @@ type TicketsStatusFilterProps = {
   onChange: (filters: TicketFiltersState) => void;
 };
 
-const ALL_STATUS_CODES = Object.keys(TICKET_STATUS_BY_CODE).map(
-  Number,
-) as TicketApiCode[];
-
 /*
  * Toggle item in the list and returns the updated list.
  * If the item is already in the list it is removed otherwise it is added
@@ -48,24 +44,21 @@ function TicketsSchoolFilter({
   onChange,
   schools,
 }: TicketsSchoolFilterProps) {
-  const allSchoolIds = schools.map((s) => s.id);
-  const isAllSelected =
-    filters.schools.length === 0 ||
-    (filters.schools.length === schools.length && schools.length > 0);
+  const [isAllChecked, setIsAllChecked] = useState(
+    filters.schools.length === 0,
+  );
 
   const handleSelectAll = () => {
-    onChange({
-      ...filters,
-      schools: isAllSelected ? [] : allSchoolIds,
-    });
+    setIsAllChecked((prev) => !prev);
+    onChange({ ...filters, schools: [] });
   };
 
   const handleSchoolToggle = (value: string | number) => {
-    const currentSchools =
-      filters.schools.length === 0 ? allSchoolIds : filters.schools;
+    const updated = toggleItem(filters.schools, value as string, []);
+    setIsAllChecked(updated.length === 0);
     onChange({
       ...filters,
-      schools: toggleItem(currentSchools, value as string, allSchoolIds),
+      schools: updated,
     });
   };
 
@@ -76,60 +69,49 @@ function TicketsSchoolFilter({
         icon={<IconFilter />}
         label="Établissement"
         badgeContent={
-          filters.schools.length === allSchoolIds.length
-            ? undefined
-            : filters.schools.length
+          filters.schools.length > 0 ? filters.schools.length : undefined
         }
       />
       <Dropdown.Menu>
         <Dropdown.CheckboxItem
-          model={isAllSelected ? ['all'] : []}
+          model={isAllChecked ? ['all'] : []}
           value="all"
           onChange={handleSelectAll}
         >
           Tous les établissements
         </Dropdown.CheckboxItem>
         <Dropdown.Separator />
-        {schools.map((school) => {
-          return (
-            <Dropdown.CheckboxItem
-              key={school.id}
-              model={
-                isAllSelected || filters.schools.includes(school.id)
-                  ? [school.id]
-                  : []
-              }
-              value={school.id}
-              onChange={handleSchoolToggle}
-            >
-              {school.name}
-            </Dropdown.CheckboxItem>
-          );
-        })}
+        <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
+          {schools.map((school) => {
+            return (
+              <Dropdown.CheckboxItem
+                key={school.id}
+                model={filters.schools.includes(school.id) ? [school.id] : []}
+                value={school.id}
+                onChange={handleSchoolToggle}
+              >
+                {school.name}
+              </Dropdown.CheckboxItem>
+            );
+          })}
+        </div>
       </Dropdown.Menu>
     </Dropdown>
   );
 }
 
 function TicketsStatusFilter({ filters, onChange }: TicketsStatusFilterProps) {
-  const isAllSelected = filters.status.length === ALL_STATUS_CODES.length;
+  const [isAllChecked, setIsAllChecked] = useState(filters.status.length === 0);
 
   const handleSelectAll = () => {
-    onChange({
-      ...filters,
-      status: isAllSelected ? [] : [...ALL_STATUS_CODES],
-    });
+    setIsAllChecked((prev) => !prev);
+    onChange({ ...filters, status: [] });
   };
 
   const handleStatusToggle = (value: string | number) => {
-    onChange({
-      ...filters,
-      status: toggleItem(
-        filters.status,
-        value as TicketApiCode,
-        ALL_STATUS_CODES,
-      ),
-    });
+    const updated = toggleItem(filters.status, value as TicketApiCode, []);
+    setIsAllChecked(updated.length === 0);
+    onChange({ ...filters, status: updated });
   };
 
   return (
@@ -139,14 +121,12 @@ function TicketsStatusFilter({ filters, onChange }: TicketsStatusFilterProps) {
         icon={<IconFilter />}
         label="Statut du ticket"
         badgeContent={
-          filters.status.length === ALL_STATUS_CODES.length
-            ? undefined
-            : filters.status.length
+          filters.status.length > 0 ? filters.status.length : undefined
         }
       />
       <Dropdown.Menu>
         <Dropdown.CheckboxItem
-          model={isAllSelected ? ['all'] : []}
+          model={isAllChecked ? ['all'] : []}
           value="all"
           onChange={handleSelectAll}
         >
