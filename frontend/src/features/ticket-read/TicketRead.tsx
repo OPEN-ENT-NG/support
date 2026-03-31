@@ -1,4 +1,4 @@
-import { Button, Flex, LoadingScreen } from '@edifice.io/react';
+import { Button, Flex, LoadingScreen, useUser } from '@edifice.io/react';
 import { IconArrowLeft } from '@edifice.io/react/icons';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTicketFormOptions } from '~/hooks';
@@ -11,7 +11,6 @@ import {
   useTicketComments,
   useTicketEvents,
 } from '~/services/queries/tickets';
-import { getAvatarURL } from '~/utils/getAvatarURL';
 import { useTicketEditForm } from './hooks/useTicketEditForm';
 import { TicketCard } from './components/TicketCard';
 import TicketCommentForm from './components/TicketCommentForm';
@@ -44,6 +43,7 @@ export function TicketRead() {
   const { ticketId } = useParams();
   const ticket = useTicket(ticketId);
   const userProfile = useUserProfile(ticket?.owner);
+  const { avatar } = useUser();
   const { categories, schoolOptions } = useTicketFormOptions();
   const { control, errors, isPending, onSubmit } = useTicketEditForm(ticket);
   const navigate = useNavigate();
@@ -57,7 +57,6 @@ export function TicketRead() {
     return <LoadingScreen />;
   }
 
-  const avatarUrl = getAvatarURL(ticket.owner);
   const timelineItems = sortTimelineItems(events, comments);
 
   return (
@@ -98,7 +97,7 @@ export function TicketRead() {
           bugTrackerIssue={bugTrackerIssue}
         />
         <TicketTimeline timelineItems={timelineItems} />
-        <TicketCommentForm ticket={ticket} avatarUrl={avatarUrl} />
+        <TicketCommentForm ticket={ticket} avatarUrl={avatar} />
       </Flex>
     </Flex>
   );
