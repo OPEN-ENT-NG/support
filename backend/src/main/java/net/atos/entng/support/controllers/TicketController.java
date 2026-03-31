@@ -1009,30 +1009,38 @@ public class TicketController extends ControllerHelper {
     @SecuredAction(value = "", type = ActionType.RESOURCE)
     @ResourceFilter(SuperAdminFilter.class)
     public void refreshTicketFromBugTracker(final HttpServerRequest request) {
-        final String issueIdStr = request.params().get("id");
+        final String ticketId = request.params().get("id");
 
-        if (issueIdStr == null || issueIdStr.isEmpty()) {
+        if (ticketId == null || ticketId.isEmpty()) {
             log.error("Error when trying to update bug tracker issue: Missing ticket ID");
             badRequest(request, "Missing ticket ID");
             return;
         }
 
-        final long issueId;
-        try {
-            issueId = Long.parseLong(issueIdStr);
-        } catch (NumberFormatException e) {
-            log.error("Error when trying to update bug tracker issue: Invalid ticket ID");
-            badRequest(request, "Invalid ticket ID format: " + issueIdStr);
-            return;
-        }
-
-        escalationService.refreshTicketFromBugTracker(issueId, res -> {
-            if (res.isLeft()) {
-                log.error("[Support] Failed to refresh issue " + issueId + ": " + res.left().getValue());
-                renderError(request, new JsonObject().put("Failed to refresh issue: " + issueId, res.left().getValue()));
-            } else {
-                ok(request);
+        ticketServiceSql.getIssue(ticketId, issueResult -> {
+            if (issueResult.isLeft()) {
+                log.error("[Support] Failed to get issue for ticket " + ticketId + ": " + issueResult.left().getValue());
+                renderError(request, new JsonObject().put("error", "Failed to get issue for ticket " + ticketId));
+                return;
             }
+
+            final Issue issue = issueResult.right().getValue();
+            final Number issueId = issue.id.get();
+
+            if (issueId == null) {
+                log.error("[Support] No bug tracker issue found for ticket " + ticketId);
+                badRequest(request, "No bug tracker issue found for ticket " + ticketId);
+                return;
+            }
+
+            escalationService.refreshTicketFromBugTracker(issueId, res -> {
+                if (res.isLeft()) {
+                    log.error("[Support] Failed to refresh issue " + issueId + ": " + res.left().getValue());
+                    renderError(request, new JsonObject().put("Failed to refresh issue: " + issueId, res.left().getValue()));
+                } else {
+                    ok(request);
+                }
+            });
         });
     }
 
