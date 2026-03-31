@@ -624,7 +624,7 @@ public class TicketController extends ControllerHelper {
                 .compose(structureChildren -> {
                     List<String> resolvedSchoolIds = getStructureIds(structureChildren);
                     return ticketServiceSql
-                            .listFilteredTickets(user, page, statuses, applicants, resolvedSchoolIds, sortBy, order, nbTicketsPerPage);
+                            .listFilteredTickets(user, page, statuses, applicants, resolvedSchoolIds, allSchools, sortBy, order, nbTicketsPerPage);
                 });
     }
 

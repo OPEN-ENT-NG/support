@@ -13,7 +13,7 @@ import { TicketsTypeSelector } from './components/TicketsTypeSelector';
 export function TicketsList() {
   const [filters, setFilters] = useState<TicketFiltersState>({
     search: '',
-    status: [1, 2, 3, 4, 5],
+    status: [],
     schools: [],
     type: 'all',
   });
