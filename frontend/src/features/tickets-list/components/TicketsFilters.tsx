@@ -200,7 +200,7 @@ export function TicketsFilters({
       />
 
       <Flex gap="16" align="center" wrap="wrap">
-        {schools.length > 0 && (
+        {schools.length > 1 && (
           <TicketsSchoolFilter
             schools={schools}
             onChange={onChange}
