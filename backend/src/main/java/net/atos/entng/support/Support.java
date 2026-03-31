@@ -74,8 +74,6 @@ public class Support extends BaseServer {
 
 	private Future<Void> initSupport(StorageFactory storageFactory, Map<String, Object> configMap) {
 
-		addController(new DisplayController());
-
 		BugTracker bugTrackerType;
 
 		// Default value to REDMINE for compatibility purpose
@@ -111,6 +109,7 @@ public class Support extends BaseServer {
 
         TicketController ticketController = new TicketController(serviceFactory);
 		addController(ticketController);
+		addController(new DisplayController());
 
 		SqlConf commentSqlConf = SqlConfs.createConf(CommentController.class.getName());
 		commentSqlConf.setTable("comments");
