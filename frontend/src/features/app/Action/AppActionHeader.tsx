@@ -102,13 +102,16 @@ export const AppActionHeader = () => {
     try {
       await refreshTicket(ticketId!);
       toast.success('Le ticket a été mis à jour.');
+      await queryClient.invalidateQueries({
+        queryKey: [ticketsQueryKeys.all()],
+      });
     } catch (e) {
       console.error(e);
       toast.error("Le ticket n'a pas pu être mis à jour.");
     } finally {
       setIsLoading(false);
     }
-  }, [ticketId, toast]);
+  }, [ticketId, toast, queryClient]);
 
   const closeInfoModal = useCallback(() => {
     setInfoModal(null);
@@ -204,6 +207,7 @@ export const AppActionHeader = () => {
       canEscalate,
       isTicketEscalated,
       isAdmc,
+      isAdml,
       isLoading,
       navigate,
       exportAllTickets,
