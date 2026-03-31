@@ -3,7 +3,7 @@ import { useTickets, useTicketsPerPage } from '~/services/queries/tickets';
 import EmptyTicketsTable from './components/EmptyTicketsTable';
 import { TicketsFilters } from './components/TicketsFilters';
 import TicketsTable from './components/TicketsTable';
-import { Flex, LoadingScreen } from '@edifice.io/react';
+import { Flex, LoadingScreen, useIsAdmlcOrAdmc } from '@edifice.io/react';
 import { Pagination } from 'antd';
 import { useCallback, useState } from 'react';
 import { TicketFiltersState } from '~/models';
@@ -11,6 +11,8 @@ import { useFilteredTickets } from './hooks/useFilteredTickets';
 import { TicketsTypeSelector } from './components/TicketsTypeSelector';
 
 export function TicketsList() {
+  const { isAdmlcOrAdmc } = useIsAdmlcOrAdmc();
+
   const [filters, setFilters] = useState<TicketFiltersState>({
     search: '',
     status: [],
@@ -49,7 +51,9 @@ export function TicketsList() {
         filters={filters}
         onChange={handleFiltersChange}
       />
-      <TicketsTypeSelector filters={filters} onChange={handleFiltersChange} />
+      {isAdmlcOrAdmc && (
+        <TicketsTypeSelector filters={filters} onChange={handleFiltersChange} />
+      )}
       {isPending ? (
         <Flex className="w-100" justify="center" align="center">
           <LoadingScreen />
