@@ -3,12 +3,7 @@ import { QueryClient } from '@tanstack/react-query';
 import { TicketRead } from '~/features/ticket-read/TicketRead';
 
 import { ticketsQueryKeys } from '~/services/queries/tickets';
-import {
-  getAttachmentById,
-  getTicketById,
-  getUserInfo,
-  getUserProfile,
-} from '~/services/api';
+import { getAttachmentById, getTicketById, getUserInfo } from '~/services/api';
 import { userQueryKeys } from '~/services/queries';
 /** Prefetch ticket data in React Query cache based on route param */
 export const loader =
@@ -21,13 +16,7 @@ export const loader =
         queryFn: () => getTicketById(ticketId),
       });
 
-      const ownerId = ticket[0]?.owner;
       await Promise.all([
-        ownerId &&
-          queryClient.ensureQueryData({
-            queryKey: userQueryKeys.profileById(String(ownerId)),
-            queryFn: () => getUserProfile(String(ownerId)),
-          }),
         queryClient.ensureQueryData({
           queryKey: userQueryKeys.appsByUserId(),
           queryFn: () => getUserInfo(),
