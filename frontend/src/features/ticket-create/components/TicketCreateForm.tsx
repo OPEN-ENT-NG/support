@@ -60,30 +60,32 @@ export default function TicketCreateForm({
             }
           />
         </FormControl>
-        <FormControl
-          id="school_id"
-          isRequired
-          status={errors.school_id ? 'invalid' : undefined}
-        >
-          <Label>Établissement</Label>
-          <input
-            type="hidden"
-            {...register('school_id', {
-              required: "L'établissement est obligatoire",
-            })}
-          />
-          <Select
-            size="lg"
-            options={schoolOptions}
-            placeholderOption="Sélectionnez l'établissement..."
-            onValueChange={(value) =>
-              setValue('school_id', value as string, {
-                shouldValidate: true,
-                shouldDirty: true,
-              })
-            }
-          />
-        </FormControl>
+        {schoolOptions.length > 1 && (
+          <FormControl
+            id="school_id"
+            isRequired
+            status={errors.school_id ? 'invalid' : undefined}
+          >
+            <Label>Établissement</Label>
+            <input
+              type="hidden"
+              {...register('school_id', {
+                required: "L'établissement est obligatoire",
+              })}
+            />
+            <Select
+              size="lg"
+              options={schoolOptions}
+              placeholderOption="Sélectionnez l'établissement..."
+              onValueChange={(value) =>
+                setValue('school_id', value as string, {
+                  shouldValidate: true,
+                  shouldDirty: true,
+                })
+              }
+            />
+          </FormControl>
+        )}
       </Flex>
 
       <FormControl

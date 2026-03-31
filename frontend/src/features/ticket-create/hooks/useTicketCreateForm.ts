@@ -9,6 +9,7 @@ import { createTicket, escalateTickets } from '~/services';
 import { ticketsQueryKeys } from '~/services/queries/tickets';
 import { buildAttachmentsFromEditor } from '~/utils';
 import { TicketCreateForm } from '../components/TicketCreateForm';
+import { useSchools } from '~/services/queries/schools';
 
 export function useTicketCreateForm() {
   const [isPending, setIsPending] = useState(false);
@@ -17,6 +18,7 @@ export function useTicketCreateForm() {
   const navigate = useNavigate();
   const toast = useToast();
   const queryClient = useQueryClient();
+  const { schools } = useSchools();
 
   const {
     register,
@@ -27,7 +29,7 @@ export function useTicketCreateForm() {
     mode: 'onTouched',
     defaultValues: {
       category: '',
-      school_id: '',
+      school_id: schools.length > 1 ? '' : schools[0].id,
       subject: '',
       description: '<p></p>',
     },
