@@ -378,9 +378,33 @@ public class TicketController extends ControllerHelper {
         UserUtils.getUserInfos(eb, request, user -> {
             if (user != null) {
                 RequestUtils.bodyToJson(request, pathPrefix + "updateTicket", ticket -> {
-                    // TODO : do not authorize description update if there is a comment
-                    ticketServiceSql.updateTicket(ticketId, ticket, user,
-                            getCreateOrUpdateTicketHandler(request, user, ticket, ticketId));
+
+                    if (ticket.containsKey("category")) {
+                        eb.request("portal", new JsonObject().put("action", "getI18n"))
+                                .onSuccess(portalI18nMessage -> {
+                                    JsonObject portalI18n = (JsonObject) portalI18nMessage.body();
+                                    JsonObject moduleI18n = I18n.getInstance().load(request);
+
+                                    String displayName = user.getApps().stream()
+                                            .filter(app -> app.getAddress().equals(ticket.getString("category")))
+                                            .map(UserInfos.Application::getDisplayName).findFirst().orElse("other");
+
+                                    String categoryLabel = moduleI18n.getString(displayName, null);
+                                    if (categoryLabel == null) categoryLabel = portalI18n.getString(displayName, null);
+
+                                    ticket.put("category_label", categoryLabel != null ? categoryLabel : displayName);
+
+                                    ticketServiceSql.updateTicket(ticketId, ticket, user,
+                                            getCreateOrUpdateTicketHandler(request, user, ticket, ticketId));
+                                }).onFailure(err -> {
+                                    String errorMessage = "[Support@TicketController::updateTicket] Failed to fill ticket without category label : ";
+                                    log.error(errorMessage + err.getMessage());
+                                    renderError(request, new JsonObject().put("error", err.getMessage()));
+                                });
+                    } else {
+                        ticketServiceSql.updateTicket(ticketId, ticket, user,
+                                getCreateOrUpdateTicketHandler(request, user, ticket, ticketId));
+                    }
                 });
             } else {
                 log.debug("User not found in session.");
