@@ -120,7 +120,7 @@ export default function TicketEditForm({
           placeholder="Profil"
           size="md"
           type="text"
-          value={userProfile ?? ''}
+          value={userProfile ?? ' '}
           disabled
         />
       </FormControl>
