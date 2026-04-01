@@ -20,11 +20,11 @@ export default function TicketCommentForm({
   avatarUrl,
 }: TicketCommentFormProps) {
   const [isEmpty, setIsEmpty] = useState(true);
+  const [attachments, setAttachments] = useState<TicketAttachment[]>([]);
 
   const contentRef = useRef('');
   const tiptapRef = useRef<any>(null);
   const editorRef = useRef<EditorRef>(null);
-  const uploadedAttachmentsRef = useRef<TicketAttachment[]>([]);
   const toast = useToast();
 
   const mutation = useMutation({
@@ -36,7 +36,7 @@ export default function TicketCommentForm({
     onSuccess: () => {
       contentRef.current = '';
       tiptapRef.current?.commands.clearContent();
-      uploadedAttachmentsRef.current = [];
+      setAttachments([]);
       setIsEmpty(true);
       queryClient.invalidateQueries({ queryKey: [ticketsQueryKeys.all()] });
     },
@@ -48,12 +48,9 @@ export default function TicketCommentForm({
 
   const handleSubmit = async () => {
     const editorAttachments = await buildAttachmentsFromEditor(editorRef);
-    const attachments = [
-      ...editorAttachments,
-      ...uploadedAttachmentsRef.current,
-    ];
+    const allAttachments = [...editorAttachments, ...attachments];
 
-    mutation.mutate(attachments);
+    mutation.mutate(allAttachments);
   };
 
   return (
@@ -80,9 +77,8 @@ export default function TicketCommentForm({
           />
         </div>
         <TicketAddAttachment
-          onChange={(attachments) => {
-            uploadedAttachmentsRef.current = attachments;
-          }}
+          attachments={attachments}
+          onChange={setAttachments}
         />
         <Flex justify="end">
           <Button
