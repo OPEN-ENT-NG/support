@@ -1,4 +1,4 @@
-import { Button, Flex } from '@edifice.io/react';
+import { Button, Checkbox, Flex } from '@edifice.io/react';
 import { ReactNode } from 'react';
 import { Ticket } from '~/models';
 
@@ -12,20 +12,31 @@ export type ToolbarAction = {
 
 export type TicketsTableToolbarProps = {
   selectedTickets: Ticket[];
+  totalCount: number;
+  handleSelectAll: () => void;
   actions: ToolbarAction[];
 };
 
 export function TicketsTableToolbar({
   selectedTickets,
+  totalCount,
+  handleSelectAll,
   actions,
 }: TicketsTableToolbarProps) {
   const selectedCount = selectedTickets.length;
+  const allSelected = selectedCount === totalCount && totalCount > 0;
+  const indeterminate = selectedCount > 0 && !allSelected;
   const visibleActions = actions.filter((action) => action.isVisible !== false);
 
   return (
     <tr>
       <td colSpan={11}>
-        <Flex align="center" gap="4">
+        <Flex className="tickets-table-toolbar" align="center" gap="16">
+          <Checkbox
+            checked={allSelected}
+            indeterminate={indeterminate}
+            onChange={() => handleSelectAll()}
+          />
           <span>({selectedCount})</span>
           {visibleActions.map((action) => (
             <Button
