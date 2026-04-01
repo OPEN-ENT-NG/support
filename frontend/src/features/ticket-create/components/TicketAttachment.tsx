@@ -4,32 +4,28 @@ import { type TicketAttachment } from '~/models';
 import { uploadAttachment } from '~/services';
 
 interface TicketAttachmentProps {
-  onChange: (attachments: TicketAttachment[]) => void;
+  onChange: (updater: (prev: TicketAttachment[]) => TicketAttachment[]) => void;
+  attachments: TicketAttachment[];
 }
 
 export default function TicketAddAttachment({
   onChange,
+  attachments,
 }: TicketAttachmentProps) {
-  const [attachments, setAttachments] = useState<TicketAttachment[]>([]);
   const [isMutating, setIsMutating] = useState(false);
-
-  const updateAttachments = (updated: TicketAttachment[]) => {
-    setAttachments(updated);
-    onChange(updated);
-  };
 
   const handleFilesSelected = async (files: File[]) => {
     setIsMutating(true);
     try {
       const uploaded = await Promise.all(files.map(uploadAttachment));
-      updateAttachments([...attachments, ...uploaded]);
+      onChange((prev) => [...prev, ...uploaded]);
     } finally {
       setIsMutating(false);
     }
   };
 
   const handleRemoveAttachment = (attachmentId: string) => {
-    updateAttachments(attachments.filter((a) => a.id !== attachmentId));
+    onChange((prev) => prev.filter((a) => a.id !== attachmentId));
   };
 
   const displayedAttachments = useMemo(

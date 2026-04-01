@@ -1,6 +1,6 @@
 import { Flex, FormControl, Input, Label, Select } from '@edifice.io/react';
 import { Editor, EditorRef } from '@edifice.io/react/editor';
-import { RefObject } from 'react';
+import { RefObject, useState } from 'react';
 import { FieldErrors, UseFormRegister, UseFormSetValue } from 'react-hook-form';
 import { TicketAttachment } from '~/models';
 import TicketAddAttachment from './TicketAttachment';
@@ -33,6 +33,18 @@ export default function TicketCreateForm({
   editorRef,
   onAttachmentsChange,
 }: TicketCreateFormProps) {
+  const [attachments, setAttachments] = useState<TicketAttachment[]>([]);
+
+  const handleAttachmentsChange = (
+    updater: (prev: TicketAttachment[]) => TicketAttachment[],
+  ) => {
+    setAttachments((prev) => {
+      const updated = updater(prev);
+      onAttachmentsChange(updated);
+      return updated;
+    });
+  };
+
   return (
     <>
       <Flex direction="row" wrap="wrap" gap="8">
@@ -134,7 +146,10 @@ export default function TicketCreateForm({
         </div>
       </FormControl>
 
-      <TicketAddAttachment onChange={onAttachmentsChange} />
+      <TicketAddAttachment
+        attachments={attachments}
+        onChange={handleAttachmentsChange}
+      />
     </>
   );
 }
