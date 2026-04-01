@@ -47,6 +47,7 @@ import net.atos.entng.support.constants.JiraTicket;
 import net.atos.entng.support.enums.BugTrackerSyncType;
 import net.atos.entng.support.enums.Error;
 import net.atos.entng.support.enums.TicketHisto;
+import net.atos.entng.support.enums.TicketStatus;
 import net.atos.entng.support.export.TicketsCSVExport;
 import net.atos.entng.support.filters.Admin;
 import net.atos.entng.support.filters.AdminOfTicketsStructure;
@@ -207,6 +208,17 @@ public class TicketController extends ControllerHelper {
                                         }
                                     });
                         } else {
+                            if (response.status == TicketStatus.RESOLVED || response.status == TicketStatus.CLOSED) {
+                                ticketServiceSql.createTicketHisto(ticketId, I18n.getInstance()
+                                                .translate("support.ticket.histo.modification", getHost(request),
+                                                        I18n.acceptLanguage(request)), TicketStatus.OPENED.status(),
+                                        user.getUserId(), TicketHisto.UPDATED, res -> {
+                                            if (res.isLeft()) {
+                                                log.error("Error creation historization : " + res.left().getValue());
+                                            }
+                                        });
+                            }
+
                             // if option activated, we can send the comment directly to the bug-tracker
                             if( bugTrackerCommDirect && (attachments == null || attachments.size() == 0)) {
                                 sendTicketUpdateToIssue(request, ticketId, ticket, user, false);

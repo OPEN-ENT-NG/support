@@ -149,19 +149,31 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 
 		String updateTicketQuery = "UPDATE support.tickets" +
 				" SET " + sb.toString() + "modified = timezone('UTC', NOW()) " +
-				"WHERE id = ? RETURNING id, modified, subject, owner, school_id";
+				"WHERE id = ? RETURNING id, modified, subject, owner, school_id, status";
 		s.prepared(updateTicketQuery, values);
 
 		// 3. Insert comment(s)
 		String comment = data.getString("newComment", null);
 		JsonArray comments = data.getJsonArray("newComments", new JsonArray());
 		String insertCommentQuery = "INSERT INTO support.comments (ticket_id, owner, content) VALUES(?, ?, ?)";
+		String reopenTicketOnComment = "UPDATE support.tickets SET status = ?, modified = timezone('UTC', NOW()) WHERE id = ? AND status IN (?, ?)";
+
+		JsonArray reopenTicketOnCommentValues = new JsonArray();
+
 		if(comment != null && !comment.trim().isEmpty()) {
 			JsonArray commentValues = new JsonArray();
 			commentValues.add(parseId(ticketId))
 				.add(user.getUserId())
 				.add(comment);
 			s.prepared(insertCommentQuery, commentValues);
+
+			reopenTicketOnCommentValues
+					.add(TicketStatus.OPENED.status())
+					.add(parseId(ticketId))
+					.add(TicketStatus.RESOLVED.status())
+					.add(TicketStatus.CLOSED.status());
+
+			s.prepared(reopenTicketOnComment, reopenTicketOnCommentValues);
 		} else if ( comments.size() > 0 ) {
 			for(Object o : comments) {
 				String newComment = (String)o;
@@ -176,6 +188,13 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 						.add(contentOfComment);
 				s.prepared(insertCommentQuery, commentValues);
 			}
+
+			reopenTicketOnCommentValues
+					.add(TicketStatus.OPENED.status())
+					.add(parseId(ticketId))
+					.add(TicketStatus.RESOLVED.status())
+					.add(TicketStatus.CLOSED.status());
+			s.prepared(reopenTicketOnComment, reopenTicketOnCommentValues);
 		}
 
 		// 4. Insert attachments
