@@ -15,6 +15,7 @@ export function useTicketEditForm(ticket: Ticket | undefined) {
     control,
     formState: { errors },
     handleSubmit,
+    reset,
   } = useForm<TicketEditFormValues>({
     mode: 'onTouched',
     defaultValues: {
@@ -23,6 +24,16 @@ export function useTicketEditForm(ticket: Ticket | undefined) {
       status: ticket ? String(ticket.status) : '',
     },
   });
+
+  useEffect(() => {
+    if (ticket) {
+      reset({
+        school_id: ticket.school_id ?? '',
+        category: ticket.category ?? '',
+        status: String(ticket.status),
+      });
+    }
+  }, [ticket, reset]);
 
   const mutation = useMutation({
     mutationFn: (formData: TicketEditFormValues) =>
