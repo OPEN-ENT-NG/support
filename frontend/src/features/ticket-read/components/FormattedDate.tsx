@@ -1,7 +1,15 @@
 import { Tooltip, useDate } from '@edifice.io/react';
 
+// if the backend omits a timezone indicator, assume UTC
+// (same behaviour as the old Angular code)
+function toUtcString(dateStr: string): string {
+  if (/^.*Z.*$/.test(dateStr)) return dateStr;
+  return dateStr + 'Z';
+}
+
 export default function FormattedDate({ date }: { date: string }) {
   const { fromNow, formatDate } = useDate();
+  const utcDate = toUtcString(date);
 
   const formattedDate = (dateStr: string) => {
     const dateObj = new Date(dateStr);
@@ -28,8 +36,8 @@ export default function FormattedDate({ date }: { date: string }) {
   };
 
   return (
-    <Tooltip message={formatDate(date, 'lll')} placement="top">
-      <span>{formattedDate(date)}</span>
+    <Tooltip message={formatDate(utcDate, 'lll')} placement="top">
+      <span>{formattedDate(utcDate)}</span>
     </Tooltip>
   );
 }
