@@ -45,7 +45,7 @@ export function TicketsList() {
   }, []);
 
   return (
-    <Flex direction="column" gap="12">
+    <Flex direction="column" gap="12" className="mb-24">
       <TicketsFilters
         schools={schools}
         filters={filters}

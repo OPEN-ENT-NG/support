@@ -1,205 +1,19 @@
-/* Import Table component from Edifice UI library */
-import {
-  Badge,
-  Checkbox,
-  Table,
-  useIsAdmc,
-  useIsAdml,
-  useToast,
-} from '@edifice.io/react';
+import { Table, useIsAdmlcOrAdmc, useToast } from '@edifice.io/react';
 import {
   IconDownload,
   IconFullScreen,
   IconGroupAvatar,
 } from '@edifice.io/react/icons';
 import { useQueryClient } from '@tanstack/react-query';
-import { memo, useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  ApiProfile,
-  ESCALATION_STATUS,
-  School,
-  Ticket,
-  TICKET_STATUS_CLASS,
-  getTicketStatusText,
-  mapApiProfileToProfile,
-} from '~/models';
+import { ESCALATION_STATUS, School, Ticket } from '~/models';
 import { escalateTickets, exportTickets } from '~/services/api';
 import { ticketsQueryKeys } from '~/services/queries/tickets';
-import { formaterDate } from '~/utils';
-import { TicketsTableToolbar, ToolbarAction } from './TicketsTableToolbar';
 import { useCanEscalate } from '~/hooks/useCanEscalate';
-
-interface Column {
-  header: string;
-  accessorKey: keyof Ticket;
-}
-
-const columns: Column[] = [
-  { header: 'ID', accessorKey: 'id' },
-  { header: 'Statut', accessorKey: 'status' },
-  { header: 'Sujet', accessorKey: 'short_desc' },
-  { header: 'Catégorie', accessorKey: 'category_label' },
-  { header: 'Établissement', accessorKey: 'school_id' },
-  { header: 'Demandeur', accessorKey: 'owner_name' },
-  { header: 'Profil', accessorKey: 'profile' },
-  { header: 'Dernière modification', accessorKey: 'modified' },
-  { header: 'Evénements', accessorKey: 'event_count' },
-  { header: 'Escaladé', accessorKey: 'escalation_date' },
-];
-
-type TicketRowProps = {
-  ticket: Ticket;
-  school: School;
-  ticketSelectionCallBack: (ticket: Ticket) => void;
-  ticketSelected: boolean;
-};
-
-type TicketTableColumn = {
-  id: keyof Ticket;
-  header: string;
-  cell?: (ticket: Ticket, school?: School) => React.ReactNode;
-};
-
-const ticketTableColumns: TicketTableColumn[] = [
-  { id: 'id', header: 'ID' },
-  {
-    id: 'status',
-    header: 'Statut',
-    cell: (ticket: Ticket) => {
-      return (
-        <Badge
-          className={TICKET_STATUS_CLASS[ticket.status]}
-          variant={{
-            type: 'beta',
-          }}
-        >
-          {getTicketStatusText(ticket.status).charAt(0).toUpperCase() +
-            getTicketStatusText(ticket.status).slice(1)}
-        </Badge>
-      );
-    },
-  },
-  {
-    id: 'short_desc',
-    header: 'Sujet',
-    cell: (ticket: Ticket) => {
-      return (
-        <>
-          <strong>
-            {ticket.subject.length > 25
-              ? ticket.subject.substring(0, 25) + '...'
-              : ticket.subject}
-          </strong>
-        </>
-      );
-    },
-  },
-  {
-    id: 'category_label',
-    header: 'Catégorie',
-    cell: (ticket: Ticket) =>
-      ticket.category_label ? ticket.category_label : '-',
-  },
-  {
-    id: 'school_id',
-    header: 'Structure du demandeur',
-    cell: (_: Ticket, school?: School) => <>{school?.name}</>,
-  },
-  { id: 'owner_name', header: 'Demandeur' },
-  {
-    id: 'profile',
-    header: 'Profil',
-    cell: (ticket: Ticket) => {
-      const profile = mapApiProfileToProfile(
-        ticket.profile as ApiProfile,
-      )?.toLowerCase();
-
-      const className = `user-profile-${profile}`;
-
-      if (!profile) return <>{ticket.profile ?? ''}</>;
-      return (
-        <strong>
-          <span className={className}>{ticket.profile}</span>
-        </strong>
-      );
-    },
-  },
-  {
-    id: 'modified',
-    header: 'Dernière modification',
-    cell: (ticket: Ticket) => formaterDate(ticket.modified),
-  },
-  { id: 'event_count', header: 'Evénements' },
-  {
-    id: 'escalation_date',
-    header: 'Escaladé',
-    cell: (ticket: Ticket) =>
-      ticket.escalation_date ? formaterDate(ticket.escalation_date) : '-',
-  },
-];
-
-const TicketsTableRow = memo(function TicketsTableRow({
-  ticket,
-  school,
-  ticketSelectionCallBack,
-  ticketSelected,
-}: TicketRowProps) {
-  const navigate = useNavigate();
-
-  return (
-    <Table.Tr>
-      <Table.Td>
-        <Checkbox
-          onChange={() => ticketSelectionCallBack(ticket)}
-          checked={ticketSelected}
-        />
-      </Table.Td>
-      {ticketTableColumns.map((column) => (
-        <Table.Td
-          role="button"
-          key={column.id}
-          onClick={() => navigate(`/tickets/${ticket.id}`)}
-        >
-          {column.cell ? column.cell(ticket, school) : ticket[column.id]}
-        </Table.Td>
-      ))}
-    </Table.Tr>
-  );
-});
-
-type TicketTableHeaderProps = {
-  columns: Column[];
-  handleSelectAll: () => void;
-  selectedTickets: Ticket[];
-  totalCount: number;
-};
-
-function TicketsTableHeader(props: TicketTableHeaderProps) {
-  const { columns, handleSelectAll, selectedTickets, totalCount } = props;
-
-  const selectedCount = selectedTickets.length;
-  const allSelected = selectedCount === totalCount && totalCount > 0;
-  const indeterminate = selectedCount > 0 && !allSelected;
-
-  return (
-    <Table.Thead>
-      <Table.Tr className="align-middle">
-        <Table.Th>
-          <Checkbox
-            className="m-auto"
-            checked={allSelected}
-            indeterminate={indeterminate}
-            onChange={() => handleSelectAll()}
-          />
-        </Table.Th>{' '}
-        {columns.map((column) => (
-          <Table.Th key={column.accessorKey}>{column.header}</Table.Th>
-        ))}
-      </Table.Tr>
-    </Table.Thead>
-  );
-}
+import { TicketsTableToolbar, ToolbarAction } from './TicketsTableToolbar';
+import TicketsTableHeader from './TicketsTableHeader';
+import TicketsTableRow from './TicketsTableRow';
 
 export type TicketsTableProps = {
   tickets?: Ticket[];
@@ -208,8 +22,7 @@ export type TicketsTableProps = {
 
 function TicketsTable({ tickets = [], schools = [] }: TicketsTableProps) {
   const navigate = useNavigate();
-  const { isAdmc } = useIsAdmc();
-  const { isAdml } = useIsAdml();
+  const { isAdmlcOrAdmc } = useIsAdmlcOrAdmc();
   const [selectedTickets, setSelectedTickets] = useState<Ticket[]>([]);
   const escalateWorkflow = useCanEscalate();
   const toast = useToast();
@@ -243,7 +56,7 @@ function TicketsTable({ tickets = [], schools = [] }: TicketsTableProps) {
         onClick: () => {
           exportTickets(selectedTickets.map((t) => t.id.toString()));
         },
-        isVisible: (selectedTickets.length > 0 && (isAdmc || isAdml)) ?? false,
+        isVisible: selectedTickets.length > 0 && isAdmlcOrAdmc,
       },
       {
         id: 'transfer',
@@ -275,8 +88,7 @@ function TicketsTable({ tickets = [], schools = [] }: TicketsTableProps) {
     [
       selectedTickets,
       navigate,
-      isAdmc,
-      isAdml,
+      isAdmlcOrAdmc,
       escalateWorkflow,
       toast,
       queryClient,
@@ -291,27 +103,22 @@ function TicketsTable({ tickets = [], schools = [] }: TicketsTableProps) {
 
   const handleTicketSelection = useCallback((ticket: Ticket) => {
     setSelectedTickets((prevSelected) => {
-      if (prevSelected.find((t) => t.id === ticket.id)) {
-        return prevSelected.filter((t) => t.id !== ticket.id);
-      } else {
-        return [...prevSelected, ticket];
-      }
+      return prevSelected.some((t) => t.id === ticket.id)
+        ? prevSelected.filter((t) => t.id !== ticket.id)
+        : [...prevSelected, ticket];
     });
   }, []);
 
   return (
     <div className="overflow-x-auto w-100">
       <Table>
-        <TicketsTableHeader
-          columns={columns}
-          handleSelectAll={handleSelectAll}
-          selectedTickets={selectedTickets}
-          totalCount={tickets.length}
-        />
+        <TicketsTableHeader isAdmlcOrAdmc={isAdmlcOrAdmc} />
         <Table.Tbody>
-          {selectedTickets.length > 0 && (
+          {isAdmlcOrAdmc && (
             <TicketsTableToolbar
               selectedTickets={selectedTickets}
+              totalCount={tickets.length}
+              handleSelectAll={handleSelectAll}
               actions={actions}
             />
           )}
@@ -322,6 +129,7 @@ function TicketsTable({ tickets = [], schools = [] }: TicketsTableProps) {
               ticketSelectionCallBack={handleTicketSelection}
               ticketSelected={selectedTicketIds.has(ticket.id)}
               school={schoolById.get(ticket.school_id) as School}
+              isAdmlcOrAdmc={isAdmlcOrAdmc}
             />
           ))}
         </Table.Tbody>

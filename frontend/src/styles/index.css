@@ -48,3 +48,7 @@
   color: var(--edifice-success-800) !important;
   border: none !important;
 }
+
+.tickets-table-toolbar {
+  height: 35px;
+}
