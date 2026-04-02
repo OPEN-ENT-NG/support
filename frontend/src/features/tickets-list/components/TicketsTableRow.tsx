@@ -9,7 +9,7 @@ type TicketRowProps = {
   school: School;
   ticketSelectionCallBack: (ticket: Ticket) => void;
   ticketSelected: boolean;
-  isAdmlcOrAdmc: boolean;
+  canMultiSelect: boolean;
 };
 
 const TicketsTableRow = memo(function TicketsTableRow({
@@ -17,13 +17,13 @@ const TicketsTableRow = memo(function TicketsTableRow({
   school,
   ticketSelectionCallBack,
   ticketSelected,
-  isAdmlcOrAdmc,
+  canMultiSelect,
 }: TicketRowProps) {
   const navigate = useNavigate();
 
   return (
     <Table.Tr>
-      {isAdmlcOrAdmc && (
+      {canMultiSelect && (
         <Table.Td>
           <Checkbox
             onChange={() => ticketSelectionCallBack(ticket)}
