@@ -27,9 +27,11 @@ export const TicketDetailsHeader = ({ ticket }: TicketDetailsHeaderProps) => {
           size="md"
         />
         <Flex gap="8">
-          <p className="small user-profile-relative">
-            <strong>{ticket.owner_name}</strong>
-          </p>
+          <a href={`/userbook/annuaire#${ticket.owner}`}>
+            <p className="small user-profile-relative">
+              <strong>{ticket.owner_name}</strong>
+            </p>
+          </a>
           <p className="small">
             <FormattedDate date={ticket.created} />
           </p>

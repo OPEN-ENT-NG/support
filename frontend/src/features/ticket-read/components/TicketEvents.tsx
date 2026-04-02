@@ -30,9 +30,11 @@ export function TicketEvent({ event }: TicketEventProps) {
             {event.username && (
               <>
                 par{' '}
-                <span className="small user-profile-relative">
-                  <strong>{event.username}</strong>
-                </span>
+                <a href={`/userbook/annuaire#${event.user_id}`}>
+                  <span className="small user-profile-relative">
+                    <strong>{event.username}</strong>
+                  </span>
+                </a>
                 .{' '}
               </>
             )}

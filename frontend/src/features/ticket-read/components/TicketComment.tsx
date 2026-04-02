@@ -14,9 +14,11 @@ export default function TicketComment({ comment }: TicketCommentProps) {
       <Avatar variant="circle" alt="avatar" src={getAvatarURL(comment.owner)} />
       <Flex direction="column" gap="4" className="flex-grow-1">
         <Flex gap="4">
-          <p className="small user-profile-relative">
-            <strong>{comment.owner_name}</strong>
-          </p>
+          <a href={`/userbook/annuaire#${comment.owner}`}>
+            <p className="small user-profile-relative">
+              <strong>{comment.owner_name}</strong>
+            </p>
+          </a>
 
           <p className="small">|</p>
 
