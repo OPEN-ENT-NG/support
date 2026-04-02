@@ -83,6 +83,7 @@ function TicketsTable({ tickets = [], schools = [] }: TicketsTableProps) {
           selectedTickets.every(
             (t) => t.escalation_status === ESCALATION_STATUS.NOT_DONE,
           ) &&
+          selectedTickets.every((t) => t.status === 1 || t.status === 2) &&
           (escalateWorkflow ?? false),
       },
     ],

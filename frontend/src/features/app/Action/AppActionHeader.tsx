@@ -23,6 +23,7 @@ import { ReactNode, useCallback, useMemo, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useCanEscalate } from '~/hooks/useCanEscalate';
 import { useIsTicketEscalated } from '~/hooks/useIsTicketEscalated';
+import { useIsTicketNewOrOpen } from '~/hooks/useIsTicketNewOrOpen';
 import {
   countTickets,
   directExportTickets,
@@ -51,6 +52,7 @@ export const AppActionHeader = () => {
   const location = useLocation();
   const canEscalate = useCanEscalate();
   const isTicketEscalated = useIsTicketEscalated();
+  const isTicketNewOrOpen = useIsTicketNewOrOpen();
   const { isAdmc } = useIsAdmc();
   const { isAdml } = useIsAdml();
 
@@ -148,7 +150,11 @@ export const AppActionHeader = () => {
       },
       {
         id: 'escalate',
-        visibility: isTicketRoute && canEscalate && !isTicketEscalated,
+        visibility:
+          isTicketRoute &&
+          canEscalate &&
+          !isTicketEscalated &&
+          isTicketNewOrOpen,
         element: (
           <Flex gap="12">
             <IconButton
@@ -206,6 +212,7 @@ export const AppActionHeader = () => {
       isTicketRoute,
       canEscalate,
       isTicketEscalated,
+      isTicketNewOrOpen,
       isAdmc,
       isAdml,
       isLoading,
