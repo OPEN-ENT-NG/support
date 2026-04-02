@@ -50,7 +50,7 @@ const routes = (queryClient: QueryClient): RouteObject[] => [
               const { loader, Component } =
                 await import('~/routes/pages/TicketCreationRoute');
               return {
-                loader,
+                loader: loader(queryClient),
                 Component,
               };
             },

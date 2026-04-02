@@ -29,7 +29,7 @@ export function useTicketCreateForm() {
     mode: 'onTouched',
     defaultValues: {
       category: '',
-      school_id: schools.length > 1 ? '' : schools[0].id,
+      school_id: schools.length === 1 ? schools[0].id : '',
       subject: '',
       description: '<p></p>',
     },
