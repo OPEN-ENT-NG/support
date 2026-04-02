@@ -53,12 +53,10 @@ import net.atos.entng.support.filters.Admin;
 import net.atos.entng.support.filters.AdminOfTicketsStructure;
 import net.atos.entng.support.filters.OwnerOrLocalAdmin;
 import net.atos.entng.support.helpers.CSVHelper;
-import net.atos.entng.support.helpers.IModelHelper;
 import net.atos.entng.support.helpers.PromiseHelper;
 import net.atos.entng.support.helpers.RequestHelper;
 import net.atos.entng.support.helpers.UserInfosHelper;
 import net.atos.entng.support.model.I18nConfig;
-import net.atos.entng.support.model.TicketModel;
 import net.atos.entng.support.services.EscalationService;
 import net.atos.entng.support.services.ServiceFactory;
 import net.atos.entng.support.services.TicketService;
@@ -1233,14 +1231,15 @@ public class TicketController extends ControllerHelper {
                         })
                         .onFailure(err -> renderError(request, new JsonObject()));
 
-                if (!Objects.equals(structureId, JiraTicket.ASTERISK))
+                if (!Objects.equals(structureId, JiraTicket.ASTERISK)) {
                     ticketService.listStructureChildren(Collections.singletonList(structureId))
                             .compose(ticketServiceSql::getTicketsFromStructureIds)
                             .onComplete(promise);
-                else ticketServiceSql.getUserTickets(user).onComplete(ar -> {
-                    List<TicketModel> ticketModels = ar.result();
-                    promise.complete(IModelHelper.listToJsonArray(ticketModels));
-                });
+                } else {
+                    ticketServiceSql.listTickets(user, 0, Collections.emptyList(), Collections.emptyList(),
+                                    JiraTicket.ASTERISK, JiraTicket.ID, "DESC", 0, null, null)
+                            .onComplete(promise);
+                }
             } else {
                 log.debug(String.format("[Support@%s::directExport] %s",
                         this.getClass().getSimpleName(), "User not found in session."));
