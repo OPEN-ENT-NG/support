@@ -1,6 +1,9 @@
 package net.atos.entng.support.export;
 
-import io.vertx.core.*;
+import io.vertx.core.Context;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -14,7 +17,9 @@ import net.atos.entng.support.model.I18nConfig;
 import net.atos.entng.support.services.FileService;
 import net.atos.entng.support.services.TicketService;
 import net.atos.entng.support.services.TicketServiceSql;
-import net.atos.entng.support.services.impl.*;
+import net.atos.entng.support.services.impl.DefaultFileService;
+import net.atos.entng.support.services.impl.TicketServiceImpl;
+import net.atos.entng.support.services.impl.TicketServiceSqlImpl;
 import org.entcore.common.bus.WorkspaceHelper;
 import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.storage.Storage;
@@ -94,8 +99,7 @@ public class TicketExportWorker extends BusModBase implements Handler<Message<Js
         String structureId = params.getString(JiraTicket.STRUCTURE_ID);
         JsonArray tickets = new JsonArray();
         UserInfos user = UserInfosHelper.getUserInfosFromJSON(params.getJsonObject(JiraTicket.USER));
-        getStructureIds(structureId, params)
-                .compose(structureIds -> ticketServiceSql.getTicketsFromStructureIds(structureIds))
+        getTickets(structureId, user)
                 .compose(ticketsResults -> {
                     tickets.addAll(CSVHelper.translateTicketCategory(user, ticketsResults));
                     return ticketService.getSchoolAndProfileFromTicket(tickets,i18nConfig);
@@ -113,10 +117,13 @@ public class TicketExportWorker extends BusModBase implements Handler<Message<Js
         return promise.future();
     }
 
-    private Future<JsonObject> getStructureIds(String structureId, JsonObject params) {
-        if (Objects.equals(structureId, JiraTicket.ASTERISK))
-            return ticketService.listStructureChildren(params.getJsonObject(JiraTicket.USER).getJsonArray(JiraTicket.STRUCTURES).getList());
-        return ticketService.listStructureChildren(Collections.singletonList(structureId));
+    private Future<JsonArray> getTickets(String structureId, UserInfos user) {
+        if (Objects.equals(structureId, JiraTicket.ASTERISK)) {
+            return ticketServiceSql.listTickets(user, 0, Collections.emptyList(), Collections.emptyList(),
+                    JiraTicket.ASTERISK, JiraTicket.ID, "DESC", 0, null, null);
+        }
+        return ticketService.listStructureChildren(Collections.singletonList(structureId))
+                .compose(ticketServiceSql::getTicketsFromStructureIds);
     }
 
     protected Future<JsonObject> exportData(ExportFile exportFile, UserInfos user) {
