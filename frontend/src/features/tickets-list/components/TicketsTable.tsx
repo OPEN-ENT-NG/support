@@ -27,6 +27,7 @@ function TicketsTable({ tickets = [], schools = [] }: TicketsTableProps) {
   const escalateWorkflow = useCanEscalate();
   const toast = useToast();
   const queryClient = useQueryClient();
+  const canMultiSelect = isAdmlcOrAdmc || escalateWorkflow;
 
   const selectedTicketIds = useMemo(
     () => new Set(selectedTickets.map((t) => t.id)),
@@ -56,7 +57,7 @@ function TicketsTable({ tickets = [], schools = [] }: TicketsTableProps) {
         onClick: () => {
           exportTickets(selectedTickets.map((t) => t.id.toString()));
         },
-        isVisible: selectedTickets.length > 0 && isAdmlcOrAdmc,
+        isVisible: selectedTickets.length > 0 && escalateWorkflow,
       },
       {
         id: 'transfer',
@@ -112,9 +113,9 @@ function TicketsTable({ tickets = [], schools = [] }: TicketsTableProps) {
   return (
     <div className="overflow-x-auto w-100">
       <Table>
-        <TicketsTableHeader isAdmlcOrAdmc={isAdmlcOrAdmc} />
+        <TicketsTableHeader canMultiSelect={canMultiSelect} />
         <Table.Tbody>
-          {isAdmlcOrAdmc && (
+          {canMultiSelect && (
             <TicketsTableToolbar
               selectedTickets={selectedTickets}
               totalCount={tickets.length}
@@ -129,7 +130,7 @@ function TicketsTable({ tickets = [], schools = [] }: TicketsTableProps) {
               ticketSelectionCallBack={handleTicketSelection}
               ticketSelected={selectedTicketIds.has(ticket.id)}
               school={schoolById.get(ticket.school_id) as School}
-              isAdmlcOrAdmc={isAdmlcOrAdmc}
+              canMultiSelect={canMultiSelect}
             />
           ))}
         </Table.Tbody>
