@@ -3,7 +3,6 @@ import { Editor, EditorRef } from '@edifice.io/react/editor';
 import { IconUndo } from '@edifice.io/react/icons';
 import { useMutation } from '@tanstack/react-query';
 import { useRef, useState } from 'react';
-import TicketAddAttachment from '~/features/ticket-create/components/TicketAttachment';
 import { Ticket, TicketAttachment } from '~/models';
 import { queryClient } from '~/providers';
 import { updateTicket } from '~/services';
@@ -20,7 +19,6 @@ export default function TicketCommentForm({
   avatarUrl,
 }: TicketCommentFormProps) {
   const [isEmpty, setIsEmpty] = useState(true);
-  const [attachments, setAttachments] = useState<TicketAttachment[]>([]);
 
   const contentRef = useRef('');
   const tiptapRef = useRef<any>(null);
@@ -36,7 +34,6 @@ export default function TicketCommentForm({
     onSuccess: () => {
       contentRef.current = '';
       tiptapRef.current?.commands.clearContent();
-      setAttachments([]);
       setIsEmpty(true);
       queryClient.invalidateQueries({ queryKey: [ticketsQueryKeys.all()] });
     },
@@ -48,9 +45,8 @@ export default function TicketCommentForm({
 
   const handleSubmit = async () => {
     const editorAttachments = await buildAttachmentsFromEditor(editorRef);
-    const allAttachments = [...editorAttachments, ...attachments];
 
-    mutation.mutate(allAttachments);
+    mutation.mutate(editorAttachments);
   };
 
   return (
@@ -76,10 +72,6 @@ export default function TicketCommentForm({
             }}
           />
         </div>
-        <TicketAddAttachment
-          attachments={attachments}
-          onChange={setAttachments}
-        />
         <Flex justify="end">
           <Button
             color="secondary"
