@@ -4,6 +4,7 @@ import { Editor } from '@edifice.io/react/editor';
 import { IconDownload, IconFolderAdd } from '@edifice.io/react/icons';
 import { ApiAttachment, BugTrackerIssue, Ticket } from '~/models/ticket';
 import { TicketDetailsHeader } from './TicketDetailsHeader';
+import { useCopyToWorkspace } from '../hooks/useCopyToWorkspace';
 
 export interface TicketCardProps {
   ticket: Ticket;
@@ -24,6 +25,8 @@ export function TicketCard({
   attachments,
   bugTrackerIssue,
 }: TicketCardProps) {
+  const { copyToWorkspace } = useCopyToWorkspace(ticket.id);
+
   const handleDownload = (
     attachmentId: string,
     origin: 'workspace' | 'gridfs' = 'workspace',
@@ -35,8 +38,12 @@ export function TicketCard({
     }
   };
 
-  const handleSaveToWorkspace = (attachmentId: string) => {
-    console.log('Saving attachment to workspace:', attachmentId);
+  const handleSaveToWorkspace = (attachment: Attachment) => {
+    copyToWorkspace({
+      documentId: attachment.document_id,
+      name: attachment.name,
+      origin: attachment.origin,
+    });
   };
 
   const allAttachments = useMemo<Attachment[]>(
@@ -91,9 +98,7 @@ export function TicketCard({
                       color="tertiary"
                       type="button"
                       icon={<IconFolderAdd />}
-                      onClick={() =>
-                        handleSaveToWorkspace(attachment.document_id)
-                      }
+                      onClick={() => handleSaveToWorkspace(attachment)}
                     />
                     <IconButton
                       variant="ghost"
