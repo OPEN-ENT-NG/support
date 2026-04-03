@@ -1,4 +1,4 @@
-import toUtcString from "./toUtcString";
+import toUtcString from './toUtcString';
 
 export function formaterDate(date: string): string {
   return new Date(toUtcString(date)).toLocaleString('fr-FR', {
