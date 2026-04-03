@@ -1,7 +1,7 @@
 import { useToast } from '@edifice.io/react';
 import { EditorRef } from '@edifice.io/react/editor';
 import { useQueryClient } from '@tanstack/react-query';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { CreateTicket, TicketAttachment } from '~/models';
@@ -29,11 +29,19 @@ export function useTicketCreateForm() {
     mode: 'onTouched',
     defaultValues: {
       category: '',
-      school_id: schools.length === 1 ? schools[0].id : '',
+      school_id: '',
       subject: '',
       description: '<p></p>',
     },
   });
+
+  useEffect(() => {
+    if (schools.length === 1) {
+      setValue('school_id', schools[0].id);
+    } else {
+      setValue('school_id', '');
+    }
+  }, [schools, setValue]);
 
   const handleCreateTicket = async (
     formData: TicketCreateForm,
