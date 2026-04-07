@@ -136,6 +136,7 @@ export default function TicketCreateForm({
             content=""
             placeholder="Saisissez votre texte ici"
             mode={'edit'}
+            focus={false}
             onContentChange={({ editor }) => {
               setValue('description', editor.getHTML(), {
                 shouldValidate: true,
