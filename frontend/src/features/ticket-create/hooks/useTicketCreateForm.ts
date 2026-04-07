@@ -23,6 +23,7 @@ export function useTicketCreateForm() {
   const {
     register,
     setValue,
+    reset,
     formState: { errors, isValid, isDirty },
     handleSubmit,
   } = useForm<TicketCreateForm>({
@@ -36,12 +37,9 @@ export function useTicketCreateForm() {
   });
 
   useEffect(() => {
-    if (schools.length === 1) {
-      setValue('school_id', schools[0].id);
-    } else {
-      setValue('school_id', '');
-    }
-  }, [schools, setValue]);
+    const school_id = schools.length === 1 ? schools[0].id : '';
+    reset((prev) => ({ ...prev, school_id }));
+  }, [schools, reset]);
 
   const handleCreateTicket = async (
     formData: TicketCreateForm,
