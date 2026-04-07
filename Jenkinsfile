@@ -3,16 +3,11 @@
 pipeline {
   agent any
 
-  environment {
-    NEXUS_SONATYPE_PASSWORD = credentials('nexus-sonatype-password')
-    NEXUS_ODE_PASSWORD = credentials('nexus-ode-password')
-  }
-  
   stages {
     stage("Initialization") {
       steps {
         script {
-          def version = sh(returnStdout: true, script: 'docker compose run --rm maven mvn -Duser.home=/var/maven help:evaluate -Dexpression=project.version -q -DforceStdout')
+          def version = sh(returnStdout: true, script: 'docker run --rm -u `id -u`:`id -g` --env MAVEN_CONFIG=/var/maven/.m2 -w /usr/src/maven -v ./:/usr/src/maven -v ~/.m2:/var/maven/.m2  opendigitaleducation/mvn-java8-node20:latest mvn -Duser.home=/var/maven help:evaluate -Dexpression=project.version -DforceStdout -q')
           buildName "${env.GIT_BRANCH.replace("origin/", "")}@${version}"
         }
       }
@@ -24,15 +19,9 @@ pipeline {
       }
     }
     stage('Build image') {
-        steps {
-            sh 'edifice image --archs=linux/amd64 --force'
-        }
-    }
-  }
-  post {
-    cleanup {
-      sh 'docker compose down'
+      steps {
+        sh './edifice image --rebuild=false'
+      }
     }
   }
 }
-
