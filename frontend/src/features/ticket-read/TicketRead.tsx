@@ -1,4 +1,10 @@
-import { Button, Flex, LoadingScreen, useUser } from '@edifice.io/react';
+import {
+  Button,
+  Flex,
+  LoadingScreen,
+  useBreakpoint,
+  useUser,
+} from '@edifice.io/react';
 import { IconArrowLeft } from '@edifice.io/react/icons';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTicketFormOptions } from '~/hooks';
@@ -40,6 +46,7 @@ function sortTimelineItems(
 }
 
 export function TicketRead() {
+  const { lg } = useBreakpoint();
   const { ticketId } = useParams();
   const ticket = useTicket(ticketId);
   const userProfile = useUserProfile(ticket?.owner);
@@ -58,6 +65,10 @@ export function TicketRead() {
   }
 
   const timelineItems = sortTimelineItems(events, comments);
+
+  const handleCancelClick = () => {
+    navigate('/');
+  };
 
   return (
     <Flex className="w-100 h-100">
@@ -91,6 +102,19 @@ export function TicketRead() {
         </Flex>
       </div>
       <Flex direction="column" className="overflow-y-auto flex-grow-1 min-w-0">
+        {!lg && (
+          <div className="border-bottom-light py-8 px-16 w-100 position-sticky top-0 bg-white z-1">
+            <Button
+              color="tertiary"
+              variant="ghost"
+              size="sm"
+              leftIcon={<IconArrowLeft />}
+              onClick={handleCancelClick}
+            >
+              Retour
+            </Button>
+          </div>
+        )}
         <TicketCard
           ticket={ticket}
           attachments={attachments}
