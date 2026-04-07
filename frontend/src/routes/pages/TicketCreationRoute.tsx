@@ -18,7 +18,7 @@ export const Component = () => {
   if (!init) return <LoadingScreen position={false} />;
 
   return (
-    <Flex direction="column" className="mt-24 ms-md-24 me-md-16">
+    <Flex direction="column" className="mt-24 mx-16">
       <TicketCreate />
     </Flex>
   );
