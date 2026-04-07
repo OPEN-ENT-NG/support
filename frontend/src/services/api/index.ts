@@ -23,6 +23,7 @@ export function getTickets(
   status: TicketApiCode[],
   type: TicketType,
   schools: string[],
+  search?: string,
 ): Promise<ApiTicket[]> {
   const body = {
     page: page,
@@ -31,6 +32,7 @@ export function getTickets(
     statuses: status.map((s) => String(s)),
     applicant: type === 'mine' ? 'ME' : type === 'other' ? 'OTHER' : undefined,
     schools: schools.length > 0 ? schools : ['*'],
+    search: search,
   };
 
   return odeServices.http().post(`${tickets_api_base_url}/tickets`, body);

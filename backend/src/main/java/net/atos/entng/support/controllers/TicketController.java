@@ -614,28 +614,31 @@ public class TicketController extends ControllerHelper {
         Integer page = body.getInteger(JiraTicket.PAGE);
         String sortBy = body.getString(JiraTicket.SORT_BY);
         String order = body.getString(JiraTicket.ORDER);
-        List<String> schools = body.getJsonArray("schools", new JsonArray()).stream()
-                .filter(String.class::isInstance)
-                .map(String.class::cast)
-                .collect(Collectors.toList());
+        String search = body.getString("search");
+        List<String> schools = body.getJsonArray("schools", new JsonArray())
+                                   .stream()
+                                   .filter(String.class::isInstance)
+                                   .map(String.class::cast)
+                                   .collect(Collectors.toList());
 
-        List<String> statuses = body.getJsonArray("statuses", new JsonArray()).stream()
-                .map(Object::toString)
-                .collect(Collectors.toList());
+        List<String> statuses = body.getJsonArray("statuses", new JsonArray())
+                                    .stream()
+                                    .map(Object::toString)
+                                    .collect(Collectors.toList());
 
         String applicantValue = body.getString(JiraTicket.APPLICANT);
-        List<String> applicants = applicantValue != null ? Collections.singletonList(applicantValue) : Collections.emptyList();
+        List<String> applicants = applicantValue != null ? Collections.singletonList(
+                applicantValue) : Collections.emptyList();
         Integer nbTicketsPerPage = config.getInteger("nbTicketsPerPage", 25);
 
         boolean allSchools = schools.isEmpty() || schools.contains(JiraTicket.ASTERISK);
         List<String> structuresToResolve = allSchools ? user.getStructures() : schools;
 
-        return ticketService.listStructureChildren(structuresToResolve)
-                .compose(structureChildren -> {
-                    List<String> resolvedSchoolIds = getStructureIds(structureChildren);
-                    return ticketServiceSql
-                            .listFilteredTickets(user, page, statuses, applicants, resolvedSchoolIds, allSchools, sortBy, order, nbTicketsPerPage);
-                });
+        return ticketService.listStructureChildren(structuresToResolve).compose(structureChildren -> {
+            List<String> resolvedSchoolIds = getStructureIds(structureChildren);
+            return ticketServiceSql.listFilteredTickets(user, page, statuses, applicants, resolvedSchoolIds, allSchools,
+                                                        sortBy, order, nbTicketsPerPage, search);
+        });
     }
 
     private Future<JsonArray> listTicketOrdered(String isSortBy, UserInfos user, Integer page, List<String> statuses, List<String> applicants,

@@ -385,89 +385,94 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 		}
 	}
 
-	@Override
-	public Future<JsonArray> listFilteredTickets(UserInfos user, Integer page, List<String> statuses,
-												 List<String> applicants, List<String> schoolIds, boolean allSchools,
-												 String sortBy, String order, Integer nbTicketsPerPage) {
-		Promise<JsonArray> promise = Promise.promise();
-		StringBuilder query = new StringBuilder();
-		JsonArray values = new JsonArray();
+    @Override
+    public Future<JsonArray> listFilteredTickets(UserInfos user, Integer page, List<String> statuses, List<String> applicants, List<String> schoolIds, boolean allSchools, String sortBy, String order, Integer nbTicketsPerPage, String search) {
+        Promise<JsonArray> promise = Promise.promise();
+        StringBuilder query = new StringBuilder();
+        JsonArray values = new JsonArray();
 
-		query.append("SELECT t.*, u.username AS owner_name, ")
-				.append("i.content")
-				.append(bugTrackerType.getLastIssueUpdateFromPostgresqlJson())
-				.append(" AS last_issue_update, ")
-				.append(" substring(t.description, 0, 101) as short_desc,")
-				.append(" COUNT(*) OVER() AS total_results")
-				.append(" FROM support.tickets AS t")
-				.append(" INNER JOIN support.users AS u ON t.owner = u.id")
-				.append(" LEFT JOIN support.bug_tracker_issues AS i ON t.id=i.ticket_id");
+        query.append("SELECT t.*, u.username AS owner_name, ")
+             .append("i.content")
+             .append(bugTrackerType.getLastIssueUpdateFromPostgresqlJson())
+             .append(" AS last_issue_update, ")
+             .append(" substring(t.description, 0, 101) as short_desc,")
+             .append(" COUNT(*) OVER() AS total_results")
+             .append(" FROM support.tickets AS t")
+             .append(" INNER JOIN support.users AS u ON t.owner = u.id")
+             .append(" LEFT JOIN support.bug_tracker_issues AS i ON t.id=i.ticket_id")
+             .append(" WHERE 1=1");
 
-		boolean oneApplicant = false;
-		boolean applicantIsMe = true;
-		if (applicants != null && applicants.size() == 1) {
-			applicantIsMe = applicants.get(0).equals("ME");
-			oneApplicant = true;
-		}
+        boolean oneApplicant = false;
+        boolean applicantIsMe = true;
+        if (applicants != null && applicants.size() == 1) {
+            applicantIsMe = applicants.get(0).equals("ME");
+            oneApplicant = true;
+        }
 
-		Function superAdmin = user.getFunctions().get(DefaultFunctions.SUPER_ADMIN);
-		Function adminLocal = user.getFunctions().get(DefaultFunctions.ADMIN_LOCAL);
-		boolean isAdmin = superAdmin != null || adminLocal != null;
+        Function superAdmin = user.getFunctions().get(DefaultFunctions.SUPER_ADMIN);
+        Function adminLocal = user.getFunctions().get(DefaultFunctions.ADMIN_LOCAL);
+        boolean isAdmin = superAdmin != null || adminLocal != null;
 
-		if (isAdmin) {
-			List<String> scopesList = superAdmin != null ? superAdmin.getScope() : adminLocal.getScope();
-			boolean hasScope = scopesList != null && !scopesList.isEmpty();
+        if (isAdmin) {
+            List<String> scopesList = superAdmin != null ? superAdmin.getScope() : adminLocal.getScope();
+            boolean hasScope = scopesList != null && !scopesList.isEmpty();
 
-			if (!allSchools && schoolIds != null && !schoolIds.isEmpty()) {
-				query.append(" AND t.school_id IN ").append(Sql.listPrepared(schoolIds));
-				values.addAll(new JsonArray(schoolIds));
-			} else if (hasScope) {
-				query.append(" AND t.school_id IN ").append(Sql.listPrepared(scopesList));
-				values.addAll(new JsonArray(scopesList));
-			}
+            if (!allSchools && schoolIds != null && !schoolIds.isEmpty()) {
+                query.append(" AND t.school_id IN ").append(Sql.listPrepared(schoolIds));
+                values.addAll(new JsonArray(schoolIds));
+            } else if (hasScope) {
+                query.append(" AND t.school_id IN ").append(Sql.listPrepared(scopesList));
+                values.addAll(new JsonArray(scopesList));
+            }
 
-			if (oneApplicant) {
-				query.append(" AND t.owner").append(applicantIsMe ? "=" : "!=").append("?");
-				values.add(user.getUserId());
-			}
-		} else {
-			query.append(" AND t.owner = ?");
-			values.add(user.getUserId());
-			if (allSchools) {
-				query.append(" AND t.school_id IN ").append(Sql.listPrepared(user.getStructures()));
-				values.addAll(new JsonArray(user.getStructures()));
-			} else if (schoolIds != null && !schoolIds.isEmpty()) {
-				query.append(" AND t.school_id IN ").append(Sql.listPrepared(schoolIds));
-				values.addAll(new JsonArray(schoolIds));
-			}
-		}
+            if (oneApplicant) {
+                query.append(" AND t.owner").append(applicantIsMe ? "=" : "!=").append("?");
+                values.add(user.getUserId());
+            }
+        } else {
+            query.append(" AND t.owner = ?");
+            values.add(user.getUserId());
+            if (allSchools) {
+                query.append(" AND t.school_id IN ").append(Sql.listPrepared(user.getStructures()));
+                values.addAll(new JsonArray(user.getStructures()));
+            } else if (schoolIds != null && !schoolIds.isEmpty()) {
+                query.append(" AND t.school_id IN ").append(Sql.listPrepared(schoolIds));
+                values.addAll(new JsonArray(schoolIds));
+            }
+        }
 
-		if (statuses != null && !statuses.isEmpty()) {
-			query.append(" AND t.status IN ").append(Sql.listPrepared(statuses));
-			values.addAll(new JsonArray(statuses));
-		}
+        if (statuses != null && !statuses.isEmpty()) {
+            query.append(" AND t.status IN ").append(Sql.listPrepared(statuses));
+            values.addAll(new JsonArray(statuses));
+        }
 
-		if (ALLOWED_SORT_BY_COLUMN.contains(sortBy)) {
-			query.append(String.format(" ORDER BY t.%s", sortBy));
-		} else {
-			query.append(" ORDER BY t.modified");
-		}
+        if (search != null && !search.isEmpty()) {
+            query.append(
+                    " AND (unaccent(t.subject) ILIKE ? OR unaccent(t.description) ILIKE ? OR CAST(t.id AS TEXT) = ?)");
+            values.add("%" + search + "%").add("%" + search + "%").add(search);
+        }
 
-		if (order != null && (order.equals("ASC") || order.equals("DESC"))) {
-			query.append(" ").append(order);
-		} else {
-			query.append(" DESC");
-		}
+        if (ALLOWED_SORT_BY_COLUMN.contains(sortBy)) {
+            query.append(String.format(" ORDER BY t.%s", sortBy));
+        } else {
+            query.append(" ORDER BY t.modified");
+        }
 
-		if (page != null && page > 0) {
-			query.append(" LIMIT ?").append(" OFFSET ").append((page - 1) * nbTicketsPerPage);
-			values.add(nbTicketsPerPage);
-		}
+        if (order != null && (order.equals("ASC") || order.equals("DESC"))) {
+            query.append(" ").append(order);
+        } else {
+            query.append(" DESC");
+        }
 
-		sql.prepared(query.toString().replaceFirst("AND", "WHERE"), values,
-				validResultHandler(PromiseHelper.handler(promise)));
-		return promise.future();
-	}
+        if (page != null && page > 0) {
+            query.append(" LIMIT ?").append(" OFFSET ").append((page - 1) * nbTicketsPerPage);
+            values.add(nbTicketsPerPage);
+        }
+
+        sql.prepared(query.toString(), values, validResultHandler(PromiseHelper.handler(promise)));
+
+        return promise.future();
+    }
 
 	@Override
 	public void getTicket(UserInfos user, Integer id, Handler<Either<String, JsonArray>> handler) {
