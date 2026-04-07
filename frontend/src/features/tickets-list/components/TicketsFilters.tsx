@@ -1,6 +1,6 @@
-import { Dropdown, Flex, SearchBar } from '@edifice.io/react';
+import { Dropdown, Flex, SearchBar, useDebounce } from '@edifice.io/react';
 import { IconFilter } from '@edifice.io/react/icons';
-import { ChangeEvent, useState } from 'react';
+import { ChangeEvent, useEffect, useState } from 'react';
 
 import {
   School,
@@ -156,8 +156,15 @@ export function TicketsFilters({
   schools,
   onChange,
 }: TicketsFiltersProps) {
+  const [search, setSearch] = useState(filters.search);
+  const debouncedSearch = useDebounce(search, 300);
+
+  useEffect(() => {
+    onChange({ ...filters, search: debouncedSearch });
+  }, [debouncedSearch]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const handleSearchChange = (e: ChangeEvent<HTMLInputElement>) => {
-    onChange({ ...filters, search: e.target.value });
+    setSearch(e.target.value);
   };
 
   return (
@@ -170,12 +177,12 @@ export function TicketsFilters({
     >
       <SearchBar
         className="flex-grow-1 w-auto search-bar"
-        placeholder="Rechercher par numéro de ticket"
+        placeholder="Rechercher un ticket"
         onChange={handleSearchChange}
         isVariant={false}
         onClick={() => {}}
         size="md"
-        value={filters.search}
+        value={search}
         data-testid="search-bar"
       />
 

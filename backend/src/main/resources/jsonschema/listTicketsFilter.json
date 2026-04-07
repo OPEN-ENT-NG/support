@@ -36,6 +36,9 @@
         "minLength": 1
       }
     },
+    "search": {
+      "type": "string"
+    },
     "statuses": {
       "type": "array",
       "items": {

@@ -29,8 +29,13 @@ export const ticketsQueryKeys = {
     status?: TicketApiCode[],
     type?: TicketType,
     schools?: string[],
+    search?: string,
   ) =>
-    [ticketsQueryKeys.all(), 'list', { page, status, type, schools }] as const,
+    [
+      ticketsQueryKeys.all(),
+      'list',
+      { page, status, type, schools, search },
+    ] as const,
   bugTrackerIssue: (ticketId: string | undefined) =>
     [ticketsQueryKeys.all(), ticketId, 'bugTrackerIssue'] as const,
 };
@@ -40,10 +45,11 @@ export const useTickets = (
   status: TicketApiCode[],
   type: TicketType,
   schools: string[],
+  search: string,
 ) => {
   const { data, isPending } = useQuery({
-    queryKey: ticketsQueryKeys.list(page, status, type, schools),
-    queryFn: () => getTickets(page, status, type, schools),
+    queryKey: ticketsQueryKeys.list(page, status, type, schools, search),
+    queryFn: () => getTickets(page, status, type, schools, search),
   });
   return { tickets: (data as Ticket[]) ?? [], isPending };
 };

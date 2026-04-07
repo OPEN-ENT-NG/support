@@ -7,7 +7,6 @@ import { Flex, LoadingScreen, useIsAdmlcOrAdmc } from '@edifice.io/react';
 import { Pagination } from 'antd';
 import { useCallback, useState } from 'react';
 import { TicketFiltersState } from '~/models';
-import { useFilteredTickets } from './hooks/useFilteredTickets';
 import { TicketsTypeSelector } from './components/TicketsTypeSelector';
 
 export function TicketsList() {
@@ -25,17 +24,16 @@ export function TicketsList() {
     filters.status,
     filters.type,
     filters.schools,
+    filters.search,
   );
   const { schools, isPending: schoolsPending } = useSchools();
   const { ticketsPerPage, isPending: ticketsPerPagePending } =
     useTicketsPerPage();
 
-  const filteredTickets = useFilteredTickets(tickets, filters);
   const totalResults = tickets[0]?.total_results ?? 0;
   const isPending = ticketsPending || schoolsPending || ticketsPerPagePending;
   const isTableEmpty =
-    !isPending &&
-    (!filteredTickets || filteredTickets.length === 0 || schools.length === 0);
+    !isPending && (!tickets || tickets.length === 0 || schools.length === 0);
 
   const handleFiltersChange = useCallback((newFilters: TicketFiltersState) => {
     setFilters(newFilters);
@@ -62,7 +60,7 @@ export function TicketsList() {
         <EmptyTicketsTable />
       ) : (
         <Flex direction="column" gap="4" align="center">
-          <TicketsTable tickets={filteredTickets} schools={schools} />
+          <TicketsTable tickets={tickets} schools={schools} />
           {ticketsPerPage !== undefined &&
             totalResults / ticketsPerPage > 1 && (
               <Pagination
