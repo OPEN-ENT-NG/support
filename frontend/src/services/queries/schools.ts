@@ -1,5 +1,6 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useIsAdmc, useIsAdml, useUser } from '@edifice.io/react';
+import { useMemo } from 'react';
 import { School } from '~/models';
 import { getSchools } from '../api';
 
@@ -28,12 +29,16 @@ export const useSchools = () => {
     enabled: isAdmin,
   });
 
-  const schools = isAdmin
-    ? ((data as School[]) ?? [])
-    : ((user?.structures ?? []).map((id, i) => ({
-        id,
-        name: user?.structureNames?.[i] ?? id,
-      })) as School[]);
+  const schools = useMemo(
+    () =>
+      isAdmin
+        ? ((data as School[]) ?? [])
+        : ((user?.structures ?? []).map((id, i) => ({
+            id,
+            name: user?.structureNames?.[i] ?? id,
+          })) as School[]),
+    [isAdmin, data, user?.structures, user?.structureNames],
+  );
 
   return { schools, isPending: isAdmin && isPending };
 };

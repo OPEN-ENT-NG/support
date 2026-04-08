@@ -14,6 +14,7 @@ export function useTicketCategories(): TicketCategory[] {
   const categories = useMemo(
     () =>
       (applications ?? [])
+        .filter((app) => app.address)
         .map((app) => ({ label: t(app.displayName), value: app.address }))
         .sort((a, b) => a.label.localeCompare(b.label)),
     [applications, t],
