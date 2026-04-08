@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useIsAdmc, useIsAdml, useUser } from '@edifice.io/react';
+import { useIsAdmlcOrAdmc, useUser } from '@edifice.io/react';
 import { useMemo } from 'react';
 import { School } from '~/models';
 import { getSchools } from '../api';
@@ -18,29 +18,32 @@ export const schoolsQueryFns = {
 };
 
 export const useSchools = () => {
-  const { isAdmc } = useIsAdmc();
-  const { isAdml } = useIsAdml();
+  const { isAdmlcOrAdmc } = useIsAdmlcOrAdmc();
   const { user } = useUser();
-  const isAdmin = isAdmc || isAdml;
 
   const { data, isPending } = useQuery({
     queryKey: schoolsQueryKeys.all,
     queryFn: () => getSchools(),
-    enabled: isAdmin,
+    enabled: isAdmlcOrAdmc,
   });
 
-  const schools = useMemo(
-    () =>
-      isAdmin
-        ? ((data as School[]) ?? [])
-        : ((user?.structures ?? []).map((id, i) => ({
-            id,
-            name: user?.structureNames?.[i] ?? id,
-          })) as School[]),
-    [isAdmin, data, user?.structures, user?.structureNames],
-  );
+  const schools = useMemo(() => {
+    const adminSchools = isAdmlcOrAdmc ? ((data as School[]) ?? []) : [];
+    const userSchools = (user?.structures ?? []).map((id, i) => ({
+      id,
+      name: user?.structureNames?.[i] ?? id,
+    })) as School[];
 
-  return { schools, isPending: isAdmin && isPending };
+    const merged = [...adminSchools, ...userSchools];
+
+    // filter duplicates
+    return merged.filter(
+      (school, index, self) =>
+        self.findIndex((s) => s.id === school.id) === index,
+    );
+  }, [isAdmlcOrAdmc, data, user]);
+
+  return { schools, isPending: isAdmlcOrAdmc && isPending };
 };
 
 export const useSchoolById = (schoolId: string) => {

@@ -29,11 +29,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import net.atos.entng.support.Attachment;
-import net.atos.entng.support.Comment;
-import net.atos.entng.support.Issue;
-import net.atos.entng.support.Ticket;
-import net.atos.entng.support.WorkspaceAttachment;
+import net.atos.entng.support.*;
 import net.atos.entng.support.constants.JiraTicket;
 import net.atos.entng.support.enums.BugTracker;
 import net.atos.entng.support.enums.EscalationStatus;
@@ -61,14 +57,7 @@ import java.text.DateFormat;
 import java.text.Format;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.TimeZone;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -417,12 +406,51 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
             List<String> scopesList = superAdmin != null ? superAdmin.getScope() : adminLocal.getScope();
             boolean hasScope = scopesList != null && !scopesList.isEmpty();
 
-            if (!allSchools && schoolIds != null && !schoolIds.isEmpty()) {
-                query.append(" AND t.school_id IN ").append(Sql.listPrepared(schoolIds));
-                values.addAll(new JsonArray(schoolIds));
-            } else if (hasScope) {
-                query.append(" AND t.school_id IN ").append(Sql.listPrepared(scopesList));
-                values.addAll(new JsonArray(scopesList));
+            if (!hasScope) {
+                // If the user is super admin we simply list all tickets
+                if (!allSchools && schoolIds != null && !schoolIds.isEmpty()) {
+                    query.append(" AND t.school_id IN ").append(Sql.listPrepared(schoolIds));
+                    values.addAll(new JsonArray(schoolIds));
+                }
+            } else {
+                // The user may be admin in one school but regular user in another
+                // So we need to check both the admin scope and the user structures to determine which tickets the user can see
+                List<String> targetSchools;
+                if (!allSchools && schoolIds != null && !schoolIds.isEmpty()) {
+                    targetSchools = schoolIds;
+                } else {
+                    // Merge admin scope and user structures
+                    targetSchools = new ArrayList<>(scopesList);
+                    user.getStructures().stream()
+                        .filter(s -> !scopesList.contains(s))
+                        .forEach(targetSchools::add);
+                }
+
+                List<String> adminSchoolIds = targetSchools.stream()
+                                                           .filter(scopesList::contains)
+                                                           .collect(Collectors.toList());
+                List<String> regularSchoolIds = targetSchools.stream()
+                                                             .filter(s -> !scopesList.contains(s))
+                                                             .collect(Collectors.toList());
+
+                if (!adminSchoolIds.isEmpty() && !regularSchoolIds.isEmpty()) { // The user is admin in some schools and regular user in others
+                    query.append(" AND (t.school_id IN ")
+                         .append(Sql.listPrepared(adminSchoolIds))
+                         .append(" OR (t.school_id IN ")
+                         .append(Sql.listPrepared(regularSchoolIds))
+                         .append(" AND t.owner = ?))");
+                    values.addAll(new JsonArray(adminSchoolIds));
+                    values.addAll(new JsonArray(regularSchoolIds));
+                    values.add(user.getUserId());
+                } else if (!adminSchoolIds.isEmpty()) { // The user is only admin in some schools
+                    query.append(" AND t.school_id IN ").append(Sql.listPrepared(adminSchoolIds));
+                    values.addAll(new JsonArray(adminSchoolIds));
+                } else if (!regularSchoolIds.isEmpty()) { // The user is only regular user in some schools
+                    query.append(" AND t.school_id IN ").append(Sql.listPrepared(regularSchoolIds));
+                    values.addAll(new JsonArray(regularSchoolIds));
+                    query.append(" AND t.owner = ?");
+                    values.add(user.getUserId());
+                }
             }
 
             if (oneApplicant) {
