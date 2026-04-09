@@ -1,4 +1,5 @@
-import { Flex, FormControl, Input, Label, Select } from '@edifice.io/react';
+import { Dropdown, Flex, FormControl, Input, Label, Select } from '@edifice.io/react';
+import { useMemo } from 'react';
 import { Control, Controller, FieldErrors } from 'react-hook-form';
 import {
   ESCALATION_STATUS,
@@ -29,6 +30,79 @@ type TicketEditFormProps = {
   bugTrackerIssueId?: number;
   isPending: boolean;
 };
+
+function ControlledDropdown({
+  name,
+  label,
+  placeholder,
+  searchPlaceholder,
+  options,
+  control,
+  required,
+  errors,
+  isPending,
+  onSubmit,
+}: {
+  name: keyof TicketEditFormValues;
+  label: string;
+  placeholder: string;
+  searchPlaceholder: string;
+  options: SelectOption[];
+  control: Control<TicketEditFormValues>;
+  required: string;
+  errors: FieldErrors<TicketEditFormValues>;
+  isPending: boolean;
+  onSubmit: () => void;
+}) {
+  const sortedOptions = useMemo(
+    () => [...options].sort((a, b) => a.label.localeCompare(b.label)),
+    [options],
+  );
+
+  return (
+    <FormControl id={name} status={errors[name] ? 'invalid' : undefined}>
+      <Label>{label}</Label>
+      <Controller
+        name={name}
+        control={control}
+        rules={{ required }}
+        render={({ field }) => (
+          <Dropdown block>
+            <Dropdown.Trigger
+              size="md"
+              block
+              disabled={isPending}
+              label={
+                sortedOptions.find((o) => o.value === field.value)?.label ??
+                placeholder
+              }
+            />
+            <Dropdown.Menu>
+              <Dropdown.SearchInput
+                placeholder={searchPlaceholder}
+                noResultsLabel="Pas de résultat"
+              />
+              {sortedOptions.map((opt) => (
+                <Dropdown.Item
+                  key={`${opt.label}-${opt.value}`}
+                  searchValue={opt.label}
+                  onClick={() => {
+                    if (opt.value !== field.value) {
+                      field.onChange(opt.value);
+                      onSubmit();
+                    }
+                  }}
+                >
+                  {opt.label}
+                </Dropdown.Item>
+              ))}
+            </Dropdown.Menu>
+          </Dropdown>
+        )}
+      />
+    </FormControl>
+  );
+}
 
 function ControlledSelect({
   name,
@@ -125,10 +199,11 @@ export default function TicketEditForm({
         />
       </FormControl>
 
-      <ControlledSelect
+      <ControlledDropdown
         name="school_id"
         label="Etablissement"
         placeholder="Etablissement"
+        searchPlaceholder="Rechercher un établissement..."
         options={schoolOptions}
         control={control}
         required="L'établissement est obligatoire"
@@ -137,10 +212,11 @@ export default function TicketEditForm({
         onSubmit={onSubmit}
       />
 
-      <ControlledSelect
+      <ControlledDropdown
         name="category"
         label="Catégorie"
         placeholder="Catégorie"
+        searchPlaceholder="Rechercher une catégorie..."
         options={categories}
         control={control}
         required="La catégorie est obligatoire"

@@ -1,6 +1,6 @@
-import { Flex, FormControl, Input, Label, Select } from '@edifice.io/react';
+import { Dropdown, Flex, FormControl, Input, Label } from '@edifice.io/react';
 import { Editor, EditorRef } from '@edifice.io/react/editor';
-import { RefObject, useState } from 'react';
+import { RefObject, useEffect, useState } from 'react';
 import { FieldErrors, UseFormRegister, UseFormSetValue } from 'react-hook-form';
 import { TicketAttachment } from '~/models';
 import TicketAddAttachment from './TicketAttachment';
@@ -34,6 +34,14 @@ export default function TicketCreateForm({
   onAttachmentsChange,
 }: TicketCreateFormProps) {
   const [attachments, setAttachments] = useState<TicketAttachment[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedSchool, setSelectedSchool] = useState('');
+
+  useEffect(() => {
+    if (schoolOptions.length === 1) {
+      setSelectedSchool(schoolOptions[0].value);
+    }
+  }, [schoolOptions]);
 
   const handleAttachmentsChange = (
     updater: (prev: TicketAttachment[]) => TicketAttachment[],
@@ -44,6 +52,10 @@ export default function TicketCreateForm({
       return updated;
     });
   };
+
+  const sortedSchools = [...schoolOptions].sort((a, b) =>
+    a.label.localeCompare(b.label),
+  );
 
   return (
     <>
@@ -60,18 +72,39 @@ export default function TicketCreateForm({
               required: 'La catégorie est obligatoire',
             })}
           />
-          <Select
-            size="lg"
-            options={categories}
-            placeholderOption="Sélectionnez la catégorie..."
-            onValueChange={(value) =>
-              setValue('category', value as string, {
-                shouldValidate: true,
-                shouldDirty: true,
-              })
-            }
-          />
+          <Dropdown block>
+            <Dropdown.Trigger
+              size="lg"
+              block
+              label={
+                categories.find((c) => c.value === selectedCategory)?.label ??
+                'Sélectionnez la catégorie...'
+              }
+            />
+            <Dropdown.Menu>
+              <Dropdown.SearchInput
+                placeholder="Rechercher une catégorie..."
+                noResultsLabel="Pas de résultat"
+              />
+              {categories.map((cat) => (
+                <Dropdown.Item
+                  key={`${cat.label}-${cat.value}`}
+                  searchValue={cat.label}
+                  onClick={() => {
+                    setSelectedCategory(cat.value);
+                    setValue('category', cat.value, {
+                      shouldValidate: true,
+                      shouldDirty: true,
+                    });
+                  }}
+                >
+                  {cat.label}
+                </Dropdown.Item>
+              ))}
+            </Dropdown.Menu>
+          </Dropdown>
         </FormControl>
+
         {schoolOptions.length > 1 && (
           <FormControl
             id="school_id"
@@ -85,17 +118,37 @@ export default function TicketCreateForm({
                 required: "L'établissement est obligatoire",
               })}
             />
-            <Select
-              size="lg"
-              options={schoolOptions}
-              placeholderOption="Sélectionnez l'établissement..."
-              onValueChange={(value) =>
-                setValue('school_id', value as string, {
-                  shouldValidate: true,
-                  shouldDirty: true,
-                })
-              }
-            />
+            <Dropdown block>
+              <Dropdown.Trigger
+                size="lg"
+                block
+                label={
+                  sortedSchools.find((s) => s.value === selectedSchool)
+                    ?.label ?? "Sélectionnez l'établissement..."
+                }
+              />
+              <Dropdown.Menu>
+                <Dropdown.SearchInput
+                  placeholder="Rechercher un établissement..."
+                  noResultsLabel="Pas de résultat"
+                />
+                {sortedSchools.map((school) => (
+                  <Dropdown.Item
+                    key={school.value}
+                    searchValue={school.label}
+                    onClick={() => {
+                      setSelectedSchool(school.value);
+                      setValue('school_id', school.value, {
+                        shouldValidate: true,
+                        shouldDirty: true,
+                      });
+                    }}
+                  >
+                    {school.label}
+                  </Dropdown.Item>
+                ))}
+              </Dropdown.Menu>
+            </Dropdown>
           </FormControl>
         )}
       </Flex>

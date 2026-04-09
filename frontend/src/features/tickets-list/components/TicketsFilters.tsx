@@ -1,4 +1,11 @@
-import { Dropdown, Flex, SearchBar, useDebounce } from '@edifice.io/react';
+import {
+  Badge,
+  Checkbox,
+  Dropdown,
+  Flex,
+  SearchBar,
+  useDebounce,
+} from '@edifice.io/react';
 import { IconFilter } from '@edifice.io/react/icons';
 import { ChangeEvent, useEffect, useState } from 'react';
 
@@ -44,26 +51,66 @@ function TicketsSchoolFilter({
   onChange,
   schools,
 }: TicketsSchoolFilterProps) {
-  const [isAllChecked, setIsAllChecked] = useState(
-    filters.schools.length === 0,
-  );
+  const [noneSelected, setNoneSelected] = useState(false);
+  const [schoolSearch, setSchoolSearch] = useState('');
+
+  const isAllChecked = filters.schools.length === 0 && !noneSelected;
+  const isIndeterminate = filters.schools.length > 0;
+
+  const visibleSchools = schoolSearch
+    ? schools.filter((s) =>
+        s.name.toLowerCase().includes(schoolSearch.toLowerCase()),
+      )
+    : schools;
 
   const handleSelectAll = () => {
-    setIsAllChecked((prev) => !prev);
-    onChange({ ...filters, schools: [] });
+    if (schoolSearch) {
+      const visibleIds = visibleSchools.map((s) => s.id);
+      const allVisibleSelected = visibleSchools.every(
+        (s) => isAllChecked || filters.schools.includes(s.id),
+      );
+      const nonVisibleSelected = isAllChecked
+        ? schools.filter((s) => !visibleIds.includes(s.id)).map((s) => s.id)
+        : filters.schools.filter((id) => !visibleIds.includes(id));
+
+      if (allVisibleSelected) {
+        // Désélectionne les items visibles, préserve les non-visibles
+        if (nonVisibleSelected.length === 0) {
+          setNoneSelected(true);
+        } else {
+          onChange({ ...filters, schools: nonVisibleSelected });
+          setNoneSelected(false);
+        }
+      } else {
+        // Sélectionne les items visibles, préserve les non-visibles
+        const next = [...new Set([...nonVisibleSelected, ...visibleIds])];
+        onChange({
+          ...filters,
+          schools: next.length === schools.length ? [] : next,
+        });
+        setNoneSelected(false);
+      }
+    } else if (isAllChecked) {
+      setNoneSelected(true);
+    } else {
+      setNoneSelected(false);
+      onChange({ ...filters, schools: [] });
+    }
   };
 
   const handleSchoolToggle = (value: string | number) => {
-    const updated = toggleItem(filters.schools, value as string, []);
-    setIsAllChecked(updated.length === 0);
-    onChange({
-      ...filters,
-      schools: updated,
-    });
+    setNoneSelected(false);
+    const base = isAllChecked ? schools.map((s) => s.id) : filters.schools;
+    const updated = toggleItem(base, value as string, []);
+    onChange({ ...filters, schools: updated });
   };
 
   return (
-    <Dropdown>
+    <Dropdown
+      onToggle={(visible) => {
+        if (!visible) setSchoolSearch('');
+      }}
+    >
       <Dropdown.Trigger
         size="md"
         icon={<IconFilter />}
@@ -73,27 +120,42 @@ function TicketsSchoolFilter({
         }
       />
       <Dropdown.Menu>
-        <Dropdown.CheckboxItem
-          model={isAllChecked ? ['all'] : []}
-          value="all"
-          onChange={handleSelectAll}
-        >
-          Tous les établissements
-        </Dropdown.CheckboxItem>
+        <div className="px-8 pb-4 d-flex align-items-center justify-content-end gap-8">
+          {isIndeterminate && (
+            <Badge variant={{ type: 'notification', level: 'info' }}>
+              {filters.schools.length}
+            </Badge>
+          )}
+          <Checkbox
+            checked={isAllChecked}
+            indeterminate={isIndeterminate}
+            onChange={handleSelectAll}
+          />
+        </div>
         <Dropdown.Separator />
-        <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
-          {schools.map((school) => {
-            return (
+        <Dropdown.SearchInput
+          placeholder="Rechercher un établissement..."
+          noResultsLabel="Pas de résultat"
+          onSearch={setSchoolSearch}
+        />
+        <div style={{ height: '200px', overflowY: 'auto' }}>
+          {[...schools]
+            .sort((a, b) => a.name.localeCompare(b.name))
+            .map((school) => (
               <Dropdown.CheckboxItem
                 key={school.id}
-                model={filters.schools.includes(school.id) ? [school.id] : []}
+                model={
+                  isAllChecked || filters.schools.includes(school.id)
+                    ? [school.id]
+                    : []
+                }
                 value={school.id}
                 onChange={handleSchoolToggle}
+                searchValue={school.name}
               >
                 {school.name}
               </Dropdown.CheckboxItem>
-            );
-          })}
+            ))}
         </div>
       </Dropdown.Menu>
     </Dropdown>

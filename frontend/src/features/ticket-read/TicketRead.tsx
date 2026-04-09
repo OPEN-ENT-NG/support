@@ -72,7 +72,7 @@ export function TicketRead() {
 
   return (
     <Flex className="w-100 h-100">
-      <div className="d-none d-lg-block border-end position-sticky top-0 h-100 overflow-y-auto ticket-sidebar">
+      <div className="d-none d-lg-block border-end position-sticky top-0 h-100 ticket-sidebar">
         <Flex direction="column" align="start" gap="8">
           <Flex
             justify="start"
