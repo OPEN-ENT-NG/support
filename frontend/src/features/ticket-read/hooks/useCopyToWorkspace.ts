@@ -1,6 +1,7 @@
 import { odeServices } from '@edifice.io/client';
 import { useToast } from '@edifice.io/react';
 import { useState } from 'react';
+import { useI18n } from '~/hooks/usei18n';
 
 export type AttachmentToCopy = {
   documentId: string;
@@ -15,6 +16,7 @@ function isFileTooLarge(e: unknown): boolean {
 }
 
 export function useCopyToWorkspace(ticketId: number) {
+  const { t } = useI18n();
   const toast = useToast();
   const [isCopying, setIsCopying] = useState(false);
 
@@ -36,15 +38,13 @@ export function useCopyToWorkspace(ticketId: number) {
       const file = new File([blob], attachment.name, { type: blob.type });
 
       await odeServices.workspace().saveFile(file, parentId ? { parentId } : undefined);
-      toast.success('Pièce jointe copiée dans votre espace documentaire.');
+      toast.success(t('support.workspace.copy.success'));
       return true;
     } catch (error) {
       if (isFileTooLarge(error)) {
-        toast.error(
-          "Erreur lors de la copie dans l'espace documentaire : espace disponible insuffisant.",
-        );
+        toast.error(t('support.workspace.copy.error.too.large'));
       } else {
-        toast.error("Erreur lors de la copie dans l'espace documentaire.");
+        toast.error(t('support.workspace.copy.error'));
       }
       return false;
     } finally {

@@ -17,6 +17,7 @@ import {
   useTicketComments,
   useTicketEvents,
 } from '~/services/queries/tickets';
+import { useI18n } from '~/hooks/usei18n';
 import { useTicketEditForm } from './hooks/useTicketEditForm';
 import { TicketCard } from './components/TicketCard';
 import TicketCommentForm from './components/TicketCommentForm';
@@ -52,6 +53,7 @@ export function TicketRead() {
   const userProfile = useUserProfile(ticket?.owner);
   const { avatar } = useUser();
   const { categories, schoolOptions } = useTicketFormOptions();
+  const { t } = useI18n();
   const { control, errors, isPending, onSubmit } = useTicketEditForm(ticket);
   const navigate = useNavigate();
 
@@ -85,7 +87,7 @@ export function TicketRead() {
               onClick={() => navigate('/')}
               size="sm"
             >
-              Retour
+              {t('support.ticket.read.back')}
             </Button>
           </Flex>
           <TicketEditForm
@@ -111,7 +113,7 @@ export function TicketRead() {
               leftIcon={<IconArrowLeft />}
               onClick={handleCancelClick}
             >
-              Retour
+              {t('support.ticket.read.back')}
             </Button>
           </div>
         )}

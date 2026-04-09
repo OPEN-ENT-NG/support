@@ -3,6 +3,7 @@ import { Editor, EditorRef } from '@edifice.io/react/editor';
 import { RefObject, useEffect, useState } from 'react';
 import { FieldErrors, UseFormRegister, UseFormSetValue } from 'react-hook-form';
 import { TicketAttachment } from '~/models';
+import { useI18n } from '~/hooks/usei18n';
 import TicketAddAttachment from './TicketAttachment';
 
 export type TicketCreateForm = {
@@ -33,6 +34,7 @@ export default function TicketCreateForm({
   editorRef,
   onAttachmentsChange,
 }: TicketCreateFormProps) {
+  const { t } = useI18n();
   const [attachments, setAttachments] = useState<TicketAttachment[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedSchool, setSelectedSchool] = useState('');
@@ -65,11 +67,11 @@ export default function TicketCreateForm({
           isRequired
           status={errors.category ? 'invalid' : undefined}
         >
-          <Label>Catégorie</Label>
+          <Label>{t('support.ticket.category')}</Label>
           <input
             type="hidden"
             {...register('category', {
-              required: 'La catégorie est obligatoire',
+              required: t('support.ticket.form.category.required'),
             })}
           />
           <Dropdown block>
@@ -78,13 +80,13 @@ export default function TicketCreateForm({
               block
               label={
                 categories.find((c) => c.value === selectedCategory)?.label ??
-                'Sélectionnez la catégorie...'
+                t('support.ticket.form.category.placeholder')
               }
             />
             <Dropdown.Menu>
               <Dropdown.SearchInput
-                placeholder="Rechercher une catégorie..."
-                noResultsLabel="Pas de résultat"
+                placeholder={t('support.ticket.form.search.category')}
+                noResultsLabel={t('support.ticket.form.no.results')}
               />
               {categories.map((cat) => (
                 <Dropdown.Item
@@ -111,11 +113,11 @@ export default function TicketCreateForm({
             isRequired
             status={errors.school_id ? 'invalid' : undefined}
           >
-            <Label>Établissement</Label>
+            <Label>{t('support.ticket.school')}</Label>
             <input
               type="hidden"
               {...register('school_id', {
-                required: "L'établissement est obligatoire",
+                required: t('support.ticket.form.school.required'),
               })}
             />
             <Dropdown block>
@@ -124,13 +126,13 @@ export default function TicketCreateForm({
                 block
                 label={
                   sortedSchools.find((s) => s.value === selectedSchool)
-                    ?.label ?? "Sélectionnez l'établissement..."
+                    ?.label ?? t('support.ticket.form.school.placeholder')
                 }
               />
               <Dropdown.Menu>
                 <Dropdown.SearchInput
-                  placeholder="Rechercher un établissement..."
-                  noResultsLabel="Pas de résultat"
+                  placeholder={t('support.ticket.form.search.school')}
+                  noResultsLabel={t('support.ticket.form.no.results')}
                 />
                 {sortedSchools.map((school) => (
                   <Dropdown.Item
@@ -158,13 +160,13 @@ export default function TicketCreateForm({
         isRequired
         status={errors.subject ? 'invalid' : undefined}
       >
-        <Label>Sujet</Label>
+        <Label>{t('support.ticket.subject')}</Label>
         <Input
           type="text"
           size="lg"
-          placeholder="Décrivez le sujet..."
+          placeholder={t('support.ticket.form.subject.placeholder')}
           maxLength={255}
-          {...register('subject', { required: 'Le sujet est obligatoire' })}
+          {...register('subject', { required: t('support.ticket.form.subject.required') })}
         />
       </FormControl>
 
@@ -173,13 +175,13 @@ export default function TicketCreateForm({
         isRequired
         status={errors.description ? 'invalid' : undefined}
       >
-        <Label>Détails de votre demande</Label>
+        <Label>{t('support.ticket.form.description.label')}</Label>
         <input
           type="hidden"
           {...register('description', {
             validate: (v) =>
               v.replace(/<[^>]*>/g, '').trim() !== '' ||
-              'La description est obligatoire',
+              t('support.ticket.form.description.required'),
           })}
         />
         <div className="editor-container">
@@ -187,7 +189,7 @@ export default function TicketCreateForm({
             ref={editorRef}
             id="description"
             content=""
-            placeholder="Saisissez votre texte ici"
+            placeholder={t('support.ticket.form.description.placeholder')}
             mode={'edit'}
             focus={false}
             onContentChange={({ editor }) => {

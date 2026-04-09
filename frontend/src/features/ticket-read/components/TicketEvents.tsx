@@ -1,5 +1,6 @@
 import { Badge, Flex } from '@edifice.io/react';
 import { IconInfoCircle } from '@edifice.io/react/icons';
+import { useI18n } from '~/hooks/usei18n';
 import {
   getTicketStatusText,
   TICKET_STATUS_CLASS,
@@ -12,6 +13,8 @@ export interface TicketEventProps {
 }
 
 export function TicketEvent({ event }: TicketEventProps) {
+  const { t } = useI18n();
+
   return (
     <Flex className="pt-24 pb-16 ps-24 pe-32 border-bottom-light" gap="16">
       <IconInfoCircle height={36} width={36} />
@@ -29,7 +32,7 @@ export function TicketEvent({ event }: TicketEventProps) {
           <p>
             {event.username && (
               <>
-                par{' '}
+                {t('support.ticket.read.event.by')}{' '}
                 <a href={`/userbook/annuaire#${event.user_id}`}>
                   <span className="small user-profile-relative">
                     <strong>{event.username}</strong>
@@ -38,7 +41,7 @@ export function TicketEvent({ event }: TicketEventProps) {
                 .{' '}
               </>
             )}
-            Le statut est{' '}
+            {t('support.ticket.read.event.status')}{' '}
             <Badge
               className={TICKET_STATUS_CLASS[event.status]}
               variant={{

@@ -1,4 +1,5 @@
 import { ConfirmModal } from '@edifice.io/react';
+import { useI18n } from '~/hooks/usei18n';
 
 type TicketCancelModalProps = {
   isOpen: boolean;
@@ -11,19 +12,16 @@ export default function TicketCancelModal({
   onClose,
   onConfirm,
 }: TicketCancelModalProps) {
+  const { t } = useI18n();
+
   return (
     <ConfirmModal
-      body={
-        <p>
-          La création de la page sera perdue. Souhaitez-vous annuler la création
-          ?
-        </p>
-      }
+      body={<p>{t('support.ticket.cancel.modal.body')}</p>}
       isOpen={isOpen}
-      header={<>Annuler la création</>}
+      header={<>{t('support.ticket.cancel.modal.title')}</>}
       id="confirm-modal"
-      okText="Annuler la création"
-      koText="Retour à la création"
+      okText={t('support.ticket.cancel.modal.confirm')}
+      koText={t('support.ticket.cancel.modal.back')}
       onCancel={onClose}
       onSuccess={onConfirm}
     />

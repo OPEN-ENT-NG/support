@@ -21,6 +21,7 @@ import ModalFooter from 'node_modules/@edifice.io/react/dist/components/Modal/Mo
 import ModalHeader from 'node_modules/@edifice.io/react/dist/components/Modal/ModalHeader';
 import { ReactNode, useCallback, useMemo, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useI18n } from '~/hooks/usei18n';
 import { useCanEscalate } from '~/hooks/useCanEscalate';
 import { useIsTicketEscalated } from '~/hooks/useIsTicketEscalated';
 import { useIsTicketNewOrOpen } from '~/hooks/useIsTicketNewOrOpen';
@@ -45,6 +46,7 @@ type InfoModalType = 'escalate' | 'sync' | null;
 export const AppActionHeader = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [infoModal, setInfoModal] = useState<InfoModalType>(null);
+  const { t } = useI18n();
 
   const navigate = useNavigate();
   const toast = useToast();
@@ -68,16 +70,14 @@ export const AppActionHeader = () => {
         countTickets('*'),
       ]);
       if (count > threshold) {
-        toast.info(
-          "L'export est en cours, vous recevrez le fichier dans votre espace de travail.",
-        );
+        toast.info(t('support.header.export.info'));
         await workerExportTickets('*');
       } else {
         directExportTickets('*');
       }
     } catch (err) {
       console.error(err);
-      toast.error("Erreur lors de l'export des tickets.");
+      toast.error(t('support.header.export.error'));
     }
   }, [toast]);
 
@@ -86,13 +86,13 @@ export const AppActionHeader = () => {
 
     try {
       await escalateTickets([ticketId!]);
-      toast.success('Ticket escaladé avec succès.');
+      toast.success(t('support.header.escalate.success'));
       await queryClient.invalidateQueries({
         queryKey: [ticketsQueryKeys.all()],
       });
     } catch (e) {
       console.error(e);
-      toast.error("Erreur lors de l'escalade du ticket.");
+      toast.error(t('support.header.escalate.error'));
     } finally {
       setIsLoading(false);
     }
@@ -103,13 +103,13 @@ export const AppActionHeader = () => {
 
     try {
       await refreshTicket(ticketId!);
-      toast.success('Le ticket a été mis à jour.');
+      toast.success(t('support.header.update.success'));
       await queryClient.invalidateQueries({
         queryKey: [ticketsQueryKeys.all()],
       });
     } catch (e) {
       console.error(e);
-      toast.error("Le ticket n'a pas pu être mis à jour.");
+      toast.error(t('support.header.update.error'));
     } finally {
       setIsLoading(false);
     }
@@ -131,7 +131,7 @@ export const AppActionHeader = () => {
             variant="outline"
             onClick={exportAllTickets}
           >
-            Exporter toutes les demandes
+            {t('support.ticket.export.all')}
           </Button>
         ),
       },
@@ -144,7 +144,7 @@ export const AppActionHeader = () => {
             color="primary"
             onClick={() => navigate('/tickets/new')}
           >
-            Nouvelle demande
+            {t('support.ticket.create')}
           </Button>
         ),
       },
@@ -169,7 +169,7 @@ export const AppActionHeader = () => {
               color="primary"
               onClick={() => escalateTicket()}
             >
-              {isLoading ? <Loading isLoading /> : 'Transmettre au support ENT'}
+              {isLoading ? <Loading isLoading /> : t('support.header.escalate.button')}
             </Button>
           </Flex>
         ),
@@ -191,7 +191,7 @@ export const AppActionHeader = () => {
               color="primary"
               onClick={() => updateTicket()}
             >
-              {isLoading ? <Loading isLoading /> : 'Mettre à jour le ticket'}
+              {isLoading ? <Loading isLoading /> : t('support.header.update.button')}
             </Button>
           </Flex>
         ),
@@ -202,7 +202,7 @@ export const AppActionHeader = () => {
           !isAdmc && isTicketRoute && canEscalate && isTicketEscalated,
         element: (
           <p className="text-escalated">
-            <em>Le ticket a été transmis au support ENT</em>
+            <em>{t('support.header.escalated.message')}</em>
           </p>
         ),
       },
@@ -239,20 +239,14 @@ export const AppActionHeader = () => {
         onModalClose={closeInfoModal}
       >
         <ModalHeader onModalClose={closeInfoModal}>
-          Transmettre au support ENT
+          {t('support.header.escalate.modal.title')}
         </ModalHeader>
         <ModalBody>
-          <p>
-            En tant qu’administrateur, vous assurez l’assistance de proximité
-            pour les utilisateurs de votre établissement. Si une demande dépasse
-            vos compétences techniques ou nécessite une investigation plus
-            poussée, vous avez la possibilité de solliciter l’assistance de
-            l’ENT pour prendre le relais.
-          </p>
+          <p>{t('support.header.escalate.modal.body')}</p>
         </ModalBody>
         <ModalFooter>
           <Flex justify="end">
-            <Button onClick={closeInfoModal}>Fermer</Button>
+            <Button onClick={closeInfoModal}>{t('support.header.escalate.modal.close')}</Button>
           </Flex>
         </ModalFooter>
       </Modal>
@@ -263,17 +257,14 @@ export const AppActionHeader = () => {
         onModalClose={closeInfoModal}
       >
         <ModalHeader onModalClose={closeInfoModal}>
-          Synchronisation avec le ticket escaladé
+          {t('support.header.sync.modal.title')}
         </ModalHeader>
         <ModalBody>
-          <p>
-            Si jamais la synchronisation entre Zendesk et Assistance ENT a été
-            interrompue, ce bouton permet de la relancer.
-          </p>
+          <p>{t('support.header.sync.modal.body')}</p>
         </ModalBody>
         <ModalFooter>
           <Flex justify="end">
-            <Button onClick={closeInfoModal}>Fermer</Button>
+            <Button onClick={closeInfoModal}>{t('support.header.sync.modal.close')}</Button>
           </Flex>
         </ModalFooter>
       </Modal>

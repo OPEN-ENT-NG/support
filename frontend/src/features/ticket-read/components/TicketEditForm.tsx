@@ -1,6 +1,7 @@
 import { Dropdown, Flex, FormControl, Input, Label, Select } from '@edifice.io/react';
 import { useMemo } from 'react';
 import { Control, Controller, FieldErrors } from 'react-hook-form';
+import { useI18n } from '~/hooks/usei18n';
 import {
   ESCALATION_STATUS,
   TICKET_STATUS_BY_CODE,
@@ -54,6 +55,7 @@ function ControlledDropdown({
   isPending: boolean;
   onSubmit: () => void;
 }) {
+  const { t } = useI18n();
   const sortedOptions = useMemo(
     () => [...options].sort((a, b) => a.label.localeCompare(b.label)),
     [options],
@@ -80,7 +82,7 @@ function ControlledDropdown({
             <Dropdown.Menu>
               <Dropdown.SearchInput
                 placeholder={searchPlaceholder}
-                noResultsLabel="Pas de résultat"
+                noResultsLabel={t('support.ticket.form.no.results')}
               />
               {sortedOptions.map((opt) => (
                 <Dropdown.Item
@@ -164,12 +166,14 @@ export default function TicketEditForm({
   bugTrackerIssueId,
   isPending,
 }: TicketEditFormProps) {
+  const { t } = useI18n();
+
   return (
     <Flex direction="column" gap="8" className="ps-16 pe-16 pt-12 pb-12 w-100">
       <FormControl id="uuid">
-        <Label>Identifiant</Label>
+        <Label>{t('support.ticket.form.id.label')}</Label>
         <Input
-          placeholder="Identifiant"
+          placeholder={t('support.ticket.form.id.label')}
           size="md"
           type="text"
           value={String(ticket.id)}
@@ -178,9 +182,9 @@ export default function TicketEditForm({
       </FormControl>
 
       <FormControl id="owner_name">
-        <Label>Demandeur</Label>
+        <Label>{t('support.ticket.form.owner.label')}</Label>
         <Input
-          placeholder="Demandeur"
+          placeholder={t('support.ticket.form.owner.label')}
           size="md"
           type="text"
           value={ticket.owner_name}
@@ -189,9 +193,9 @@ export default function TicketEditForm({
       </FormControl>
 
       <FormControl id="profile">
-        <Label>Profil</Label>
+        <Label>{t('support.ticket.form.profile.label')}</Label>
         <Input
-          placeholder="Profil"
+          placeholder={t('support.ticket.form.profile.label')}
           size="md"
           type="text"
           value={userProfile ?? ' '}
@@ -201,12 +205,12 @@ export default function TicketEditForm({
 
       <ControlledDropdown
         name="school_id"
-        label="Etablissement"
-        placeholder="Etablissement"
-        searchPlaceholder="Rechercher un établissement..."
+        label={t('support.ticket.form.school.edit.label')}
+        placeholder={t('support.ticket.form.school.edit.label')}
+        searchPlaceholder={t('support.ticket.form.search.school')}
         options={schoolOptions}
         control={control}
-        required="L'établissement est obligatoire"
+        required={t('support.ticket.form.school.required')}
         errors={errors}
         isPending={isPending}
         onSubmit={onSubmit}
@@ -214,12 +218,12 @@ export default function TicketEditForm({
 
       <ControlledDropdown
         name="category"
-        label="Catégorie"
-        placeholder="Catégorie"
-        searchPlaceholder="Rechercher une catégorie..."
+        label={t('support.ticket.category')}
+        placeholder={t('support.ticket.category')}
+        searchPlaceholder={t('support.ticket.form.search.category')}
         options={categories}
         control={control}
-        required="La catégorie est obligatoire"
+        required={t('support.ticket.form.category.required')}
         errors={errors}
         isPending={isPending}
         onSubmit={onSubmit}
@@ -227,20 +231,20 @@ export default function TicketEditForm({
 
       <ControlledSelect
         name="status"
-        label="Statut"
-        placeholder="Statut"
+        label={t('support.ticket.status')}
+        placeholder={t('support.ticket.status')}
         options={STATUS_OPTIONS}
         control={control}
-        required="Le statut est obligatoire"
+        required={t('support.ticket.form.status.required')}
         errors={errors}
         isPending={isPending}
         onSubmit={onSubmit}
       />
 
       <FormControl id="created">
-        <Label>Date de Création</Label>
+        <Label>{t('support.ticket.form.created.label')}</Label>
         <Input
-          placeholder="Date de Création"
+          placeholder={t('support.ticket.form.created.label')}
           size="md"
           type="date"
           disabled
@@ -249,9 +253,9 @@ export default function TicketEditForm({
       </FormControl>
 
       <FormControl id="modified">
-        <Label>Date de dernière modification</Label>
+        <Label>{t('support.ticket.form.modified.label')}</Label>
         <Input
-          placeholder="Date de dernière modification"
+          placeholder={t('support.ticket.form.modified.label')}
           size="md"
           type="date"
           disabled
@@ -262,7 +266,7 @@ export default function TicketEditForm({
       {ticket.escalation_status === ESCALATION_STATUS.SUCCESSFUL &&
         bugTrackerIssueId && (
           <FormControl id="escalation_id">
-            <Label>Ticket escaladé</Label>
+            <Label>{t('support.ticket.form.escalated.label')}</Label>
             <Input
               placeholder=""
               size="md"

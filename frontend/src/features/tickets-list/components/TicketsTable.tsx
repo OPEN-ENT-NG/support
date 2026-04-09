@@ -1,4 +1,5 @@
 import { Table, useIsAdmlcOrAdmc, useToast } from '@edifice.io/react';
+import { useI18n } from '~/hooks/usei18n';
 import { SortableTicketField, SortOrder } from '~/models';
 import {
   IconDownload,
@@ -29,6 +30,7 @@ function TicketsTable({ tickets = [], schools = [], sortBy, order, onSort }: Tic
   const { isAdmlcOrAdmc } = useIsAdmlcOrAdmc();
   const [selectedTickets, setSelectedTickets] = useState<Ticket[]>([]);
   const escalateWorkflow = useCanEscalate();
+  const { t } = useI18n();
   const toast = useToast();
   const queryClient = useQueryClient();
   const canMultiSelect = isAdmlcOrAdmc || escalateWorkflow;
@@ -47,7 +49,7 @@ function TicketsTable({ tickets = [], schools = [], sortBy, order, onSort }: Tic
     () => [
       {
         id: 'open',
-        label: 'Ouvrir',
+        label: t('support.ticket.table.open'),
         icon: <IconFullScreen />,
         onClick: () => {
           navigate(`/tickets/${selectedTickets[0].id}`);
@@ -56,7 +58,7 @@ function TicketsTable({ tickets = [], schools = [], sortBy, order, onSort }: Tic
       },
       {
         id: 'export',
-        label: 'Exporter les tickets sélectionnés',
+        label: t('support.ticket.export.selected'),
         icon: <IconDownload />,
         onClick: () => {
           exportTickets(selectedTickets.map((t) => t.id.toString()));
@@ -65,7 +67,7 @@ function TicketsTable({ tickets = [], schools = [], sortBy, order, onSort }: Tic
       },
       {
         id: 'transfer',
-        label: 'Transférer au support Édifice',
+        label: t('support.ticket.table.transfer'),
         icon: <IconGroupAvatar />,
         onClick: async () => {
           try {
@@ -74,12 +76,10 @@ function TicketsTable({ tickets = [], schools = [], sortBy, order, onSort }: Tic
             queryClient.invalidateQueries({
               queryKey: [ticketsQueryKeys.all()],
             });
-            toast.success('Les tickets ont été transférés avec succès');
+            toast.success(t('support.ticket.table.transfer.success'));
           } catch (error) {
             console.error(error);
-            toast.error(
-              "Une erreur s'est produite lors du transfert des tickets",
-            );
+            toast.error(t('support.ticket.table.transfer.error'));
           }
         },
         isVisible:

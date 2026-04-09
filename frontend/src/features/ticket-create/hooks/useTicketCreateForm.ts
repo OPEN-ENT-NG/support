@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { CreateTicket, TicketAttachment } from '~/models';
+import { useI18n } from '~/hooks/usei18n';
 import { createTicket, escalateTickets } from '~/services';
 import { ticketsQueryKeys } from '~/services/queries/tickets';
 import { buildAttachmentsFromEditor } from '~/utils';
@@ -12,6 +13,7 @@ import { TicketCreateForm } from '../components/TicketCreateForm';
 import { useSchools } from '~/services/queries/schools';
 
 export function useTicketCreateForm() {
+  const { t } = useI18n();
   const [isPending, setIsPending] = useState(false);
   const attachmentsRef = useRef<TicketAttachment[]>([]);
   const editorRef = useRef<EditorRef>(null);
@@ -60,9 +62,9 @@ export function useTicketCreateForm() {
 
       if (escalate && newTicketResult?.id) {
         await escalateTickets([newTicketResult.id.toString()]);
-        toast.success('Ticket créé et transmis au support ENT avec succès');
+        toast.success(t('support.ticket.create.and.escalate.success'));
       } else {
-        toast.success('Ticket créé avec succès');
+        toast.success(t('support.ticket.create.success'));
       }
       await queryClient.invalidateQueries({
         queryKey: [ticketsQueryKeys.all(), 'list'],
@@ -70,7 +72,7 @@ export function useTicketCreateForm() {
       navigate(`/tickets/${newTicketResult?.id}`);
     } catch (error) {
       console.error('Error creating ticket:', error);
-      toast.error('Erreur lors de la création du ticket');
+      toast.error(t('support.ticket.create.error'));
     } finally {
       setIsPending(false);
     }

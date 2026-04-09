@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react';
 import { Editor } from '@edifice.io/react/editor';
 import { IconDownload, IconFolderAdd } from '@edifice.io/react/icons';
 import { ApiAttachment, BugTrackerIssue, Ticket } from '~/models/ticket';
+import { useI18n } from '~/hooks/usei18n';
 import { TicketDetailsHeader } from './TicketDetailsHeader';
 import { useCopyToWorkspace } from '../hooks/useCopyToWorkspace';
 import { AddAttachmentToWorkspaceModal } from './AddAttachmentToWorkspaceModal';
@@ -26,6 +27,7 @@ export function TicketCard({
   attachments,
   bugTrackerIssue,
 }: TicketCardProps) {
+  const { t } = useI18n();
   const { copyToWorkspace } = useCopyToWorkspace(ticket.id);
   const [attachmentToSave, setAttachmentToSave] = useState<Attachment | null>(null);
 
@@ -103,7 +105,7 @@ export function TicketCard({
             gap="8"
           >
             <p className="caption mt-8 pb-8 border-bottom-light">
-              <strong>Pièces jointes</strong>
+              <strong>{t('support.ticket.read.attachments.title')}</strong>
             </p>
             {allAttachments.map((attachment) => (
               <Attachment

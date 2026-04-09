@@ -1,6 +1,7 @@
 import { Button, Flex } from '@edifice.io/react';
 import { IconSave } from '@edifice.io/react/icons';
 import { useCanEscalate } from '~/hooks/useCanEscalate';
+import { useI18n } from '~/hooks/usei18n';
 
 type TicketCreateActionsProps = {
   isValid: boolean;
@@ -17,6 +18,7 @@ export default function TicketCreateActions({
   onSubmitAndEscalate,
   onCancelClick,
 }: TicketCreateActionsProps) {
+  const { t } = useI18n();
   const canEscalate = useCanEscalate();
 
   return (
@@ -27,7 +29,7 @@ export default function TicketCreateActions({
         disabled={isPending}
         onClick={onCancelClick}
       >
-        Annuler
+        {t('support.ticket.cancel')}
       </Button>
 
       <Button
@@ -37,7 +39,7 @@ export default function TicketCreateActions({
         disabled={!isValid || isPending}
         onClick={onSubmit}
       >
-        Créer
+        {t('support.ticket.action.create')}
       </Button>
 
       {canEscalate && (
@@ -46,7 +48,7 @@ export default function TicketCreateActions({
           disabled={!isValid || isPending}
           onClick={onSubmitAndEscalate}
         >
-          Créer et transmettre au support ENT
+          {t('support.ticket.action.create.and.escalate')}
         </Button>
       )}
     </Flex>
