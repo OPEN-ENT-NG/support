@@ -1,4 +1,5 @@
 import { Table, useIsAdmlcOrAdmc, useToast } from '@edifice.io/react';
+import { SortableTicketField, SortOrder } from '~/models';
 import {
   IconDownload,
   IconFullScreen,
@@ -18,9 +19,12 @@ import TicketsTableRow from './TicketsTableRow';
 export type TicketsTableProps = {
   tickets?: Ticket[];
   schools?: School[];
+  sortBy: SortableTicketField;
+  order: SortOrder;
+  onSort: (field: SortableTicketField) => void;
 };
 
-function TicketsTable({ tickets = [], schools = [] }: TicketsTableProps) {
+function TicketsTable({ tickets = [], schools = [], sortBy, order, onSort }: TicketsTableProps) {
   const navigate = useNavigate();
   const { isAdmlcOrAdmc } = useIsAdmlcOrAdmc();
   const [selectedTickets, setSelectedTickets] = useState<Ticket[]>([]);
@@ -114,7 +118,12 @@ function TicketsTable({ tickets = [], schools = [] }: TicketsTableProps) {
   return (
     <div className="overflow-x-auto w-100">
       <Table>
-        <TicketsTableHeader canMultiSelect={canMultiSelect} />
+        <TicketsTableHeader
+          canMultiSelect={canMultiSelect}
+          sortBy={sortBy}
+          order={order}
+          onSort={onSort}
+        />
         <Table.Tbody>
           {canMultiSelect && (
             <TicketsTableToolbar

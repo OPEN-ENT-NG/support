@@ -6,7 +6,7 @@ import TicketsTable from './components/TicketsTable';
 import { Flex, LoadingScreen, useIsAdmlcOrAdmc } from '@edifice.io/react';
 import { Pagination } from 'antd';
 import { useCallback, useState } from 'react';
-import { TicketFiltersState } from '~/models';
+import { SortableTicketField, SortOrder, TicketFiltersState } from '~/models';
 import { TicketsTypeSelector } from './components/TicketsTypeSelector';
 
 export function TicketsList() {
@@ -17,6 +17,8 @@ export function TicketsList() {
     status: [],
     schools: [],
     type: 'all',
+    sortBy: 'modified',
+    order: 'DESC',
   });
   const [page, setPage] = useState(1);
   const { tickets, isPending: ticketsPending } = useTickets(
@@ -25,7 +27,18 @@ export function TicketsList() {
     filters.type,
     filters.schools,
     filters.search,
+    filters.sortBy,
+    filters.order,
   );
+
+  const handleSort = useCallback((field: SortableTicketField) => {
+    setFilters((prev) => ({
+      ...prev,
+      sortBy: field,
+      order: prev.sortBy === field && prev.order === 'DESC' ? 'ASC' : 'DESC',
+    }));
+    setPage(1);
+  }, []);
   const { schools, isPending: schoolsPending } = useSchools();
   const { ticketsPerPage, isPending: ticketsPerPagePending } =
     useTicketsPerPage();
@@ -60,7 +73,13 @@ export function TicketsList() {
         <EmptyTicketsTable />
       ) : (
         <Flex direction="column" gap="4" align="center">
-          <TicketsTable tickets={tickets} schools={schools} />
+          <TicketsTable
+            tickets={tickets}
+            schools={schools}
+            sortBy={filters.sortBy}
+            order={filters.order}
+            onSort={handleSort}
+          />
           {ticketsPerPage !== undefined &&
             totalResults / ticketsPerPage > 1 && (
               <Pagination

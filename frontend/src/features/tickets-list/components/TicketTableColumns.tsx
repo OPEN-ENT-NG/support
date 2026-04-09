@@ -2,6 +2,7 @@ import { Badge } from '@edifice.io/react';
 import {
   ApiProfile,
   School,
+  SortableTicketField,
   Ticket,
   TICKET_STATUS_CLASS,
   getTicketStatusText,
@@ -12,14 +13,16 @@ import { formaterDate } from '~/utils';
 export type TicketTableColumn = {
   id: keyof Ticket;
   header: string;
+  sortBy?: SortableTicketField;
   cell?: (ticket: Ticket, school?: School) => React.ReactNode;
 };
 
 export const ticketTableColumns: TicketTableColumn[] = [
-  { id: 'id', header: 'ID' },
+  { id: 'id', header: 'ID', sortBy: 'id' },
   {
     id: 'status',
     header: 'Statut',
+    sortBy: 'status',
     cell: (ticket: Ticket) => {
       return (
         <Badge
@@ -37,6 +40,7 @@ export const ticketTableColumns: TicketTableColumn[] = [
   {
     id: 'short_desc',
     header: 'Sujet',
+    sortBy: 'subject',
     cell: (ticket: Ticket) => {
       return (
         <strong>
@@ -49,15 +53,17 @@ export const ticketTableColumns: TicketTableColumn[] = [
   {
     id: 'category_label',
     header: 'Catégorie',
+    sortBy: 'category_label',
     cell: (ticket: Ticket) =>
       ticket.category_label ? ticket.category_label : '-',
   },
   {
     id: 'school_id',
     header: 'Structure du demandeur',
+    sortBy: 'school_id',
     cell: (_: Ticket, school?: School) => <>{school?.name}</>,
   },
-  { id: 'owner_name', header: 'Demandeur' },
+  { id: 'owner_name', header: 'Demandeur', sortBy: 'owner' },
   {
     id: 'profile',
     header: 'Profil',
@@ -79,9 +85,10 @@ export const ticketTableColumns: TicketTableColumn[] = [
   {
     id: 'modified',
     header: 'Dernière modification',
+    sortBy: 'modified',
     cell: (ticket: Ticket) => formaterDate(ticket.modified),
   },
-  { id: 'event_count', header: 'Evénements' },
+  { id: 'event_count', header: 'Evénements', sortBy: 'event_count' },
   {
     id: 'escalation_date',
     header: 'Escaladé',

@@ -24,11 +24,13 @@ export function getTickets(
   type: TicketType,
   schools: string[],
   search?: string,
+  sortBy: string = 'modified',
+  order: string = 'DESC',
 ): Promise<ApiTicket[]> {
   const body = {
     page: page,
-    sortBy: 'modified',
-    order: 'DESC',
+    sortBy,
+    order,
     statuses: status.map((s) => String(s)),
     applicant: type === 'mine' ? 'ME' : type === 'other' ? 'OTHER' : undefined,
     schools: schools.length > 0 ? schools : ['*'],
