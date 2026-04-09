@@ -1,10 +1,11 @@
 import { Attachment, Flex, IconButton } from '@edifice.io/react';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Editor } from '@edifice.io/react/editor';
 import { IconDownload, IconFolderAdd } from '@edifice.io/react/icons';
 import { ApiAttachment, BugTrackerIssue, Ticket } from '~/models/ticket';
 import { TicketDetailsHeader } from './TicketDetailsHeader';
 import { useCopyToWorkspace } from '../hooks/useCopyToWorkspace';
+import { AddAttachmentToWorkspaceModal } from './AddAttachmentToWorkspaceModal';
 
 export interface TicketCardProps {
   ticket: Ticket;
@@ -26,6 +27,7 @@ export function TicketCard({
   bugTrackerIssue,
 }: TicketCardProps) {
   const { copyToWorkspace } = useCopyToWorkspace(ticket.id);
+  const [attachmentToSave, setAttachmentToSave] = useState<Attachment | null>(null);
 
   const handleDownload = (
     attachmentId: string,
@@ -39,11 +41,19 @@ export function TicketCard({
   };
 
   const handleSaveToWorkspace = (attachment: Attachment) => {
-    copyToWorkspace({
-      documentId: attachment.document_id,
-      name: attachment.name,
-      origin: attachment.origin,
-    });
+    setAttachmentToSave(attachment);
+  };
+
+  const handleCopyToWorkspace = async (folderId: string): Promise<boolean> => {
+    if (!attachmentToSave) return false;
+    return copyToWorkspace(
+      {
+        documentId: attachmentToSave.document_id,
+        name: attachmentToSave.name,
+        origin: attachmentToSave.origin,
+      },
+      folderId,
+    );
   };
 
   const allAttachments = useMemo<Attachment[]>(
@@ -69,6 +79,14 @@ export function TicketCard({
   );
 
   return (
+    <>
+    {attachmentToSave && (
+      <AddAttachmentToWorkspaceModal
+        isOpen={true}
+        onModalClose={() => setAttachmentToSave(null)}
+        onCopyToWorkspace={handleCopyToWorkspace}
+      />
+    )}
     <Flex
       direction="column"
       className="pt-24 pb-24 ps-24 pe-16 border-bottom-light"
@@ -120,5 +138,6 @@ export function TicketCard({
         )}
       </Flex>
     </Flex>
+    </>
   );
 }

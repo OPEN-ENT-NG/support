@@ -18,7 +18,10 @@ export function useCopyToWorkspace(ticketId: number) {
   const toast = useToast();
   const [isCopying, setIsCopying] = useState(false);
 
-  async function copyToWorkspace(attachment: AttachmentToCopy) {
+  async function copyToWorkspace(
+    attachment: AttachmentToCopy,
+    parentId?: string,
+  ): Promise<boolean> {
     setIsCopying(true);
     try {
       const url =
@@ -32,8 +35,9 @@ export function useCopyToWorkspace(ticketId: number) {
       const blob = await response.blob();
       const file = new File([blob], attachment.name, { type: blob.type });
 
-      await odeServices.workspace().saveFile(file);
+      await odeServices.workspace().saveFile(file, parentId ? { parentId } : undefined);
       toast.success('Pièce jointe copiée dans votre espace documentaire.');
+      return true;
     } catch (error) {
       if (isFileTooLarge(error)) {
         toast.error(
@@ -42,6 +46,7 @@ export function useCopyToWorkspace(ticketId: number) {
       } else {
         toast.error("Erreur lors de la copie dans l'espace documentaire.");
       }
+      return false;
     } finally {
       setIsCopying(false);
     }
