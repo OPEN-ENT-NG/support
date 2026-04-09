@@ -15,6 +15,7 @@ import {
   TicketApiCode,
   TicketFiltersState,
 } from '~/models';
+import { useI18n } from '~/hooks/usei18n';
 
 type TicketsFiltersProps = {
   filters: TicketFiltersState;
@@ -51,6 +52,7 @@ function TicketsSchoolFilter({
   onChange,
   schools,
 }: TicketsSchoolFilterProps) {
+  const { t } = useI18n();
   const [noneSelected, setNoneSelected] = useState(false);
   const [schoolSearch, setSchoolSearch] = useState('');
 
@@ -114,7 +116,7 @@ function TicketsSchoolFilter({
       <Dropdown.Trigger
         size="md"
         icon={<IconFilter />}
-        label="Établissement"
+        label={t('support.ticket.filter.schools')}
         badgeContent={
           filters.schools.length > 0 ? filters.schools.length : undefined
         }
@@ -134,8 +136,8 @@ function TicketsSchoolFilter({
         </div>
         <Dropdown.Separator />
         <Dropdown.SearchInput
-          placeholder="Rechercher un établissement..."
-          noResultsLabel="Pas de résultat"
+          placeholder={t('support.ticket.form.search.school')}
+          noResultsLabel={t('support.ticket.form.no.results')}
           onSearch={setSchoolSearch}
         />
         <div style={{ height: '200px', overflowY: 'auto' }}>
@@ -163,6 +165,7 @@ function TicketsSchoolFilter({
 }
 
 function TicketsStatusFilter({ filters, onChange }: TicketsStatusFilterProps) {
+  const { t } = useI18n();
   const [isAllChecked, setIsAllChecked] = useState(filters.status.length === 0);
 
   const handleSelectAll = () => {
@@ -181,7 +184,7 @@ function TicketsStatusFilter({ filters, onChange }: TicketsStatusFilterProps) {
       <Dropdown.Trigger
         size="md"
         icon={<IconFilter />}
-        label="Statut du ticket"
+        label={t('support.ticket.filter.status')}
         badgeContent={
           filters.status.length > 0 ? filters.status.length : undefined
         }
@@ -192,7 +195,7 @@ function TicketsStatusFilter({ filters, onChange }: TicketsStatusFilterProps) {
           value="all"
           onChange={handleSelectAll}
         >
-          Tous les statuts
+          {t('support.ticket.filter.allstatuses')}
         </Dropdown.CheckboxItem>
         <Dropdown.Separator />
         {Object.entries(TICKET_STATUS_BY_CODE).map(([code, status]) => {
@@ -218,6 +221,7 @@ export function TicketsFilters({
   schools,
   onChange,
 }: TicketsFiltersProps) {
+  const { t } = useI18n();
   const [search, setSearch] = useState(filters.search);
   const debouncedSearch = useDebounce(search, 300);
 
@@ -239,7 +243,7 @@ export function TicketsFilters({
     >
       <SearchBar
         className="flex-grow-1 w-auto search-bar"
-        placeholder="Rechercher un ticket"
+        placeholder={t('support.ticket.filter.search')}
         onChange={handleSearchChange}
         isVariant={false}
         onClick={() => {}}

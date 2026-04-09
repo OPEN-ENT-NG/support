@@ -12,16 +12,16 @@ import { formaterDate } from '~/utils';
 
 export type TicketTableColumn = {
   id: keyof Ticket;
-  header: string;
+  headerKey: string;
   sortBy?: SortableTicketField;
   cell?: (ticket: Ticket, school?: School) => React.ReactNode;
 };
 
 export const ticketTableColumns: TicketTableColumn[] = [
-  { id: 'id', header: 'ID', sortBy: 'id' },
+  { id: 'id', headerKey: 'support.ticket.table.id', sortBy: 'id' },
   {
     id: 'status',
-    header: 'Statut',
+    headerKey: 'support.ticket.table.status',
     sortBy: 'status',
     cell: (ticket: Ticket) => {
       return (
@@ -39,7 +39,7 @@ export const ticketTableColumns: TicketTableColumn[] = [
   },
   {
     id: 'short_desc',
-    header: 'Sujet',
+    headerKey: 'support.ticket.table.subject',
     sortBy: 'subject',
     cell: (ticket: Ticket) => {
       return (
@@ -52,21 +52,21 @@ export const ticketTableColumns: TicketTableColumn[] = [
   },
   {
     id: 'category_label',
-    header: 'Catégorie',
+    headerKey: 'support.ticket.table.category',
     sortBy: 'category_label',
     cell: (ticket: Ticket) =>
       ticket.category_label ? ticket.category_label : '-',
   },
   {
     id: 'school_id',
-    header: 'Structure du demandeur',
+    headerKey: 'support.ticket.table.school',
     sortBy: 'school_id',
     cell: (_: Ticket, school?: School) => <>{school?.name}</>,
   },
-  { id: 'owner_name', header: 'Demandeur', sortBy: 'owner' },
+  { id: 'owner_name', headerKey: 'support.ticket.table.author', sortBy: 'owner' },
   {
     id: 'profile',
-    header: 'Profil',
+    headerKey: 'support.ticket.table.profile',
     cell: (ticket: Ticket) => {
       const profile = mapApiProfileToProfile(
         ticket.profile as ApiProfile,
@@ -84,14 +84,14 @@ export const ticketTableColumns: TicketTableColumn[] = [
   },
   {
     id: 'modified',
-    header: 'Dernière modification',
+    headerKey: 'support.ticket.table.last.modified',
     sortBy: 'modified',
     cell: (ticket: Ticket) => formaterDate(ticket.modified),
   },
-  { id: 'event_count', header: 'Evénements', sortBy: 'event_count' },
+  { id: 'event_count', headerKey: 'support.ticket.table.event.count', sortBy: 'event_count' },
   {
     id: 'escalation_date',
-    header: 'Escaladé',
+    headerKey: 'support.ticket.table.last.update.of.escalated.ticket',
     cell: (ticket: Ticket) =>
       ticket.escalation_date ? formaterDate(ticket.escalation_date) : '-',
   },

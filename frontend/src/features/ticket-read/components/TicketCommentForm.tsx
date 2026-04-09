@@ -4,6 +4,7 @@ import { IconUndo } from '@edifice.io/react/icons';
 import { useMutation } from '@tanstack/react-query';
 import { useRef, useState } from 'react';
 import { Ticket, TicketAttachment } from '~/models';
+import { useI18n } from '~/hooks/usei18n';
 import { queryClient } from '~/providers';
 import { updateTicket } from '~/services';
 import { ticketsQueryKeys } from '~/services/queries';
@@ -18,6 +19,7 @@ export default function TicketCommentForm({
   ticket,
   avatarUrl,
 }: TicketCommentFormProps) {
+  const { t } = useI18n();
   const [isEmpty, setIsEmpty] = useState(true);
 
   const contentRef = useRef('');
@@ -39,13 +41,12 @@ export default function TicketCommentForm({
     },
     onError: (error) => {
       console.error('Error commenting ticket:', error);
-      toast.error("Erreur lors de l'envoi du commentaire");
+      toast.error(t('support.ticket.read.comment.error'));
     },
   });
 
   const handleSubmit = async () => {
     const editorAttachments = await buildAttachmentsFromEditor(editorRef);
-
     mutation.mutate(editorAttachments);
   };
 
@@ -62,7 +63,7 @@ export default function TicketCommentForm({
           <Editor
             ref={editorRef}
             content=""
-            placeholder="Saisissez votre réponse ici"
+            placeholder={t('support.ticket.read.comment.placeholder')}
             mode="edit"
             visibility="public"
             onContentChange={({ editor }) => {
@@ -81,7 +82,7 @@ export default function TicketCommentForm({
             onClick={handleSubmit}
             disabled={isEmpty || mutation.isPending}
           >
-            {mutation.isPending ? <Loading isLoading /> : 'Répondre'}
+            {mutation.isPending ? <Loading isLoading /> : t('support.ticket.read.comment.reply')}
           </Button>
         </Flex>
       </Flex>

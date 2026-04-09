@@ -1,6 +1,7 @@
 import { AddAttachments, Flex, useToast } from '@edifice.io/react';
 import { useMemo, useState } from 'react';
 import { type TicketAttachment } from '~/models';
+import { useI18n } from '~/hooks/usei18n';
 import { uploadAttachment } from '~/services';
 
 interface TicketAttachmentProps {
@@ -18,6 +19,7 @@ export default function TicketAddAttachment({
   onChange,
   attachments,
 }: TicketAttachmentProps) {
+  const { t } = useI18n();
   const [isMutating, setIsMutating] = useState(false);
   const toast = useToast();
 
@@ -29,11 +31,9 @@ export default function TicketAddAttachment({
     } catch (error) {
       console.error('Error uploading attachment:', error);
       if (isFileTooLarge(error)) {
-        toast.error(
-          'Erreur lors du téléchargement de la pièce jointe : espace disponible insuffisant.',
-        );
+        toast.error(t('support.ticket.attachment.upload.error.too.large'));
       } else {
-        toast.error('Erreur lors du téléchargement de la pièce jointe.');
+        toast.error(t('support.ticket.attachment.upload.error'));
       }
     } finally {
       setIsMutating(false);

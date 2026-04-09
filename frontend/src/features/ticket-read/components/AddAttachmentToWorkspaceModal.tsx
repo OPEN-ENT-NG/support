@@ -1,6 +1,7 @@
 import { Button, Modal, WorkspaceFolders } from '@edifice.io/react';
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { useI18n } from '~/hooks/usei18n';
 
 interface AddAttachmentToWorkspaceModalProps {
   isOpen?: boolean;
@@ -13,6 +14,7 @@ export function AddAttachmentToWorkspaceModal({
   onModalClose,
   onCopyToWorkspace,
 }: AddAttachmentToWorkspaceModalProps) {
+  const { t } = useI18n();
   const [selectedFolderId, setSelectedFolderId] = useState<string | undefined>(
     undefined,
   );
@@ -43,11 +45,11 @@ export function AddAttachmentToWorkspaceModal({
       size="md"
     >
       <Modal.Header onModalClose={onModalClose}>
-        Copier dans l&apos;espace documentaire
+        {t('support.workspace.copy.modal.title')}
       </Modal.Header>
       <Modal.Body>
         <div className="d-flex flex-column gap-12">
-          <p>Sélectionnez le dossier de destination.</p>
+          <p>{t('support.workspace.copy.modal.description')}</p>
           <WorkspaceFolders onFolderSelected={handleFolderSelected} />
         </div>
       </Modal.Body>
@@ -58,7 +60,7 @@ export function AddAttachmentToWorkspaceModal({
           variant="ghost"
           onClick={onModalClose}
         >
-          Annuler
+          {t('support.workspace.copy.modal.cancel')}
         </Button>
         <Button
           type="button"
@@ -68,7 +70,7 @@ export function AddAttachmentToWorkspaceModal({
           disabled={isLoading || disabled}
           isLoading={isLoading}
         >
-          Copier
+          {t('support.workspace.copy.modal.confirm')}
         </Button>
       </Modal.Footer>
     </Modal>,

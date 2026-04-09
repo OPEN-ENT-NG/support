@@ -3,11 +3,13 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { Ticket, TicketApiCode } from '~/models';
+import { useI18n } from '~/hooks/usei18n';
 import { updateTicket } from '~/services';
 import { ticketsQueryKeys } from '~/services/queries/tickets';
 import type { TicketEditFormValues } from '../components/TicketEditForm';
 
 export function useTicketEditForm(ticket: Ticket | undefined) {
+  const { t } = useI18n();
   const toast = useToast();
   const queryClient = useQueryClient();
 
@@ -43,12 +45,12 @@ export function useTicketEditForm(ticket: Ticket | undefined) {
         status: Number(formData.status) as TicketApiCode,
       }),
     onSuccess: () => {
-      toast.success('Ticket mis à jour avec succès');
+      toast.success(t('support.ticket.update.success'));
       queryClient.invalidateQueries({ queryKey: [ticketsQueryKeys.all()] });
     },
     onError: (error) => {
       console.error('Error updating ticket:', error);
-      toast.error('Erreur lors de la mise à jour du ticket');
+      toast.error(t('support.ticket.update.error'));
     },
   });
 
