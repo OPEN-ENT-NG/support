@@ -198,7 +198,7 @@ export default function TicketEditForm({
           placeholder={t('support.ticket.form.profile.label')}
           size="md"
           type="text"
-          value={userProfile ?? ' '}
+          value={userProfile ? t(userProfile) : ' '}
           disabled
         />
       </FormControl>
