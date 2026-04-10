@@ -79,7 +79,10 @@ export function TicketCreateForm({
             selectedValue={selectedCategory}
             onChange={(value) => {
               setSelectedCategory(value);
-              setValue('category', value, { shouldValidate: true, shouldDirty: true });
+              setValue('category', value, {
+                shouldValidate: true,
+                shouldDirty: true,
+              });
             }}
             isRequired
             isInvalid={!!errors.category}
@@ -108,7 +111,10 @@ export function TicketCreateForm({
               selectedValue={selectedSchool}
               onChange={(value) => {
                 setSelectedSchool(value);
-                setValue('school_id', value, { shouldValidate: true, shouldDirty: true });
+                setValue('school_id', value, {
+                  shouldValidate: true,
+                  shouldDirty: true,
+                });
               }}
               isRequired
               isInvalid={!!errors.school_id}
@@ -129,7 +135,9 @@ export function TicketCreateForm({
           size="lg"
           placeholder={t('support.ticket.form.subject.placeholder')}
           maxLength={255}
-          {...register('subject', { required: t('support.ticket.form.subject.required') })}
+          {...register('subject', {
+            required: t('support.ticket.form.subject.required'),
+          })}
         />
       </FormControl>
 

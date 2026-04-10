@@ -1,5 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
-import { SortableTicketField, SortOrder, Ticket, TicketApiCode, TicketType } from '~/models';
+import {
+  SortableTicketField,
+  SortOrder,
+  Ticket,
+  TicketApiCode,
+  TicketType,
+} from '~/models';
 import {
   getAttachmentById,
   getBugTrackerIssueById,
@@ -53,8 +59,17 @@ export const useTickets = (
   order: SortOrder = 'DESC',
 ) => {
   const { data, isPending } = useQuery({
-    queryKey: ticketsQueryKeys.list(page, status, type, schools, search, sortBy, order),
-    queryFn: () => getTickets(page, status, type, schools, search, sortBy, order),
+    queryKey: ticketsQueryKeys.list(
+      page,
+      status,
+      type,
+      schools,
+      search,
+      sortBy,
+      order,
+    ),
+    queryFn: () =>
+      getTickets(page, status, type, schools, search, sortBy, order),
   });
   return { tickets: (data as Ticket[]) ?? [], isPending };
 };

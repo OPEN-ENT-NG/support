@@ -145,20 +145,20 @@ function TicketsSchoolFilter({
         />
         <div style={{ height: '200px', overflowY: 'auto' }}>
           {sortByKey(schools, 'name').map((school) => (
-              <Dropdown.CheckboxItem
-                key={school.id}
-                model={
-                  isAllChecked || filters.schools.includes(school.id)
-                    ? [school.id]
-                    : []
-                }
-                value={school.id}
-                onChange={handleSchoolToggle}
-                searchValue={school.name}
-              >
-                {school.name}
-              </Dropdown.CheckboxItem>
-            ))}
+            <Dropdown.CheckboxItem
+              key={school.id}
+              model={
+                isAllChecked || filters.schools.includes(school.id)
+                  ? [school.id]
+                  : []
+              }
+              value={school.id}
+              onChange={handleSchoolToggle}
+              searchValue={school.name}
+            >
+              {school.name}
+            </Dropdown.CheckboxItem>
+          ))}
         </div>
       </Dropdown.Menu>
     </Dropdown>

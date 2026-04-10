@@ -49,7 +49,8 @@ export const AppActionHeader = () => {
   const queryClient = useQueryClient();
   const location = useLocation();
   const canEscalate = useCanEscalate();
-  const { isEscalated: isTicketEscalated, isNewOrOpen: isTicketNewOrOpen } = useTicketActionState();
+  const { isEscalated: isTicketEscalated, isNewOrOpen: isTicketNewOrOpen } =
+    useTicketActionState();
   const { isAdmc } = useIsAdmc();
   const { isAdml } = useIsAdml();
 
@@ -167,7 +168,11 @@ export const AppActionHeader = () => {
               color="primary"
               onClick={() => escalateTicket()}
             >
-              {isLoading ? <Loading isLoading /> : t('support.header.escalate.button')}
+              {isLoading ? (
+                <Loading isLoading />
+              ) : (
+                t('support.header.escalate.button')
+              )}
             </Button>
           </Flex>
         ),
@@ -189,7 +194,11 @@ export const AppActionHeader = () => {
               color="primary"
               onClick={() => updateTicket()}
             >
-              {isLoading ? <Loading isLoading /> : t('support.header.update.button')}
+              {isLoading ? (
+                <Loading isLoading />
+              ) : (
+                t('support.header.update.button')
+              )}
             </Button>
           </Flex>
         ),
@@ -244,7 +253,9 @@ export const AppActionHeader = () => {
         </Modal.Body>
         <Modal.Footer>
           <Flex justify="end">
-            <Button onClick={closeInfoModal}>{t('support.header.escalate.modal.close')}</Button>
+            <Button onClick={closeInfoModal}>
+              {t('support.header.escalate.modal.close')}
+            </Button>
           </Flex>
         </Modal.Footer>
       </Modal>
@@ -262,7 +273,9 @@ export const AppActionHeader = () => {
         </Modal.Body>
         <Modal.Footer>
           <Flex justify="end">
-            <Button onClick={closeInfoModal}>{t('support.header.sync.modal.close')}</Button>
+            <Button onClick={closeInfoModal}>
+              {t('support.header.sync.modal.close')}
+            </Button>
           </Flex>
         </Modal.Footer>
       </Modal>
