@@ -1,5 +1,4 @@
-import { Flex, LoadingScreen, useIsAdmlcOrAdmc } from '@edifice.io/react';
-import { Pagination } from 'antd';
+import { Flex, LoadingScreen, Pagination, useIsAdmlcOrAdmc } from '@edifice.io/react';
 import { EmptyTicketsTable } from './components/EmptyTicketsTable';
 import { TicketsFilters } from './components/TicketsFilters';
 import { TicketsTable } from './components/TicketsTable';
@@ -47,18 +46,15 @@ export function TicketsList() {
             order={filters.order}
             onSort={handleSort}
           />
-          {ticketsPerPage !== undefined &&
-            totalResults / ticketsPerPage > 1 && (
-              <Pagination
-                align="center"
-                className="mt-4 mb-24"
-                current={page}
-                total={totalResults}
-                onChange={setPage}
-                showSizeChanger={false}
-                pageSize={ticketsPerPage}
-              />
-            )}
+          {ticketsPerPage !== undefined && (
+            <Pagination
+              className="mt-4 mb-24"
+              current={page}
+              total={totalResults}
+              onChange={setPage}
+              pageSize={ticketsPerPage}
+            />
+          )}
         </Flex>
       )}
     </Flex>
