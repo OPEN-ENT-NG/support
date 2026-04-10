@@ -1,7 +1,7 @@
 import { Avatar, Flex, Heading } from '@edifice.io/react';
 import { Ticket } from '~/models';
 import { getAvatarURL } from '~/utils/getAvatarURL';
-import FormattedDate from './FormattedDate';
+import { FormattedDate } from './FormattedDate';
 
 export type TicketDetailsHeaderProps = {
   /**

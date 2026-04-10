@@ -1,10 +1,11 @@
-import { Dropdown, Flex, FormControl, Input, Label } from '@edifice.io/react';
+import { Flex, FormControl, Input, Label } from '@edifice.io/react';
 import { Editor, EditorRef } from '@edifice.io/react/editor';
 import { RefObject, useEffect, useState } from 'react';
 import { FieldErrors, UseFormRegister, UseFormSetValue } from 'react-hook-form';
 import { TicketAttachment } from '~/models';
 import { useI18n } from '~/hooks/usei18n';
-import TicketAddAttachment from './TicketAttachment';
+import { SearchableDropdown } from '~/components/SearchableDropdown';
+import { TicketAddAttachment } from './TicketAttachment';
 
 export type TicketCreateForm = {
   category: string;
@@ -25,7 +26,7 @@ type TicketCreateFormProps = {
   onAttachmentsChange: (attachments: TicketAttachment[]) => void;
 };
 
-export default function TicketCreateForm({
+export function TicketCreateForm({
   register,
   setValue,
   errors,
@@ -36,7 +37,7 @@ export default function TicketCreateForm({
 }: TicketCreateFormProps) {
   const { t } = useI18n();
   const [attachments, setAttachments] = useState<TicketAttachment[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedSchool, setSelectedSchool] = useState('');
 
   useEffect(() => {
@@ -55,10 +56,6 @@ export default function TicketCreateForm({
     });
   };
 
-  const sortedSchools = [...schoolOptions].sort((a, b) =>
-    a.label.localeCompare(b.label),
-  );
-
   return (
     <>
       <Flex direction="row" wrap="wrap" gap="8">
@@ -67,44 +64,27 @@ export default function TicketCreateForm({
           isRequired
           status={errors.category ? 'invalid' : undefined}
         >
-          <Label>{t('support.ticket.category')}</Label>
           <input
             type="hidden"
             {...register('category', {
               required: t('support.ticket.form.category.required'),
             })}
           />
-          <Dropdown block>
-            <Dropdown.Trigger
-              size="lg"
-              block
-              label={
-                categories.find((c) => c.value === selectedCategory)?.label ??
-                t('support.ticket.form.category.placeholder')
-              }
-            />
-            <Dropdown.Menu>
-              <Dropdown.SearchInput
-                placeholder={t('support.ticket.form.search.category')}
-                noResultsLabel={t('support.ticket.form.no.results')}
-              />
-              {categories.map((cat) => (
-                <Dropdown.Item
-                  key={`${cat.label}-${cat.value}`}
-                  searchValue={cat.label}
-                  onClick={() => {
-                    setSelectedCategory(cat.value);
-                    setValue('category', cat.value, {
-                      shouldValidate: true,
-                      shouldDirty: true,
-                    });
-                  }}
-                >
-                  {cat.label}
-                </Dropdown.Item>
-              ))}
-            </Dropdown.Menu>
-          </Dropdown>
+          <SearchableDropdown
+            id="category-dropdown"
+            label={t('support.ticket.category')}
+            placeholder={t('support.ticket.form.category.placeholder')}
+            searchPlaceholder={t('support.ticket.form.search.category')}
+            options={categories}
+            selectedValue={selectedCategory}
+            onChange={(value) => {
+              setSelectedCategory(value);
+              setValue('category', value, { shouldValidate: true, shouldDirty: true });
+            }}
+            isRequired
+            isInvalid={!!errors.category}
+            size="lg"
+          />
         </FormControl>
 
         {schoolOptions.length > 1 && (
@@ -113,44 +93,27 @@ export default function TicketCreateForm({
             isRequired
             status={errors.school_id ? 'invalid' : undefined}
           >
-            <Label>{t('support.ticket.school')}</Label>
             <input
               type="hidden"
               {...register('school_id', {
                 required: t('support.ticket.form.school.required'),
               })}
             />
-            <Dropdown block>
-              <Dropdown.Trigger
-                size="lg"
-                block
-                label={
-                  sortedSchools.find((s) => s.value === selectedSchool)
-                    ?.label ?? t('support.ticket.form.school.placeholder')
-                }
-              />
-              <Dropdown.Menu>
-                <Dropdown.SearchInput
-                  placeholder={t('support.ticket.form.search.school')}
-                  noResultsLabel={t('support.ticket.form.no.results')}
-                />
-                {sortedSchools.map((school) => (
-                  <Dropdown.Item
-                    key={school.value}
-                    searchValue={school.label}
-                    onClick={() => {
-                      setSelectedSchool(school.value);
-                      setValue('school_id', school.value, {
-                        shouldValidate: true,
-                        shouldDirty: true,
-                      });
-                    }}
-                  >
-                    {school.label}
-                  </Dropdown.Item>
-                ))}
-              </Dropdown.Menu>
-            </Dropdown>
+            <SearchableDropdown
+              id="school-dropdown"
+              label={t('support.ticket.school')}
+              placeholder={t('support.ticket.form.school.placeholder')}
+              searchPlaceholder={t('support.ticket.form.search.school')}
+              options={schoolOptions}
+              selectedValue={selectedSchool}
+              onChange={(value) => {
+                setSelectedSchool(value);
+                setValue('school_id', value, { shouldValidate: true, shouldDirty: true });
+              }}
+              isRequired
+              isInvalid={!!errors.school_id}
+              size="lg"
+            />
           </FormControl>
         )}
       </Flex>

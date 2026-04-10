@@ -1,6 +1,5 @@
-import { Dropdown, Flex, FormControl, IconButton, Input, Label, Select, useToast } from '@edifice.io/react';
+import { Flex, FormControl, IconButton, Input, Label, Select, useToast } from '@edifice.io/react';
 import { IconCopy } from '@edifice.io/react/icons';
-import { useMemo } from 'react';
 import { Control, Controller, FieldErrors } from 'react-hook-form';
 import { useI18n } from '~/hooks/usei18n';
 import {
@@ -8,6 +7,7 @@ import {
   TICKET_STATUS_BY_CODE,
   type Ticket,
 } from '~/models';
+import { SearchableDropdown } from '~/components/SearchableDropdown';
 
 export type TicketEditFormValues = {
   school_id: string;
@@ -76,80 +76,6 @@ function CopyableInput({
   );
 }
 
-function ControlledDropdown({
-  name,
-  label,
-  placeholder,
-  searchPlaceholder,
-  options,
-  control,
-  required,
-  errors,
-  isPending,
-  onSubmit,
-}: {
-  name: keyof TicketEditFormValues;
-  label: string;
-  placeholder: string;
-  searchPlaceholder: string;
-  options: SelectOption[];
-  control: Control<TicketEditFormValues>;
-  required: string;
-  errors: FieldErrors<TicketEditFormValues>;
-  isPending: boolean;
-  onSubmit: () => void;
-}) {
-  const { t } = useI18n();
-  const sortedOptions = useMemo(
-    () => [...options].sort((a, b) => a.label.localeCompare(b.label)),
-    [options],
-  );
-
-  return (
-    <FormControl id={name} status={errors[name] ? 'invalid' : undefined}>
-      <Label>{label}</Label>
-      <Controller
-        name={name}
-        control={control}
-        rules={{ required }}
-        render={({ field }) => (
-          <Dropdown block>
-            <Dropdown.Trigger
-              size="md"
-              block
-              disabled={isPending}
-              label={
-                sortedOptions.find((o) => o.value === field.value)?.label ??
-                placeholder
-              }
-            />
-            <Dropdown.Menu>
-              <Dropdown.SearchInput
-                placeholder={searchPlaceholder}
-                noResultsLabel={t('support.ticket.form.no.results')}
-              />
-              {sortedOptions.map((opt) => (
-                <Dropdown.Item
-                  key={`${opt.label}-${opt.value}`}
-                  searchValue={opt.label}
-                  onClick={() => {
-                    if (opt.value !== field.value) {
-                      field.onChange(opt.value);
-                      onSubmit();
-                    }
-                  }}
-                >
-                  {opt.label}
-                </Dropdown.Item>
-              ))}
-            </Dropdown.Menu>
-          </Dropdown>
-        )}
-      />
-    </FormControl>
-  );
-}
-
 function ControlledSelect({
   name,
   label,
@@ -199,7 +125,7 @@ function ControlledSelect({
   );
 }
 
-export default function TicketEditForm({
+export function TicketEditForm({
   control,
   onSubmit,
   errors,
@@ -237,30 +163,42 @@ export default function TicketEditForm({
         />
       </FormControl>
 
-      <ControlledDropdown
+      <Controller
         name="school_id"
-        label={t('support.ticket.form.school.edit.label')}
-        placeholder={t('support.ticket.form.school.edit.label')}
-        searchPlaceholder={t('support.ticket.form.search.school')}
-        options={schoolOptions}
         control={control}
-        required={t('support.ticket.form.school.required')}
-        errors={errors}
-        isPending={isPending}
-        onSubmit={onSubmit}
+        rules={{ required: t('support.ticket.form.school.required') }}
+        render={({ field }) => (
+          <SearchableDropdown
+            id="school_id"
+            label={t('support.ticket.form.school.edit.label')}
+            placeholder={t('support.ticket.form.school.edit.label')}
+            searchPlaceholder={t('support.ticket.form.search.school')}
+            options={schoolOptions}
+            selectedValue={field.value}
+            onChange={(value) => { field.onChange(value); onSubmit(); }}
+            disabled={isPending}
+            isInvalid={!!errors.school_id}
+          />
+        )}
       />
 
-      <ControlledDropdown
+      <Controller
         name="category"
-        label={t('support.ticket.category')}
-        placeholder={t('support.ticket.category')}
-        searchPlaceholder={t('support.ticket.form.search.category')}
-        options={categories}
         control={control}
-        required={t('support.ticket.form.category.required')}
-        errors={errors}
-        isPending={isPending}
-        onSubmit={onSubmit}
+        rules={{ required: t('support.ticket.form.category.required') }}
+        render={({ field }) => (
+          <SearchableDropdown
+            id="category"
+            label={t('support.ticket.category')}
+            placeholder={t('support.ticket.category')}
+            searchPlaceholder={t('support.ticket.form.search.category')}
+            options={categories}
+            selectedValue={field.value}
+            onChange={(value) => { field.onChange(value); onSubmit(); }}
+            disabled={isPending}
+            isInvalid={!!errors.category}
+          />
+        )}
       />
 
       <ControlledSelect

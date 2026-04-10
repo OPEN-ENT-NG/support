@@ -1,59 +1,26 @@
-import { useSchools } from '~/services/queries/schools';
-import { useTickets, useTicketsPerPage } from '~/services/queries/tickets';
-import EmptyTicketsTable from './components/EmptyTicketsTable';
-import { TicketsFilters } from './components/TicketsFilters';
-import TicketsTable from './components/TicketsTable';
 import { Flex, LoadingScreen, useIsAdmlcOrAdmc } from '@edifice.io/react';
 import { Pagination } from 'antd';
-import { useCallback, useState } from 'react';
-import { SortableTicketField, SortOrder, TicketFiltersState } from '~/models';
+import { EmptyTicketsTable } from './components/EmptyTicketsTable';
+import { TicketsFilters } from './components/TicketsFilters';
+import { TicketsTable } from './components/TicketsTable';
 import { TicketsTypeSelector } from './components/TicketsTypeSelector';
+import { useTicketListState } from './hooks/useTicketListState';
 
 export function TicketsList() {
   const { isAdmlcOrAdmc } = useIsAdmlcOrAdmc();
-
-  const [filters, setFilters] = useState<TicketFiltersState>({
-    search: '',
-    status: [],
-    schools: [],
-    type: 'all',
-    sortBy: 'modified',
-    order: 'DESC',
-  });
-  const [page, setPage] = useState(1);
-  const { tickets, isPending: ticketsPending } = useTickets(
+  const {
+    filters,
     page,
-    filters.status,
-    filters.type,
-    filters.schools,
-    filters.search,
-    filters.sortBy,
-    filters.order,
-  );
-
-  const handleSort = useCallback((field: SortableTicketField) => {
-    setFilters((prev) => ({
-      ...prev,
-      sortBy: field,
-      order: prev.sortBy === field && prev.order === 'DESC' ? 'ASC' : 'DESC',
-    }));
-    setPage(1);
-  }, []);
-  const { schools, isPending: schoolsPending } = useSchools();
-  const { ticketsPerPage, isPending: ticketsPerPagePending } =
-    useTicketsPerPage();
-
-  const totalResults = tickets[0]?.total_results ?? 0;
-  const isPending = ticketsPending || schoolsPending || ticketsPerPagePending;
-  const isTableEmpty =
-    !isPending && (!tickets || tickets.length === 0 || schools.length === 0);
-
-  const handleFiltersChange = useCallback((newFilters: TicketFiltersState) => {
-    setFilters(newFilters);
-
-    // Going back to page one when filters change
-    setPage(1);
-  }, []);
+    setPage,
+    tickets,
+    schools,
+    ticketsPerPage,
+    totalResults,
+    isPending,
+    isTableEmpty,
+    handleSort,
+    handleFiltersChange,
+  } = useTicketListState();
 
   return (
     <Flex direction="column" gap="12" className="mb-24">

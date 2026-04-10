@@ -5,17 +5,19 @@ import { useMutation } from '@tanstack/react-query';
 import { useRef, useState } from 'react';
 import { Ticket, TicketAttachment } from '~/models';
 import { useI18n } from '~/hooks/usei18n';
-import { queryClient } from '~/providers';
+import { queryClient } from '~/services/queryClient';
 import { updateTicket } from '~/services';
 import { ticketsQueryKeys } from '~/services/queries';
 import { buildAttachmentsFromEditor } from '~/utils';
+
+type TiptapEditor = { commands: { clearContent: () => void } };
 
 type TicketCommentFormProps = {
   ticket: Ticket;
   avatarUrl: string;
 };
 
-export default function TicketCommentForm({
+export function TicketCommentForm({
   ticket,
   avatarUrl,
 }: TicketCommentFormProps) {
@@ -23,7 +25,7 @@ export default function TicketCommentForm({
   const [isEmpty, setIsEmpty] = useState(true);
 
   const contentRef = useRef('');
-  const tiptapRef = useRef<any>(null);
+  const tiptapRef = useRef<TiptapEditor | null>(null);
   const editorRef = useRef<EditorRef>(null);
   const toast = useToast();
 
@@ -37,7 +39,8 @@ export default function TicketCommentForm({
       contentRef.current = '';
       tiptapRef.current?.commands.clearContent();
       setIsEmpty(true);
-      queryClient.invalidateQueries({ queryKey: [ticketsQueryKeys.all()] });
+      queryClient.invalidateQueries({ queryKey: ticketsQueryKeys.byId(String(ticket.id)) });
+      queryClient.invalidateQueries({ queryKey: ticketsQueryKeys.byIdWithComment(String(ticket.id)) });
     },
     onError: (error) => {
       console.error('Error commenting ticket:', error);

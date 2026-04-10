@@ -7,7 +7,9 @@ import {
   useDebounce,
 } from '@edifice.io/react';
 import { IconFilter } from '@edifice.io/react/icons';
-import { ChangeEvent, useEffect, useState } from 'react';
+import { ChangeEvent, useEffect, useRef, useState } from 'react';
+
+const SEARCH_DEBOUNCE_MS = 300;
 
 import {
   School,
@@ -16,6 +18,7 @@ import {
   TicketFiltersState,
 } from '~/models';
 import { useI18n } from '~/hooks/usei18n';
+import { sortByKey } from '~/utils';
 
 type TicketsFiltersProps = {
   filters: TicketFiltersState;
@@ -141,9 +144,7 @@ function TicketsSchoolFilter({
           onSearch={setSchoolSearch}
         />
         <div style={{ height: '200px', overflowY: 'auto' }}>
-          {[...schools]
-            .sort((a, b) => a.name.localeCompare(b.name))
-            .map((school) => (
+          {sortByKey(schools, 'name').map((school) => (
               <Dropdown.CheckboxItem
                 key={school.id}
                 model={
@@ -223,11 +224,13 @@ export function TicketsFilters({
 }: TicketsFiltersProps) {
   const { t } = useI18n();
   const [search, setSearch] = useState(filters.search);
-  const debouncedSearch = useDebounce(search, 300);
+  const debouncedSearch = useDebounce(search, SEARCH_DEBOUNCE_MS);
+  const filtersRef = useRef(filters);
+  filtersRef.current = filters;
 
   useEffect(() => {
-    onChange({ ...filters, search: debouncedSearch });
-  }, [debouncedSearch]); // eslint-disable-line react-hooks/exhaustive-deps
+    onChange({ ...filtersRef.current, search: debouncedSearch });
+  }, [debouncedSearch, onChange]);
 
   const handleSearchChange = (e: ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value);

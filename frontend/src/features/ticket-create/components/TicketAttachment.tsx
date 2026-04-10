@@ -3,19 +3,14 @@ import { useMemo, useState } from 'react';
 import { type TicketAttachment } from '~/models';
 import { useI18n } from '~/hooks/usei18n';
 import { uploadAttachment } from '~/services';
+import { isFileTooLarge } from '~/utils';
 
 interface TicketAttachmentProps {
   onChange: (updater: (prev: TicketAttachment[]) => TicketAttachment[]) => void;
   attachments: TicketAttachment[];
 }
 
-function isFileTooLarge(e: unknown): boolean {
-  return (
-    typeof e === 'object' && e !== null && (e as any).error === 'file.too.large'
-  );
-}
-
-export default function TicketAddAttachment({
+export function TicketAddAttachment({
   onChange,
   attachments,
 }: TicketAttachmentProps) {

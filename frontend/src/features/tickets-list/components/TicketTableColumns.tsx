@@ -9,7 +9,7 @@ import {
   mapApiProfileToProfile,
 } from '~/models';
 import { useI18n } from '~/hooks/usei18n';
-import { formaterDate } from '~/utils';
+import { formatDate } from '~/utils';
 
 function ProfileCell({ ticket }: { ticket: Ticket }) {
   const { t } = useI18n();
@@ -92,7 +92,7 @@ export const ticketTableColumns: TicketTableColumn[] = [
     id: 'modified',
     headerKey: 'support.ticket.table.last.modified',
     sortBy: 'modified',
-    cell: (ticket: Ticket) => formaterDate(ticket.modified),
+    cell: (ticket: Ticket) => formatDate(ticket.modified),
   },
   {
     id: 'event_count',
@@ -103,6 +103,6 @@ export const ticketTableColumns: TicketTableColumn[] = [
     id: 'escalation_date',
     headerKey: 'support.ticket.table.last.update.of.escalated.ticket',
     cell: (ticket: Ticket) =>
-      ticket.escalation_date ? formaterDate(ticket.escalation_date) : '-',
+      ticket.escalation_date ? formatDate(ticket.escalation_date) : '-',
   },
 ];

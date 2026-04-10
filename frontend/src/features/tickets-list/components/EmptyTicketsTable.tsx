@@ -5,7 +5,7 @@ import illuEmptyAdminThreads from '@images/emptyscreen/illu-actualites.svg';
 import { useNavigate } from 'react-router-dom';
 import { useI18n } from '~/hooks/usei18n';
 
-export default function EmptyTicketsTable() {
+export function EmptyTicketsTable() {
   const navigate = useNavigate();
   const { t } = useI18n();
 

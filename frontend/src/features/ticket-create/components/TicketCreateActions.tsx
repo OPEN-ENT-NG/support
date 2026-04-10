@@ -11,7 +11,7 @@ type TicketCreateActionsProps = {
   onCancelClick: () => void;
 };
 
-export default function TicketCreateActions({
+export function TicketCreateActions({
   isValid,
   isPending,
   onSubmit,

@@ -58,6 +58,14 @@ export type Ticket = {
   total_results: number;
 };
 
+export type TicketCardAttachment = {
+  document_id: string;
+  name: string;
+  size: number;
+  created: string;
+  origin: 'workspace' | 'gridfs';
+};
+
 export type ApiAttachment = {
   document_id: string;
   ticket_id: number;
@@ -186,6 +194,8 @@ export type TicketEvent = {
 };
 
 export type TicketApiCode = 1 | 2 | 3 | 4 | 5;
+
+export const NEW_OR_OPEN_STATUSES = [1, 2] as const satisfies TicketApiCode[];
 
 export type TicketStatusText =
   | 'nouveau'

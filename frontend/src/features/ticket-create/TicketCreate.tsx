@@ -4,9 +4,9 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTicketFormOptions } from '~/hooks';
 import { useTicketCreateForm } from './hooks/useTicketCreateForm';
-import TicketCancelModal from './components/TicketCancelModal';
-import TicketCreateActions from './components/TicketCreateActions';
-import TicketCreateForm from './components/TicketCreateForm';
+import { TicketCancelModal } from './components/TicketCancelModal';
+import { TicketCreateActions } from './components/TicketCreateActions';
+import { TicketCreateForm } from './components/TicketCreateForm';
 
 export function TicketCreate() {
   const navigate = useNavigate();
