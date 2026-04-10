@@ -476,8 +476,8 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 
         if (search != null && !search.isEmpty()) {
             query.append(
-                    " AND (unaccent(t.subject) ILIKE ? OR unaccent(t.description) ILIKE ? OR CAST(t.id AS TEXT) = ?)");
-            values.add("%" + search + "%").add("%" + search + "%").add(search);
+                    " AND (unaccent(t.subject) ILIKE unaccent(?) OR unaccent(t.description) ILIKE unaccent(?) OR CAST(t.id AS TEXT) = ? OR unaccent(u.username) ILIKE unaccent(?))");
+            values.add("%" + search + "%").add("%" + search + "%").add(search).add("%" + search + "%");
         }
 
         if (ALLOWED_SORT_BY_COLUMN.contains(sortBy)) {
