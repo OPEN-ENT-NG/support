@@ -27,13 +27,21 @@ function TicketsTableHeader({
           <Table.Th
             key={column.id}
             onClick={column.sortBy ? () => onSort(column.sortBy!) : undefined}
-            style={column.sortBy ? { cursor: 'pointer', userSelect: 'none' } : undefined}
+            style={
+              column.sortBy
+                ? { cursor: 'pointer', userSelect: 'none' }
+                : undefined
+            }
           >
             <span className="d-inline-flex align-items-center gap-4">
               {t(column.headerKey)}
-              {column.sortBy && sortBy === column.sortBy && (
-                order === 'ASC' ? <IconArrowUp width={14} height={14} /> : <IconArrowDown width={14} height={14} />
-              )}
+              {column.sortBy &&
+                sortBy === column.sortBy &&
+                (order === 'ASC' ? (
+                  <IconArrowUp width={14} height={14} />
+                ) : (
+                  <IconArrowDown width={14} height={14} />
+                ))}
             </span>
           </Table.Th>
         ))}

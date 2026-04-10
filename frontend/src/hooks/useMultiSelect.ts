@@ -1,6 +1,9 @@
 import { useCallback, useMemo, useState } from 'react';
 
-export function useMultiSelect<T>(items: T[], getId: (item: T) => string | number) {
+export function useMultiSelect<T>(
+  items: T[],
+  getId: (item: T) => string | number,
+) {
   const [selected, setSelected] = useState<T[]>([]);
 
   const selectedIds = useMemo(
@@ -13,14 +16,17 @@ export function useMultiSelect<T>(items: T[], getId: (item: T) => string | numbe
     [selectedIds, getId],
   );
 
-  const toggle = useCallback((item: T) => {
-    const id = getId(item);
-    setSelected((prev) =>
-      prev.some((s) => getId(s) === id)
-        ? prev.filter((s) => getId(s) !== id)
-        : [...prev, item],
-    );
-  }, [getId]);
+  const toggle = useCallback(
+    (item: T) => {
+      const id = getId(item);
+      setSelected((prev) =>
+        prev.some((s) => getId(s) === id)
+          ? prev.filter((s) => getId(s) !== id)
+          : [...prev, item],
+      );
+    },
+    [getId],
+  );
 
   const toggleAll = useCallback(() => {
     setSelected((prev) => (prev.length === items.length ? [] : items));

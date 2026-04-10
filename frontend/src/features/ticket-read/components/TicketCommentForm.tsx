@@ -39,8 +39,12 @@ export function TicketCommentForm({
       contentRef.current = '';
       tiptapRef.current?.commands.clearContent();
       setIsEmpty(true);
-      queryClient.invalidateQueries({ queryKey: ticketsQueryKeys.byId(String(ticket.id)) });
-      queryClient.invalidateQueries({ queryKey: ticketsQueryKeys.byIdWithComment(String(ticket.id)) });
+      queryClient.invalidateQueries({
+        queryKey: ticketsQueryKeys.byId(String(ticket.id)),
+      });
+      queryClient.invalidateQueries({
+        queryKey: ticketsQueryKeys.byIdWithComment(String(ticket.id)),
+      });
     },
     onError: (error) => {
       console.error('Error commenting ticket:', error);
@@ -85,7 +89,11 @@ export function TicketCommentForm({
             onClick={handleSubmit}
             disabled={isEmpty || mutation.isPending}
           >
-            {mutation.isPending ? <Loading isLoading /> : t('support.ticket.read.comment.reply')}
+            {mutation.isPending ? (
+              <Loading isLoading />
+            ) : (
+              t('support.ticket.read.comment.reply')
+            )}
           </Button>
         </Flex>
       </Flex>

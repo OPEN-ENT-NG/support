@@ -26,7 +26,8 @@ export function useTicketListState() {
     filters.order,
   );
   const { schools, isPending: schoolsPending } = useSchools();
-  const { ticketsPerPage, isPending: ticketsPerPagePending } = useTicketsPerPage();
+  const { ticketsPerPage, isPending: ticketsPerPagePending } =
+    useTicketsPerPage();
 
   const totalResults = tickets[0]?.total_results ?? 0;
   const isPending = ticketsPending || schoolsPending || ticketsPerPagePending;

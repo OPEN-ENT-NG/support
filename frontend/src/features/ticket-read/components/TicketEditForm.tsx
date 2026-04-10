@@ -1,4 +1,12 @@
-import { Flex, FormControl, IconButton, Input, Label, Select, useToast } from '@edifice.io/react';
+import {
+  Flex,
+  FormControl,
+  IconButton,
+  Input,
+  Label,
+  Select,
+  useToast,
+} from '@edifice.io/react';
 import { IconCopy } from '@edifice.io/react/icons';
 import { Control, Controller, FieldErrors } from 'react-hook-form';
 import { useI18n } from '~/hooks/usei18n';
@@ -175,7 +183,10 @@ export function TicketEditForm({
             searchPlaceholder={t('support.ticket.form.search.school')}
             options={schoolOptions}
             selectedValue={field.value}
-            onChange={(value) => { field.onChange(value); onSubmit(); }}
+            onChange={(value) => {
+              field.onChange(value);
+              onSubmit();
+            }}
             disabled={isPending}
             isInvalid={!!errors.school_id}
           />
@@ -194,7 +205,10 @@ export function TicketEditForm({
             searchPlaceholder={t('support.ticket.form.search.category')}
             options={categories}
             selectedValue={field.value}
-            onChange={(value) => { field.onChange(value); onSubmit(); }}
+            onChange={(value) => {
+              field.onChange(value);
+              onSubmit();
+            }}
             disabled={isPending}
             isInvalid={!!errors.category}
           />

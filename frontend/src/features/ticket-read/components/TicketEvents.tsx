@@ -28,7 +28,9 @@ export function TicketEvent({ event }: TicketEventProps) {
           Even though this is not the cleanest nor the safest solution,
           It applies only to comments coming from Zendesk written by our support team, risks are limited.
         */}
-        <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(event.event) }} />
+        <div
+          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(event.event) }}
+        />
         {event.status !== -1 && (
           <p>
             {event.username && (

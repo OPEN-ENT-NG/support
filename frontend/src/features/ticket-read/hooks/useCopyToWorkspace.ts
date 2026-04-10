@@ -32,7 +32,9 @@ export function useCopyToWorkspace(ticketId: number) {
       const blob = await response.blob();
       const file = new File([blob], attachment.name, { type: blob.type });
 
-      await odeServices.workspace().saveFile(file, parentId ? { parentId } : undefined);
+      await odeServices
+        .workspace()
+        .saveFile(file, parentId ? { parentId } : undefined);
       toast.success(t('support.workspace.copy.success'));
       return true;
     } catch (error) {

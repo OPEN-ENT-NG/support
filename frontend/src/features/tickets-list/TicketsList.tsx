@@ -1,4 +1,9 @@
-import { Flex, LoadingScreen, Pagination, useIsAdmlcOrAdmc } from '@edifice.io/react';
+import {
+  Flex,
+  LoadingScreen,
+  Pagination,
+  useIsAdmlcOrAdmc,
+} from '@edifice.io/react';
 import { EmptyTicketsTable } from './components/EmptyTicketsTable';
 import { TicketsFilters } from './components/TicketsFilters';
 import { TicketsTable } from './components/TicketsTable';

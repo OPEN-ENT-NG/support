@@ -48,7 +48,9 @@ export function useTicketEditForm(ticket: Ticket | undefined) {
       }),
     onSuccess: () => {
       toast.success(t('support.ticket.update.success'));
-      queryClient.invalidateQueries({ queryKey: ticketsQueryKeys.byId(String(ticket!.id)) });
+      queryClient.invalidateQueries({
+        queryKey: ticketsQueryKeys.byId(String(ticket!.id)),
+      });
       queryClient.invalidateQueries({ queryKey: ticketsQueryKeys.lists() });
     },
     onError: (error) => {
