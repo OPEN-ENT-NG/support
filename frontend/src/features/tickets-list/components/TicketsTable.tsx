@@ -78,7 +78,8 @@ function TicketsTable({
         onClick: () => {
           exportTickets(selectedTickets.map((t) => t.id.toString()));
         },
-        isVisible: selectedTickets.length > 0 && escalateWorkflow,
+        isVisible:
+          selectedTickets.length > 0 && escalateWorkflow && isAdmlcOrAdmc,
       },
       {
         id: 'transfer',
