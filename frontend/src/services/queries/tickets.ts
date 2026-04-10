@@ -15,6 +15,7 @@ import {
  */
 export const ticketsQueryKeys = {
   all: () => ['tickets'] as const,
+  lists: () => [ticketsQueryKeys.all(), 'list'] as const,
   ticketsPerPage: () =>
     [ticketsQueryKeys.all(), 'config', 'ticketsPerPage'] as const,
   byId: (ticketId: string) => [ticketsQueryKeys.all(), ticketId] as const,

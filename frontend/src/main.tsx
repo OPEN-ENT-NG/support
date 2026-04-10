@@ -5,7 +5,8 @@ import { createRoot } from 'react-dom/client';
 
 import { RouterProvider } from 'react-router-dom';
 import './i18n';
-import { Providers, queryClient } from './providers';
+import { Providers } from './providers';
+import { queryClient } from './services/queryClient';
 import { router } from './routes';
 import './styles/index.css';
 

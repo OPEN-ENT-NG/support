@@ -1,8 +1,8 @@
-import { Attachment, Flex, IconButton } from '@edifice.io/react';
+import { Attachment as AttachmentComponent, Flex, IconButton } from '@edifice.io/react';
 import { useMemo, useState } from 'react';
 import { Editor } from '@edifice.io/react/editor';
 import { IconDownload, IconFolderAdd } from '@edifice.io/react/icons';
-import { ApiAttachment, BugTrackerIssue, Ticket } from '~/models/ticket';
+import { ApiAttachment, BugTrackerIssue, Ticket, TicketCardAttachment } from '~/models/ticket';
 import { useI18n } from '~/hooks/usei18n';
 import { TicketDetailsHeader } from './TicketDetailsHeader';
 import { useCopyToWorkspace } from '../hooks/useCopyToWorkspace';
@@ -14,14 +14,6 @@ export interface TicketCardProps {
   bugTrackerIssue?: BugTrackerIssue;
 }
 
-type Attachment = {
-  document_id: string;
-  name: string;
-  size: number;
-  created: string;
-  origin: 'workspace' | 'gridfs';
-};
-
 export function TicketCard({
   ticket,
   attachments,
@@ -29,7 +21,7 @@ export function TicketCard({
 }: TicketCardProps) {
   const { t } = useI18n();
   const { copyToWorkspace } = useCopyToWorkspace(ticket.id);
-  const [attachmentToSave, setAttachmentToSave] = useState<Attachment | null>(null);
+  const [attachmentToSave, setAttachmentToSave] = useState<TicketCardAttachment | null>(null);
 
   const handleDownload = (
     attachmentId: string,
@@ -42,7 +34,7 @@ export function TicketCard({
     }
   };
 
-  const handleSaveToWorkspace = (attachment: Attachment) => {
+  const handleSaveToWorkspace = (attachment: TicketCardAttachment) => {
     setAttachmentToSave(attachment);
   };
 
@@ -58,7 +50,7 @@ export function TicketCard({
     );
   };
 
-  const allAttachments = useMemo<Attachment[]>(
+  const allAttachments = useMemo<TicketCardAttachment[]>(
     () => [
       ...attachments.map((attachment) => ({
         document_id: attachment.document_id,
@@ -108,7 +100,7 @@ export function TicketCard({
               <strong>{t('support.ticket.read.attachments.title')}</strong>
             </p>
             {allAttachments.map((attachment) => (
-              <Attachment
+              <AttachmentComponent
                 key={attachment.document_id}
                 name={attachment.name}
                 options={

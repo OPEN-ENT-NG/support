@@ -44,4 +44,4 @@ const TicketsTableRow = memo(function TicketsTableRow({
   );
 });
 
-export default TicketsTableRow;
+export { TicketsTableRow };

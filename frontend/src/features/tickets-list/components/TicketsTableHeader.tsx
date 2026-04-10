@@ -42,4 +42,4 @@ function TicketsTableHeader({
   );
 }
 
-export default TicketsTableHeader;
+export { TicketsTableHeader };

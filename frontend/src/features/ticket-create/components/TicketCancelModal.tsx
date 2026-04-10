@@ -7,7 +7,7 @@ type TicketCancelModalProps = {
   onConfirm: () => void;
 };
 
-export default function TicketCancelModal({
+export function TicketCancelModal({
   isOpen,
   onClose,
   onConfirm,

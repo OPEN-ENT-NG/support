@@ -20,9 +20,9 @@ import {
 import { useI18n } from '~/hooks/usei18n';
 import { useTicketEditForm } from './hooks/useTicketEditForm';
 import { TicketCard } from './components/TicketCard';
-import TicketCommentForm from './components/TicketCommentForm';
-import TicketEditForm from './components/TicketEditForm';
-import TicketTimeline from './components/TicketTimeline';
+import { TicketCommentForm } from './components/TicketCommentForm';
+import { TicketEditForm } from './components/TicketEditForm';
+import { TicketTimeline } from './components/TicketTimeline';
 
 export type TimelineItem =
   | { type: 'event'; date: string; data: TicketEvent }

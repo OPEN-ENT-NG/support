@@ -16,15 +16,11 @@ import {
   IconRefresh,
   IconSend,
 } from '@edifice.io/react/icons';
-import ModalBody from 'node_modules/@edifice.io/react/dist/components/Modal/ModalBody';
-import ModalFooter from 'node_modules/@edifice.io/react/dist/components/Modal/ModalFooter';
-import ModalHeader from 'node_modules/@edifice.io/react/dist/components/Modal/ModalHeader';
 import { ReactNode, useCallback, useMemo, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useI18n } from '~/hooks/usei18n';
 import { useCanEscalate } from '~/hooks/useCanEscalate';
-import { useIsTicketEscalated } from '~/hooks/useIsTicketEscalated';
-import { useIsTicketNewOrOpen } from '~/hooks/useIsTicketNewOrOpen';
+import { useTicketActionState } from './hooks/useTicketActionState';
 import {
   countTickets,
   directExportTickets,
@@ -53,8 +49,7 @@ export const AppActionHeader = () => {
   const queryClient = useQueryClient();
   const location = useLocation();
   const canEscalate = useCanEscalate();
-  const isTicketEscalated = useIsTicketEscalated();
-  const isTicketNewOrOpen = useIsTicketNewOrOpen();
+  const { isEscalated: isTicketEscalated, isNewOrOpen: isTicketNewOrOpen } = useTicketActionState();
   const { isAdmc } = useIsAdmc();
   const { isAdml } = useIsAdml();
 
@@ -88,7 +83,10 @@ export const AppActionHeader = () => {
       await escalateTickets([ticketId!]);
       toast.success(t('support.header.escalate.success'));
       await queryClient.invalidateQueries({
-        queryKey: [ticketsQueryKeys.all()],
+        queryKey: ticketsQueryKeys.byId(ticketId!),
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ticketsQueryKeys.lists(),
       });
     } catch (e) {
       console.error(e);
@@ -105,7 +103,7 @@ export const AppActionHeader = () => {
       await refreshTicket(ticketId!);
       toast.success(t('support.header.update.success'));
       await queryClient.invalidateQueries({
-        queryKey: [ticketsQueryKeys.all()],
+        queryKey: ticketsQueryKeys.byId(ticketId!),
       });
     } catch (e) {
       console.error(e);
@@ -238,17 +236,17 @@ export const AppActionHeader = () => {
         isOpen={infoModal === 'escalate'}
         onModalClose={closeInfoModal}
       >
-        <ModalHeader onModalClose={closeInfoModal}>
+        <Modal.Header onModalClose={closeInfoModal}>
           {t('support.header.escalate.modal.title')}
-        </ModalHeader>
-        <ModalBody>
+        </Modal.Header>
+        <Modal.Body>
           <p>{t('support.header.escalate.modal.body')}</p>
-        </ModalBody>
-        <ModalFooter>
+        </Modal.Body>
+        <Modal.Footer>
           <Flex justify="end">
             <Button onClick={closeInfoModal}>{t('support.header.escalate.modal.close')}</Button>
           </Flex>
-        </ModalFooter>
+        </Modal.Footer>
       </Modal>
 
       <Modal
@@ -256,17 +254,17 @@ export const AppActionHeader = () => {
         isOpen={infoModal === 'sync'}
         onModalClose={closeInfoModal}
       >
-        <ModalHeader onModalClose={closeInfoModal}>
+        <Modal.Header onModalClose={closeInfoModal}>
           {t('support.header.sync.modal.title')}
-        </ModalHeader>
-        <ModalBody>
+        </Modal.Header>
+        <Modal.Body>
           <p>{t('support.header.sync.modal.body')}</p>
-        </ModalBody>
-        <ModalFooter>
+        </Modal.Body>
+        <Modal.Footer>
           <Flex justify="end">
             <Button onClick={closeInfoModal}>{t('support.header.sync.modal.close')}</Button>
           </Flex>
-        </ModalFooter>
+        </Modal.Footer>
       </Modal>
     </>
   );

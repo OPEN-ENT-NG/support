@@ -1,12 +1,12 @@
 import { TimelineItem } from '../TicketRead';
 import { TicketEvent } from './TicketEvents';
-import TicketComment from './TicketComment';
+import { TicketComment } from './TicketComment';
 
 type TicketTimelineProps = {
   timelineItems: TimelineItem[];
 };
 
-export default function TicketTimeline({ timelineItems }: TicketTimelineProps) {
+export function TicketTimeline({ timelineItems }: TicketTimelineProps) {
   return (
     <>
       {timelineItems.map((item) => {

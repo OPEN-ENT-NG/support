@@ -1,4 +1,6 @@
 import { useToast } from '@edifice.io/react';
+
+const SUBMIT_DEBOUNCE_MS = 1000;
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
@@ -46,7 +48,8 @@ export function useTicketEditForm(ticket: Ticket | undefined) {
       }),
     onSuccess: () => {
       toast.success(t('support.ticket.update.success'));
-      queryClient.invalidateQueries({ queryKey: [ticketsQueryKeys.all()] });
+      queryClient.invalidateQueries({ queryKey: ticketsQueryKeys.byId(String(ticket!.id)) });
+      queryClient.invalidateQueries({ queryKey: ticketsQueryKeys.lists() });
     },
     onError: (error) => {
       console.error('Error updating ticket:', error);
@@ -66,7 +69,7 @@ export function useTicketEditForm(ticket: Ticket | undefined) {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
       handleSubmit((data) => mutation.mutate(data))();
-    }, 1000);
+    }, SUBMIT_DEBOUNCE_MS);
   }, [handleSubmit, mutation]);
 
   return {

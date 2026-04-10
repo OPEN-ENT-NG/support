@@ -1,7 +1,7 @@
 import { Tooltip, useDate } from '@edifice.io/react';
 import toUtcString from '~/utils/toUtcString';
 
-export default function FormattedDate({ date }: { date: string }) {
+export function FormattedDate({ date }: { date: string }) {
   const { fromNow, formatDate } = useDate();
   const utcDate = toUtcString(date);
 

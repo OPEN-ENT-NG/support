@@ -2,18 +2,13 @@ import { odeServices } from '@edifice.io/client';
 import { useToast } from '@edifice.io/react';
 import { useState } from 'react';
 import { useI18n } from '~/hooks/usei18n';
+import { isFileTooLarge } from '~/utils';
 
 export type AttachmentToCopy = {
   documentId: string;
   name: string;
   origin: 'workspace' | 'gridfs';
 };
-
-function isFileTooLarge(e: unknown): boolean {
-  return (
-    typeof e === 'object' && e !== null && (e as any).error === 'file.too.large'
-  );
-}
 
 export function useCopyToWorkspace(ticketId: number) {
   const { t } = useI18n();

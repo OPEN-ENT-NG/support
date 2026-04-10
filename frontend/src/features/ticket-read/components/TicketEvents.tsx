@@ -1,4 +1,5 @@
 import { Badge, Flex } from '@edifice.io/react';
+import DOMPurify from 'dompurify';
 import { IconInfoCircle } from '@edifice.io/react/icons';
 import { useI18n } from '~/hooks/usei18n';
 import {
@@ -6,7 +7,7 @@ import {
   TICKET_STATUS_CLASS,
   TicketEvent as TicketEventModel,
 } from '~/models';
-import FormattedDate from './FormattedDate';
+import { FormattedDate } from './FormattedDate';
 
 export interface TicketEventProps {
   event: TicketEventModel;
@@ -27,7 +28,7 @@ export function TicketEvent({ event }: TicketEventProps) {
           Even though this is not the cleanest nor the safest solution,
           It applies only to comments coming from Zendesk written by our support team, risks are limited.
         */}
-        <div dangerouslySetInnerHTML={{ __html: event.event }} />
+        <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(event.event) }} />
         {event.status !== -1 && (
           <p>
             {event.username && (

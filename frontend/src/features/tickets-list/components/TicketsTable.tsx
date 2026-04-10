@@ -7,15 +7,16 @@ import {
   IconGroupAvatar,
 } from '@edifice.io/react/icons';
 import { useQueryClient } from '@tanstack/react-query';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ESCALATION_STATUS, School, Ticket } from '~/models';
+import { ESCALATION_STATUS, NEW_OR_OPEN_STATUSES, School, Ticket } from '~/models';
 import { escalateTickets, exportTickets } from '~/services/api';
 import { ticketsQueryKeys } from '~/services/queries/tickets';
 import { useCanEscalate } from '~/hooks/useCanEscalate';
+import { useMultiSelect } from '~/hooks/useMultiSelect';
 import { TicketsTableToolbar, ToolbarAction } from './TicketsTableToolbar';
-import TicketsTableHeader from './TicketsTableHeader';
-import TicketsTableRow from './TicketsTableRow';
+import { TicketsTableHeader } from './TicketsTableHeader';
+import { TicketsTableRow } from './TicketsTableRow';
 
 export type TicketsTableProps = {
   tickets?: Ticket[];
@@ -28,17 +29,20 @@ export type TicketsTableProps = {
 function TicketsTable({ tickets = [], schools = [], sortBy, order, onSort }: TicketsTableProps) {
   const navigate = useNavigate();
   const { isAdmlcOrAdmc } = useIsAdmlcOrAdmc();
-  const [selectedTickets, setSelectedTickets] = useState<Ticket[]>([]);
   const escalateWorkflow = useCanEscalate();
   const { t } = useI18n();
   const toast = useToast();
   const queryClient = useQueryClient();
   const canMultiSelect = isAdmlcOrAdmc || escalateWorkflow;
 
-  const selectedTicketIds = useMemo(
-    () => new Set(selectedTickets.map((t) => t.id)),
-    [selectedTickets],
-  );
+  const getTicketId = useCallback((ticket: Ticket) => ticket.id, []);
+  const {
+    selected: selectedTickets,
+    selectedIds: selectedTicketIds,
+    toggle: handleTicketSelection,
+    toggleAll: handleSelectAll,
+    clear: clearSelection,
+  } = useMultiSelect(tickets, getTicketId);
 
   const schoolById = useMemo(
     () => new Map(schools.map((s) => [s.id, s])),
@@ -71,10 +75,10 @@ function TicketsTable({ tickets = [], schools = [], sortBy, order, onSort }: Tic
         icon: <IconGroupAvatar />,
         onClick: async () => {
           try {
-            setSelectedTickets([]);
+            clearSelection();
             await escalateTickets(selectedTickets.map((t) => t.id.toString()));
             queryClient.invalidateQueries({
-              queryKey: [ticketsQueryKeys.all()],
+              queryKey: ticketsQueryKeys.lists(),
             });
             toast.success(t('support.ticket.table.transfer.success'));
           } catch (error) {
@@ -87,7 +91,7 @@ function TicketsTable({ tickets = [], schools = [], sortBy, order, onSort }: Tic
           selectedTickets.every(
             (t) => t.escalation_status === ESCALATION_STATUS.NOT_DONE,
           ) &&
-          selectedTickets.every((t) => t.status === 1 || t.status === 2) &&
+          selectedTickets.every((t) => (NEW_OR_OPEN_STATUSES as readonly number[]).includes(t.status)) &&
           (escalateWorkflow ?? false),
       },
     ],
@@ -98,22 +102,9 @@ function TicketsTable({ tickets = [], schools = [], sortBy, order, onSort }: Tic
       escalateWorkflow,
       toast,
       queryClient,
+      clearSelection,
     ],
   );
-
-  const handleSelectAll = useCallback(() => {
-    setSelectedTickets((prev) =>
-      prev.length === tickets.length ? [] : tickets,
-    );
-  }, [tickets]);
-
-  const handleTicketSelection = useCallback((ticket: Ticket) => {
-    setSelectedTickets((prevSelected) => {
-      return prevSelected.some((t) => t.id === ticket.id)
-        ? prevSelected.filter((t) => t.id !== ticket.id)
-        : [...prevSelected, ticket];
-    });
-  }, []);
 
   return (
     <div className="overflow-x-auto w-100">
@@ -149,4 +140,4 @@ function TicketsTable({ tickets = [], schools = [], sortBy, order, onSort }: Tic
   );
 }
 
-export default TicketsTable;
+export { TicketsTable };
