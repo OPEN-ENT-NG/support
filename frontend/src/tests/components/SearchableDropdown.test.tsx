@@ -1,5 +1,7 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { type ReactNode } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { SearchableDropdown } from '~/components/SearchableDropdown';
 
@@ -7,47 +9,16 @@ vi.mock('~/hooks/usei18n', () => ({
   useI18n: () => ({ t: (key: string) => key }),
 }));
 
-// Mock edifice components that carry internal React contexts (react-query, i18next)
-// from the edifice-ui monorepo package — avoids dual-React-instance issues in tests.
-vi.mock('@edifice.io/react', () => {
-  const DropdownMenu = ({ children }: { children: React.ReactNode }) => (
-    <ul role="menu">{children}</ul>
+// Minimal wrapper: Dropdown internals use no react-query, but FormControl might
+// pull in hooks that do. A fresh QueryClient per test prevents cross-test leakage.
+function makeWrapper() {
+  const client = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
+  return ({ children }: { children: ReactNode }) => (
+    <QueryClientProvider client={client}>{children}</QueryClientProvider>
   );
-  const DropdownItem = ({
-    children,
-    onClick,
-  }: {
-    children: React.ReactNode;
-    onClick?: () => void;
-  }) => (
-    <li role="menuitem" onClick={onClick}>
-      {children}
-    </li>
-  );
-  const DropdownTrigger = ({ label }: { label: string }) => (
-    <button type="button">{label}</button>
-  );
-  const DropdownSearchInput = () => null;
-
-  const Dropdown = Object.assign(
-    ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-    {
-      Trigger: DropdownTrigger,
-      Menu: DropdownMenu,
-      Item: DropdownItem,
-      SearchInput: DropdownSearchInput,
-    },
-  );
-
-  const FormControl = ({ children }: { children: React.ReactNode }) => (
-    <div>{children}</div>
-  );
-  const Label = ({ children }: { children: React.ReactNode }) => (
-    <label>{children}</label>
-  );
-
-  return { Dropdown, FormControl, Label };
-});
+}
 
 const options = [
   { label: 'Mathématiques', value: 'math' },
@@ -63,71 +34,75 @@ const defaultProps = {
   options,
   selectedValue: '',
   onChange: vi.fn(),
+  disabled: false,
 };
+
+function renderDropdown(props: Partial<typeof defaultProps> = {}) {
+  return render(<SearchableDropdown {...defaultProps} {...props} />, {
+    wrapper: makeWrapper(),
+  });
+}
+
+async function openDropdown() {
+  const user = userEvent.setup();
+  await user.click(screen.getByRole('button'));
+  return user;
+}
 
 describe('SearchableDropdown', () => {
   it('renders the label', () => {
-    render(<SearchableDropdown {...defaultProps} />);
+    renderDropdown();
     expect(screen.getByText('Catégorie')).toBeInTheDocument();
   });
 
-  it('shows placeholder when no value is selected', () => {
-    render(
-      <SearchableDropdown
-        {...defaultProps}
-        placeholder="Choisir une catégorie"
-        selectedValue=""
-      />,
-    );
-    expect(screen.getByText('Choisir une catégorie')).toBeInTheDocument();
+  it('shows placeholder in the trigger when no value is selected', () => {
+    renderDropdown({ placeholder: 'Choisir une catégorie', selectedValue: '' });
+    expect(
+      screen.getByRole('button', { name: /Choisir une catégorie/i }),
+    ).toBeInTheDocument();
   });
 
-  it('shows the selected option label instead of placeholder', () => {
-    render(<SearchableDropdown {...defaultProps} selectedValue="math" />);
-    // Label appears in both the trigger button and the menu item
-    expect(screen.getAllByText('Mathématiques').length).toBeGreaterThanOrEqual(
-      1,
-    );
+  it('shows the selected option label in the trigger instead of placeholder', () => {
+    renderDropdown({ selectedValue: 'math' });
+    expect(
+      screen.getByRole('button', { name: /Mathématiques/i }),
+    ).toBeInTheDocument();
   });
 
-  it('calls onChange when an option is clicked', async () => {
+  it('opens the menu and shows all options when trigger is clicked', async () => {
+    renderDropdown();
+    await openDropdown();
+    const items = screen.getAllByRole('menuitem');
+    expect(items).toHaveLength(options.length);
+  });
+
+  it('renders options sorted alphabetically', async () => {
+    renderDropdown({ selectedValue: '' });
+    await openDropdown();
+    const labels = screen
+      .getAllByRole('menuitem')
+      .map((el) => el.textContent?.trim());
+    expect(labels).toEqual(['Français', 'Histoire', 'Mathématiques']);
+  });
+
+  it('calls onChange with the selected value when an option is clicked', async () => {
     const onChange = vi.fn();
-    const user = userEvent.setup();
-
-    render(
-      <SearchableDropdown
-        {...defaultProps}
-        onChange={onChange}
-        selectedValue=""
-      />,
-    );
-
-    await user.click(screen.getByText('Français'));
+    renderDropdown({ onChange, selectedValue: '' });
+    const user = await openDropdown();
+    await user.click(screen.getByRole('menuitem', { name: 'Français' }));
     expect(onChange).toHaveBeenCalledWith('fr');
   });
 
-  it('does not call onChange when clicking the already selected option', async () => {
+  it('does not call onChange when the already-selected option is clicked', async () => {
     const onChange = vi.fn();
-    const user = userEvent.setup();
-
-    render(
-      <SearchableDropdown
-        {...defaultProps}
-        onChange={onChange}
-        selectedValue="math"
-      />,
-    );
-
-    // Mathématiques is the selected value — clicking it should not call onChange
-    const mathItems = screen.getAllByText('Mathématiques');
-    await user.click(mathItems[mathItems.length - 1]);
+    renderDropdown({ onChange, selectedValue: 'math' });
+    const user = await openDropdown();
+    await user.click(screen.getByRole('menuitem', { name: 'Mathématiques' }));
     expect(onChange).not.toHaveBeenCalled();
   });
 
-  it('renders options sorted alphabetically', () => {
-    render(<SearchableDropdown {...defaultProps} selectedValue="" />);
-    const items = screen.getAllByRole('menuitem');
-    const labels = items.map((el) => el.textContent?.trim());
-    expect(labels).toEqual(['Français', 'Histoire', 'Mathématiques']);
+  it('hides the trigger caret label when disabled', () => {
+    renderDropdown({ disabled: true });
+    expect(screen.getByRole('button')).toBeDisabled();
   });
 });
