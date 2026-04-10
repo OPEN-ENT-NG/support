@@ -7,7 +7,7 @@ import {
   Select,
   useToast,
 } from '@edifice.io/react';
-import { IconCopy } from '@edifice.io/react/icons';
+import { IconCopy, IconExternalLink } from '@edifice.io/react/icons';
 import { Control, Controller, FieldErrors } from 'react-hook-form';
 import { useI18n } from '~/hooks/usei18n';
 import {
@@ -38,6 +38,7 @@ type TicketEditFormProps = {
   categories: SelectOption[];
   schoolOptions: SelectOption[];
   bugTrackerIssueId?: number;
+  bugTrackerIssueUrl?: string;
   isPending: boolean;
 };
 
@@ -46,11 +47,13 @@ function CopyableInput({
   label,
   value,
   type = 'text',
+  externalUrl,
 }: {
   id: string;
   label: string;
   value: string;
   type?: string;
+  externalUrl?: string;
 }) {
   const toast = useToast();
   const { t } = useI18n();
@@ -71,6 +74,16 @@ function CopyableInput({
           value={value}
           disabled
         />
+        {externalUrl && (
+          <IconButton
+            aria-label={t('support.ticket.form.escalated.external.label')}
+            icon={<IconExternalLink />}
+            color="tertiary"
+            variant="ghost"
+            type="button"
+            onClick={() => window.open(externalUrl, '_blank')}
+          />
+        )}
         <IconButton
           aria-label={t('support.ticket.form.copy.label')}
           icon={<IconCopy />}
@@ -142,6 +155,7 @@ export function TicketEditForm({
   categories,
   schoolOptions,
   bugTrackerIssueId,
+  bugTrackerIssueUrl,
   isPending,
 }: TicketEditFormProps) {
   const { t } = useI18n();
@@ -255,6 +269,7 @@ export function TicketEditForm({
             id="escalation_id"
             label={t('support.ticket.form.escalated.label')}
             value={String(bugTrackerIssueId)}
+            externalUrl={bugTrackerIssueUrl}
           />
         )}
     </Flex>
