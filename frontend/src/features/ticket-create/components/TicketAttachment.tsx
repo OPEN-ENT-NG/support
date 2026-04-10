@@ -4,6 +4,7 @@ import { type TicketAttachment } from '~/models';
 import { useI18n } from '~/hooks/usei18n';
 import { uploadAttachment } from '~/services';
 import { isFileTooLarge } from '~/utils';
+import { Attachment } from '~/models/attachment';
 
 interface TicketAttachmentProps {
   onChange: (updater: (prev: TicketAttachment[]) => TicketAttachment[]) => void;
@@ -47,7 +48,7 @@ export function TicketAddAttachment({
         charset: 'UTF-8',
         contentTransferEncoding: 'binary',
         contentType: 'application/octet-stream',
-      })),
+      })) as Attachment[],
     [attachments],
   );
 
