@@ -107,7 +107,7 @@ export default ({ mode }: { mode: string }) => {
       globals: true,
       passWithNoTests: true,
       environment: 'jsdom',
-      include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
+      include: ['src/tests/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
       setupFiles: ['./src/mocks/setup.ts'],
       reporters: ['default'],
       coverage: {
@@ -116,7 +116,23 @@ export default ({ mode }: { mode: string }) => {
       },
       server: {
         deps: {
-          inline: ['@edifice.io/react'],
+          inline: [
+            '@edifice.io/react',
+            'react-i18next',
+            'i18next',
+            '@tanstack/react-query',
+          ],
+        },
+      },
+      resolve: {
+        alias: {
+          'react': resolve('./node_modules/react'),
+          'react-dom': resolve('./node_modules/react-dom'),
+          'react-i18next': resolve('./node_modules/react-i18next'),
+          'i18next': resolve('./node_modules/i18next'),
+          '@tanstack/react-query': resolve(
+            './node_modules/@tanstack/react-query',
+          ),
         },
       },
     },

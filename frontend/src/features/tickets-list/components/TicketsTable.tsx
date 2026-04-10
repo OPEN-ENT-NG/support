@@ -9,7 +9,12 @@ import {
 import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ESCALATION_STATUS, NEW_OR_OPEN_STATUSES, School, Ticket } from '~/models';
+import {
+  ESCALATION_STATUS,
+  NEW_OR_OPEN_STATUSES,
+  School,
+  Ticket,
+} from '~/models';
 import { escalateTickets, exportTickets } from '~/services/api';
 import { ticketsQueryKeys } from '~/services/queries/tickets';
 import { useCanEscalate } from '~/hooks/useCanEscalate';
@@ -26,7 +31,13 @@ export type TicketsTableProps = {
   onSort: (field: SortableTicketField) => void;
 };
 
-function TicketsTable({ tickets = [], schools = [], sortBy, order, onSort }: TicketsTableProps) {
+function TicketsTable({
+  tickets = [],
+  schools = [],
+  sortBy,
+  order,
+  onSort,
+}: TicketsTableProps) {
   const navigate = useNavigate();
   const { isAdmlcOrAdmc } = useIsAdmlcOrAdmc();
   const escalateWorkflow = useCanEscalate();
@@ -91,7 +102,9 @@ function TicketsTable({ tickets = [], schools = [], sortBy, order, onSort }: Tic
           selectedTickets.every(
             (t) => t.escalation_status === ESCALATION_STATUS.NOT_DONE,
           ) &&
-          selectedTickets.every((t) => (NEW_OR_OPEN_STATUSES as readonly number[]).includes(t.status)) &&
+          selectedTickets.every((t) =>
+            (NEW_OR_OPEN_STATUSES as readonly number[]).includes(t.status),
+          ) &&
           (escalateWorkflow ?? false),
       },
     ],
@@ -103,6 +116,7 @@ function TicketsTable({ tickets = [], schools = [], sortBy, order, onSort }: Tic
       toast,
       queryClient,
       clearSelection,
+      t,
     ],
   );
 
