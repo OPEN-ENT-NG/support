@@ -168,6 +168,7 @@
   "support.ticket.form.created.label": "Date de Création",
   "support.ticket.form.modified.label": "Date de dernière modification",
   "support.ticket.form.escalated.label": "Ticket escaladé",
+  "support.ticket.form.escalated.external.label": "Voir le ticket externe",
   "support.ticket.form.copy.success": "Valeur copiée dans le presse-papiers",
   "support.ticket.form.copy.label": "Copier",
   "support.workspace.copy.modal.title": "Copier dans l'espace documentaire",

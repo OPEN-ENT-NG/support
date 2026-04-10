@@ -99,6 +99,9 @@ export function TicketRead() {
             categories={categories}
             schoolOptions={schoolOptions}
             bugTrackerIssueId={bugTrackerIssue?.id}
+            bugTrackerIssueUrl={bugTrackerIssue?.content?.url
+              ?.replace('/api/v2/tickets/', '/agent/tickets/')
+              ?.replace('.json', '')}
             isPending={isPending}
           />
         </Flex>
