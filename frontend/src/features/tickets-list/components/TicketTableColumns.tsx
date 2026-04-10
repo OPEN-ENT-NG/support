@@ -8,7 +8,22 @@ import {
   getTicketStatusText,
   mapApiProfileToProfile,
 } from '~/models';
+import { useI18n } from '~/hooks/usei18n';
 import { formaterDate } from '~/utils';
+
+function ProfileCell({ ticket }: { ticket: Ticket }) {
+  const { t } = useI18n();
+
+  const profile = mapApiProfileToProfile(ticket.profile as ApiProfile);
+  const className = `user-profile-${profile?.toLowerCase()}`;
+
+  if (!profile) return <>{ticket.profile ?? ''}</>;
+  return (
+    <strong>
+      <span className={className}>{t(profile)}</span>
+    </strong>
+  );
+}
 
 export type TicketTableColumn = {
   id: keyof Ticket;
@@ -63,24 +78,15 @@ export const ticketTableColumns: TicketTableColumn[] = [
     sortBy: 'school_id',
     cell: (_: Ticket, school?: School) => <>{school?.name}</>,
   },
-  { id: 'owner_name', headerKey: 'support.ticket.table.author', sortBy: 'owner' },
+  {
+    id: 'owner_name',
+    headerKey: 'support.ticket.table.author',
+    sortBy: 'owner',
+  },
   {
     id: 'profile',
     headerKey: 'support.ticket.table.profile',
-    cell: (ticket: Ticket) => {
-      const profile = mapApiProfileToProfile(
-        ticket.profile as ApiProfile,
-      )?.toLowerCase();
-
-      const className = `user-profile-${profile}`;
-
-      if (!profile) return <>{ticket.profile ?? ''}</>;
-      return (
-        <strong>
-          <span className={className}>{ticket.profile}</span>
-        </strong>
-      );
-    },
+    cell: (ticket: Ticket) => <ProfileCell ticket={ticket} />,
   },
   {
     id: 'modified',
@@ -88,7 +94,11 @@ export const ticketTableColumns: TicketTableColumn[] = [
     sortBy: 'modified',
     cell: (ticket: Ticket) => formaterDate(ticket.modified),
   },
-  { id: 'event_count', headerKey: 'support.ticket.table.event.count', sortBy: 'event_count' },
+  {
+    id: 'event_count',
+    headerKey: 'support.ticket.table.event.count',
+    sortBy: 'event_count',
+  },
   {
     id: 'escalation_date',
     headerKey: 'support.ticket.table.last.update.of.escalated.ticket',

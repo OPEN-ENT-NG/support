@@ -3,7 +3,8 @@ export type ApiProfile =
   | 'Enseignant'
   | 'Parent'
   | 'Personnel'
-  | 'Invité';
+  | 'Invité'
+  | 'Staff';
 export type Profile =
   | 'Student'
   | 'Teacher'
@@ -153,12 +154,13 @@ const API_PROFILE_TO_PROFILE: Record<ApiProfile, Profile> = {
   Parent: 'Relative',
   Personnel: 'Personnel',
   Invité: 'Guest',
+  Staff: 'Personnel',
 };
 
 export function mapApiProfileToProfile(
   apiProfile: ApiProfile,
 ): Profile | undefined {
-  return API_PROFILE_TO_PROFILE[apiProfile];
+  return API_PROFILE_TO_PROFILE[apiProfile] ?? apiProfile;
 }
 
 export type TicketType = 'all' | 'mine' | 'other';
