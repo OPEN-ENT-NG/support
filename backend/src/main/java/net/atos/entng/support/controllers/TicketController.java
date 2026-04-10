@@ -215,6 +215,16 @@ public class TicketController extends ControllerHelper {
                                                 log.error("Error creation historization : " + res.left().getValue());
                                             }
                                         });
+                            } else if (response.status == TicketStatus.NEW && !user.getUserId().equals(response.ownerId)) {
+                                ticketServiceSql.createTicketHisto(ticketId, I18n.getInstance()
+                                                .translate("support.ticket.histo.modification", getHost(request),
+                                                        I18n.acceptLanguage(request)), TicketStatus.OPENED.status(),
+                                        user.getUserId(), TicketHisto.UPDATED, res -> {
+                                            if (res.isLeft()) {
+                                                log.error("Error creation historization : " + res.left().getValue());
+                                            }
+                                        });
+                                response.status = TicketStatus.OPENED;
                             }
 
                             // if option activated, we can send the comment directly to the bug-tracker

@@ -146,6 +146,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 		JsonArray comments = data.getJsonArray("newComments", new JsonArray());
 		String insertCommentQuery = "INSERT INTO support.comments (ticket_id, owner, content) VALUES(?, ?, ?)";
 		String reopenTicketOnComment = "UPDATE support.tickets SET status = ?, modified = timezone('UTC', NOW()) WHERE id = ? AND status IN (?, ?)";
+		String openTicketOnCommentFromOther = "UPDATE support.tickets SET status = ?, modified = timezone('UTC', NOW()) WHERE id = ? AND status = ? AND owner != ?";
 
 		JsonArray reopenTicketOnCommentValues = new JsonArray();
 
@@ -163,6 +164,12 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 					.add(TicketStatus.CLOSED.status());
 
 			s.prepared(reopenTicketOnComment, reopenTicketOnCommentValues);
+
+			s.prepared(openTicketOnCommentFromOther, new JsonArray()
+					.add(TicketStatus.OPENED.status())
+					.add(parseId(ticketId))
+					.add(TicketStatus.NEW.status())
+					.add(user.getUserId()));
 		} else if ( comments.size() > 0 ) {
 			for(Object o : comments) {
 				String newComment = (String)o;
@@ -184,6 +191,12 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 					.add(TicketStatus.RESOLVED.status())
 					.add(TicketStatus.CLOSED.status());
 			s.prepared(reopenTicketOnComment, reopenTicketOnCommentValues);
+
+			s.prepared(openTicketOnCommentFromOther, new JsonArray()
+					.add(TicketStatus.OPENED.status())
+					.add(parseId(ticketId))
+					.add(TicketStatus.NEW.status())
+					.add(user.getUserId()));
 		}
 
 		// 4. Insert attachments
