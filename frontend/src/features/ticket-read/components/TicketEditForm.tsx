@@ -1,4 +1,5 @@
-import { Dropdown, Flex, FormControl, Input, Label, Select } from '@edifice.io/react';
+import { Dropdown, Flex, FormControl, IconButton, Input, Label, Select, useToast } from '@edifice.io/react';
+import { IconCopy } from '@edifice.io/react/icons';
 import { useMemo } from 'react';
 import { Control, Controller, FieldErrors } from 'react-hook-form';
 import { useI18n } from '~/hooks/usei18n';
@@ -31,6 +32,49 @@ type TicketEditFormProps = {
   bugTrackerIssueId?: number;
   isPending: boolean;
 };
+
+function CopyableInput({
+  id,
+  label,
+  value,
+  type = 'text',
+}: {
+  id: string;
+  label: string;
+  value: string;
+  type?: string;
+}) {
+  const toast = useToast();
+  const { t } = useI18n();
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(value);
+    toast.success(t('support.ticket.form.copy.success'));
+  };
+
+  return (
+    <FormControl id={id}>
+      <Label>{label}</Label>
+      <Flex gap="8" align="center">
+        <Input
+          className="flex-grow-1"
+          size="md"
+          type={type}
+          value={value}
+          disabled
+        />
+        <IconButton
+          aria-label={t('support.ticket.form.copy.label')}
+          icon={<IconCopy />}
+          color="tertiary"
+          variant="ghost"
+          type="button"
+          onClick={handleCopy}
+        />
+      </Flex>
+    </FormControl>
+  );
+}
 
 function ControlledDropdown({
   name,
@@ -170,27 +214,17 @@ export default function TicketEditForm({
 
   return (
     <Flex direction="column" gap="8" className="ps-16 pe-16 pt-12 pb-12 w-100">
-      <FormControl id="uuid">
-        <Label>{t('support.ticket.form.id.label')}</Label>
-        <Input
-          placeholder={t('support.ticket.form.id.label')}
-          size="md"
-          type="text"
-          value={String(ticket.id)}
-          disabled
-        />
-      </FormControl>
+      <CopyableInput
+        id="uuid"
+        label={t('support.ticket.form.id.label')}
+        value={String(ticket.id)}
+      />
 
-      <FormControl id="owner_name">
-        <Label>{t('support.ticket.form.owner.label')}</Label>
-        <Input
-          placeholder={t('support.ticket.form.owner.label')}
-          size="md"
-          type="text"
-          value={ticket.owner_name}
-          disabled
-        />
-      </FormControl>
+      <CopyableInput
+        id="owner_name"
+        label={t('support.ticket.form.owner.label')}
+        value={ticket.owner_name}
+      />
 
       <FormControl id="profile">
         <Label>{t('support.ticket.form.profile.label')}</Label>
@@ -265,16 +299,11 @@ export default function TicketEditForm({
 
       {ticket.escalation_status === ESCALATION_STATUS.SUCCESSFUL &&
         bugTrackerIssueId && (
-          <FormControl id="escalation_id">
-            <Label>{t('support.ticket.form.escalated.label')}</Label>
-            <Input
-              placeholder=""
-              size="md"
-              type="text"
-              disabled
-              value={bugTrackerIssueId}
-            />
-          </FormControl>
+          <CopyableInput
+            id="escalation_id"
+            label={t('support.ticket.form.escalated.label')}
+            value={String(bugTrackerIssueId)}
+          />
         )}
     </Flex>
   );
