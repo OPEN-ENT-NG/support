@@ -19,7 +19,8 @@
         "event_count",
         "subject",
         "school_id",
-        "profile"
+        "profile",
+        "escalation_date"
       ]
     },
     "order": {

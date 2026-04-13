@@ -102,6 +102,7 @@ export const ticketTableColumns: TicketTableColumn[] = [
   {
     id: 'escalation_date',
     headerKey: 'support.ticket.table.last.update.of.escalated.ticket',
+    sortBy: 'escalation_date',
     cell: (ticket: Ticket) =>
       ticket.escalation_date ? formatDate(ticket.escalation_date) : '-',
   },

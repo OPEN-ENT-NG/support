@@ -70,7 +70,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
     protected static final Logger log = LoggerFactory.getLogger(Renders.class);
     private final static String UPSERT_USER_QUERY = "SELECT support.merge_users(?,?)";
     private final List<String> ALLOWED_SORT_BY_COLUMN = new ArrayList<>(Arrays.asList(JiraTicket.ID, JiraTicket.MODIFICATION_DATE, JiraTicket.STATUS,
-			JiraTicket.CATEGORY, JiraTicket.CATEGORY_LABEL, JiraTicket.OWNER, JiraTicket.EVENT_COUNT, JiraTicket.SUBJECT, JiraTicket.SCHOOL_ID, JiraTicket.PROFILE));
+			JiraTicket.CATEGORY, JiraTicket.CATEGORY_LABEL, JiraTicket.OWNER, JiraTicket.EVENT_COUNT, JiraTicket.SUBJECT, JiraTicket.SCHOOL_ID, JiraTicket.PROFILE, JiraTicket.ESCALATION_DATE));
     private final BugTracker bugTrackerType;
     private final Logger LOGGER = LoggerFactory.getLogger(TicketServiceSqlImpl.class);
 
