@@ -26,7 +26,8 @@ export function AddAttachmentToWorkspaceModal({
   };
 
   const handleConfirm = async () => {
-    if (!selectedFolderId) return;
+    // if the user has selected the root folder (Mes documents) the id is an empty string
+    if (selectedFolderId === undefined) return;
     setIsLoading(true);
     const isSuccess = await onCopyToWorkspace(selectedFolderId);
     if (isSuccess) onModalClose();
