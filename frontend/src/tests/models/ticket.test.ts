@@ -12,13 +12,13 @@ import {
 
 describe('getTicketStatusText', () => {
   it.each([
-    [1, 'Nouveau'],
-    [2, 'Ouvert'],
-    [3, 'Résolu'],
-    [4, 'Fermé'],
-    [5, 'En attente de réponse'],
+    [1, 'support.ticket.status.new'],
+    [2, 'support.ticket.status.opened'],
+    [3, 'support.ticket.status.resolved'],
+    [4, 'support.ticket.status.closed'],
+    [5, 'support.ticket.status.waiting'],
   ] as [TicketApiCode, string][])(
-    'returns "%s" for code %i',
+    'returns i18n key "%s" for code %i',
     (code, expected) => {
       expect(getTicketStatusText(code)).toBe(expected);
     },
@@ -33,18 +33,18 @@ describe('getTicketStatusText', () => {
 
 describe('ticketStatusToCode', () => {
   it.each([
-    ['Nouveau', 1],
-    ['Ouvert', 2],
-    ['Résolu', 3],
-    ['Fermé', 4],
-    ['En attente de réponse', 5],
+    ['support.ticket.status.new', 1],
+    ['support.ticket.status.opened', 2],
+    ['support.ticket.status.resolved', 3],
+    ['support.ticket.status.closed', 4],
+    ['support.ticket.status.waiting', 5],
   ])('returns %i for "%s"', (label, expected) => {
     expect(ticketStatusToCode(label)).toBe(expected);
   });
 
   it('throws for an unknown status label', () => {
-    expect(() => ticketStatusToCode('Inconnu')).toThrow(
-      'Unknown ticket status: Inconnu',
+    expect(() => ticketStatusToCode('support.ticket.status.unknown')).toThrow(
+      'Unknown ticket status: support.ticket.status.unknown',
     );
   });
 
@@ -56,14 +56,14 @@ describe('ticketStatusToCode', () => {
 });
 
 describe('getStatusLabels', () => {
-  it('returns all 5 status labels', () => {
+  it('returns all 5 status i18n keys', () => {
     const labels = getStatusLabels();
     expect(labels).toHaveLength(5);
-    expect(labels).toContain('Nouveau');
-    expect(labels).toContain('Ouvert');
-    expect(labels).toContain('Résolu');
-    expect(labels).toContain('Fermé');
-    expect(labels).toContain('En attente de réponse');
+    expect(labels).toContain('support.ticket.status.new');
+    expect(labels).toContain('support.ticket.status.opened');
+    expect(labels).toContain('support.ticket.status.resolved');
+    expect(labels).toContain('support.ticket.status.closed');
+    expect(labels).toContain('support.ticket.status.waiting');
   });
 
   it('returns labels in code order', () => {

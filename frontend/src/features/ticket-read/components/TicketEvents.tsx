@@ -51,7 +51,7 @@ export function TicketEvent({ event }: TicketEventProps) {
                 type: 'beta',
               }}
             >
-              {getTicketStatusText(event.status)}
+              {t(getTicketStatusText(event.status))}
             </Badge>
           </p>
         )}

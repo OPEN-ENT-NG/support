@@ -216,11 +216,11 @@ export const TICKET_STATUS_CLASS: Record<TicketApiCode, string> = {
 };
 
 export const TICKET_STATUS_BY_CODE: Record<TicketApiCode, { label: string }> = {
-  1: { label: 'Nouveau' },
-  2: { label: 'Ouvert' },
-  3: { label: 'Résolu' },
-  4: { label: 'Fermé' },
-  5: { label: 'En attente de réponse' },
+  1: { label: 'support.ticket.status.new' },
+  2: { label: 'support.ticket.status.opened' },
+  3: { label: 'support.ticket.status.resolved' },
+  4: { label: 'support.ticket.status.closed' },
+  5: { label: 'support.ticket.status.waiting' },
 };
 
 export function getTicketStatusText(apiCode: TicketApiCode): string {

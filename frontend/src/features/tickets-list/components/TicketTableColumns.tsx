@@ -11,6 +11,18 @@ import {
 import { useI18n } from '~/hooks/usei18n';
 import { formatDate } from '~/utils';
 
+function StatusCell({ ticket }: { ticket: Ticket }) {
+  const { t } = useI18n();
+  return (
+    <Badge
+      className={TICKET_STATUS_CLASS[ticket.status]}
+      variant={{ type: 'beta' }}
+    >
+      {t(getTicketStatusText(ticket.status))}
+    </Badge>
+  );
+}
+
 function ProfileCell({ ticket }: { ticket: Ticket }) {
   const { t } = useI18n();
 
@@ -38,19 +50,7 @@ export const ticketTableColumns: TicketTableColumn[] = [
     id: 'status',
     headerKey: 'support.ticket.table.status',
     sortBy: 'status',
-    cell: (ticket: Ticket) => {
-      return (
-        <Badge
-          className={TICKET_STATUS_CLASS[ticket.status]}
-          variant={{
-            type: 'beta',
-          }}
-        >
-          {getTicketStatusText(ticket.status).charAt(0).toUpperCase() +
-            getTicketStatusText(ticket.status).slice(1)}
-        </Badge>
-      );
-    },
+    cell: (ticket: Ticket) => <StatusCell ticket={ticket} />,
   },
   {
     id: 'short_desc',
