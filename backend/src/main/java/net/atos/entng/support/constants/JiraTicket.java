@@ -27,6 +27,7 @@ public class JiraTicket {
     public static final String SUBJECT = "subject";
     public static final String CATEGORY = "category";
     public static final String PROFILE = "profile";
+    public static final String ESCALATION_DATE = "escalation_date";
     public static final String CREATION_DATE = "created";
     public static final String MODIFICATION_DATE = "modified";
     public static final String USER_ID = "user_id";

@@ -10,7 +10,8 @@ export type SortableTicketField =
   | 'owner'
   | 'modified'
   | 'event_count'
-  | 'school_id';
+  | 'school_id'
+  | 'escalation_date';
 
 export type TicketFiltersState = {
   search: string;
