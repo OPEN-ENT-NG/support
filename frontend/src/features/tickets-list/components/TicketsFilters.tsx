@@ -208,7 +208,7 @@ function TicketsStatusFilter({ filters, onChange }: TicketsStatusFilterProps) {
               value={statusCode}
               onChange={handleStatusToggle}
             >
-              {status.label}
+              {t(status.label)}
             </Dropdown.CheckboxItem>
           );
         })}

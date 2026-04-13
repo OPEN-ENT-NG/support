@@ -233,7 +233,10 @@ export function TicketEditForm({
         name="status"
         label={t('support.ticket.status')}
         placeholder={t('support.ticket.status')}
-        options={STATUS_OPTIONS}
+        options={STATUS_OPTIONS.map((option) => ({
+          label: t(option.label),
+          value: option.value,
+        }))}
         control={control}
         required={t('support.ticket.form.status.required')}
         errors={errors}

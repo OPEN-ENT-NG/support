@@ -107,7 +107,7 @@
   "support.ticket.status.opened": "Ouvert",
   "support.ticket.status.other.demands": "Autres demandes",
   "support.ticket.status.resolved": "Résolu",
-  "support.ticket.status.waiting": "En attente de réponse utilisateur",
+  "support.ticket.status.waiting": "En attente de réponse",
   "support.ticket.subject": "Sujet",
   "support.ticket.table.author": "Demandeur",
   "support.ticket.table.category": "Catégorie",
