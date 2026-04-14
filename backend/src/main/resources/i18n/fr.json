@@ -192,7 +192,7 @@
   "support.ticket.empty.create": "Créer une nouvelle demande",
   "support.type.selector.all": "Tout",
   "support.ticket.table.open": "Ouvrir",
-  "support.ticket.table.transfer": "Transférer au support Édifice",
+  "support.ticket.table.transfer": "Transmettre au support ENT",
   "support.ticket.table.transfer.success": "Les tickets ont été transférés avec succès",
   "support.ticket.table.transfer.error": "Une erreur s'est produite lors du transfert des tickets",
   "support.header.export.info": "L'export est en cours, vous recevrez le fichier dans votre espace de travail.",
