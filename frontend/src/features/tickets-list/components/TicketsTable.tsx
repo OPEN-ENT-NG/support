@@ -22,6 +22,7 @@ import { useMultiSelect } from '~/hooks/useMultiSelect';
 import { TicketsTableToolbar, ToolbarAction } from './TicketsTableToolbar';
 import { TicketsTableHeader } from './TicketsTableHeader';
 import { TicketsTableRow } from './TicketsTableRow';
+import { useUserScope } from '~/hooks/useUserScope';
 
 export type TicketsTableProps = {
   tickets?: Ticket[];
@@ -45,6 +46,7 @@ function TicketsTable({
   const toast = useToast();
   const queryClient = useQueryClient();
   const canMultiSelect = isAdmlcOrAdmc || escalateWorkflow;
+  const userScope = useUserScope();
 
   const getTicketId = useCallback((ticket: Ticket) => ticket.id, []);
   const {
@@ -79,7 +81,11 @@ function TicketsTable({
           exportTickets(selectedTickets.map((t) => t.id.toString()));
         },
         isVisible:
-          selectedTickets.length > 0 && escalateWorkflow && isAdmlcOrAdmc,
+          selectedTickets.length > 0 &&
+          escalateWorkflow &&
+          isAdmlcOrAdmc &&
+          (userScope === null ||
+            selectedTickets.every((t) => userScope.includes(t.school_id))),
       },
       {
         id: 'transfer',
@@ -118,6 +124,7 @@ function TicketsTable({
       queryClient,
       clearSelection,
       t,
+      userScope,
     ],
   );
 
