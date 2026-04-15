@@ -42,15 +42,22 @@ export type TicketTableColumn = {
   headerKey: string;
   sortBy?: SortableTicketField;
   cell?: (ticket: Ticket, school?: School) => React.ReactNode;
+  width?: string;
 };
 
 export const ticketTableColumns: TicketTableColumn[] = [
-  { id: 'id', headerKey: 'support.ticket.table.id', sortBy: 'id' },
+  {
+    id: 'id',
+    headerKey: 'support.ticket.table.id',
+    sortBy: 'id',
+    width: '45px',
+  },
   {
     id: 'status',
     headerKey: 'support.ticket.table.status',
     sortBy: 'status',
     cell: (ticket: Ticket) => <StatusCell ticket={ticket} />,
+    width: '150px',
   },
   {
     id: 'short_desc',
@@ -64,6 +71,7 @@ export const ticketTableColumns: TicketTableColumn[] = [
         </strong>
       );
     },
+    width: '140px',
   },
   {
     id: 'category_label',
@@ -71,33 +79,39 @@ export const ticketTableColumns: TicketTableColumn[] = [
     sortBy: 'category_label',
     cell: (ticket: Ticket) =>
       ticket.category_label ? ticket.category_label : '-',
+    width: '92px',
   },
   {
     id: 'school_id',
     headerKey: 'support.ticket.table.school',
     sortBy: 'school_id',
     cell: (_: Ticket, school?: School) => <>{school?.name}</>,
+    width: '110px',
   },
   {
     id: 'owner_name',
     headerKey: 'support.ticket.table.author',
     sortBy: 'owner',
+    width: '110px',
   },
   {
     id: 'profile',
     headerKey: 'support.ticket.table.profile',
     cell: (ticket: Ticket) => <ProfileCell ticket={ticket} />,
+    width: '75px',
   },
   {
     id: 'modified',
     headerKey: 'support.ticket.table.last.modified',
     sortBy: 'modified',
     cell: (ticket: Ticket) => formatDate(ticket.modified),
+    width: '110px',
   },
   {
     id: 'event_count',
     headerKey: 'support.ticket.table.event.count',
     sortBy: 'event_count',
+    width: '70px',
   },
   {
     id: 'escalation_date',
@@ -105,5 +119,6 @@ export const ticketTableColumns: TicketTableColumn[] = [
     sortBy: 'escalation_date',
     cell: (ticket: Ticket) =>
       ticket.escalation_date ? formatDate(ticket.escalation_date) : '-',
+    width: '90px',
   },
 ];

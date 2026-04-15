@@ -84,7 +84,7 @@
     "support.ticket.table.category": "Catégorie",
     "support.ticket.table.id": "Id",
     "support.ticket.table.last.modified": "Dernière modification",
-    "support.ticket.table.last.update.of.escalated.ticket": "Demande transmise mise à jour le",
+    "support.ticket.table.last.update.of.escalated.ticket": "Escaladé",
     "support.ticket.table.status": "Statut",
     "support.ticket.table.subject": "Sujet",
     "support.ticket.table.school": "Structure du demandeur",

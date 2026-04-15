@@ -37,7 +37,9 @@ const TicketsTableRow = memo(function TicketsTableRow({
           key={column.id}
           onClick={() => navigate(`/tickets/${ticket.id}`)}
         >
-          {column.cell ? column.cell(ticket, school) : ticket[column.id]}
+          <div style={{ width: column.width }}>
+            {column.cell ? column.cell(ticket, school) : ticket[column.id]}
+          </div>
         </Table.Td>
       ))}
     </Table.Tr>
