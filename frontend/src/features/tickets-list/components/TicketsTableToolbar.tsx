@@ -1,4 +1,4 @@
-import { Button, Checkbox, Flex } from '@edifice.io/react';
+import { Button, Checkbox, Flex, Table } from '@edifice.io/react';
 import { ReactNode } from 'react';
 import { Ticket } from '~/models';
 
@@ -29,7 +29,7 @@ export function TicketsTableToolbar({
   const visibleActions = actions.filter((action) => action.isVisible !== false);
 
   return (
-    <tr>
+    <Table.Tr>
       <td colSpan={11}>
         <Flex className="tickets-table-toolbar" align="center" gap="16">
           <Checkbox
@@ -51,6 +51,6 @@ export function TicketsTableToolbar({
           ))}
         </Flex>
       </td>
-    </tr>
+    </Table.Tr>
   );
 }
