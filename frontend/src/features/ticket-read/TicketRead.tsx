@@ -3,12 +3,11 @@ import {
   Flex,
   LoadingScreen,
   useBreakpoint,
-  useIsAdmlcOrAdmc,
   useUser,
 } from '@edifice.io/react';
 import { IconArrowLeft } from '@edifice.io/react/icons';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useTicketFormOptions } from '~/hooks';
+import { useTicketFormOptions, useUserScope } from '~/hooks';
 import { TicketComment, TicketEvent } from '~/models';
 import { useUserProfile } from '~/services/queries';
 import {
@@ -53,7 +52,7 @@ export function TicketRead() {
   const ticket = useTicket(ticketId);
   const userProfile = useUserProfile(ticket?.owner);
   const { avatar } = useUser();
-  const { isAdmlcOrAdmc } = useIsAdmlcOrAdmc();
+  const scope = useUserScope();
   const { categories, schoolOptions } = useTicketFormOptions();
   const { t } = useI18n();
   const { control, errors, isPending, onSubmit } = useTicketEditForm(ticket);
@@ -67,6 +66,8 @@ export function TicketRead() {
   if (ticket === undefined) {
     return <LoadingScreen />;
   }
+
+  const canEditAllStatuses = scope === null || scope.includes(ticket.school_id);
 
   const timelineItems = sortTimelineItems(events, comments);
 
@@ -105,7 +106,7 @@ export function TicketRead() {
               ?.replace('/api/v2/tickets/', '/agent/tickets/')
               ?.replace('.json', '')}
             isPending={isPending}
-            isAdmlcOrAdmc={isAdmlcOrAdmc}
+            canEditAllStatuses={canEditAllStatuses}
           />
         </Flex>
       </div>
