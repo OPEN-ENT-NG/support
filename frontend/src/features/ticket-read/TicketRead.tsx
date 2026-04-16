@@ -3,6 +3,7 @@ import {
   Flex,
   LoadingScreen,
   useBreakpoint,
+  useIsAdmlcOrAdmc,
   useUser,
 } from '@edifice.io/react';
 import { IconArrowLeft } from '@edifice.io/react/icons';
@@ -52,6 +53,7 @@ export function TicketRead() {
   const ticket = useTicket(ticketId);
   const userProfile = useUserProfile(ticket?.owner);
   const { avatar } = useUser();
+  const { isAdmlcOrAdmc } = useIsAdmlcOrAdmc();
   const { categories, schoolOptions } = useTicketFormOptions();
   const { t } = useI18n();
   const { control, errors, isPending, onSubmit } = useTicketEditForm(ticket);
@@ -103,6 +105,7 @@ export function TicketRead() {
               ?.replace('/api/v2/tickets/', '/agent/tickets/')
               ?.replace('.json', '')}
             isPending={isPending}
+            isAdmlcOrAdmc={isAdmlcOrAdmc}
           />
         </Flex>
       </div>

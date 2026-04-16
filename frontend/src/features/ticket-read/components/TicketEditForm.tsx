@@ -29,6 +29,8 @@ const STATUS_OPTIONS: SelectOption[] = Object.entries(
   TICKET_STATUS_BY_CODE,
 ).map(([code, { label }]) => ({ label, value: code }));
 
+const RESOLVED_STATUS_CODE = '3';
+
 type TicketEditFormProps = {
   control: Control<TicketEditFormValues>;
   onSubmit: () => void;
@@ -40,6 +42,7 @@ type TicketEditFormProps = {
   bugTrackerIssueId?: number;
   bugTrackerIssueUrl?: string;
   isPending: boolean;
+  isAdmlcOrAdmc: boolean;
 };
 
 function CopyableInput({
@@ -102,6 +105,7 @@ function ControlledSelect({
   label,
   placeholder,
   options,
+  valueOptions,
   control,
   required,
   errors,
@@ -112,6 +116,7 @@ function ControlledSelect({
   label: string;
   placeholder: string;
   options: SelectOption[];
+  valueOptions?: SelectOption[];
   control: Control<TicketEditFormValues>;
   required: string;
   errors: FieldErrors<TicketEditFormValues>;
@@ -130,7 +135,9 @@ function ControlledSelect({
             block
             size="md"
             options={options}
-            selectedValue={options.find((o) => o.value === field.value)}
+            selectedValue={(valueOptions ?? options).find(
+              (o) => o.value === field.value,
+            )}
             placeholderOption={placeholder}
             onValueChange={(value) => {
               if (value !== field.value) {
@@ -157,6 +164,7 @@ export function TicketEditForm({
   bugTrackerIssueId,
   bugTrackerIssueUrl,
   isPending,
+  isAdmlcOrAdmc,
 }: TicketEditFormProps) {
   const { t } = useI18n();
 
@@ -233,10 +241,23 @@ export function TicketEditForm({
         name="status"
         label={t('support.ticket.status')}
         placeholder={t('support.ticket.status')}
-        options={STATUS_OPTIONS.map((option) => ({
+        options={(isAdmlcOrAdmc
+          ? STATUS_OPTIONS
+          : STATUS_OPTIONS.filter(
+              (option) => option.value === RESOLVED_STATUS_CODE,
+            )
+        ).map((option) => ({
           label: t(option.label),
           value: option.value,
         }))}
+        valueOptions={
+          !isAdmlcOrAdmc
+            ? STATUS_OPTIONS.map((option) => ({
+                label: t(option.label),
+                value: option.value,
+              }))
+            : undefined
+        }
         control={control}
         required={t('support.ticket.form.status.required')}
         errors={errors}
