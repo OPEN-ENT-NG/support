@@ -42,7 +42,7 @@ type TicketEditFormProps = {
   bugTrackerIssueId?: number;
   bugTrackerIssueUrl?: string;
   isPending: boolean;
-  isAdmlcOrAdmc: boolean;
+  canEditAllStatuses: boolean;
 };
 
 function CopyableInput({
@@ -164,7 +164,7 @@ export function TicketEditForm({
   bugTrackerIssueId,
   bugTrackerIssueUrl,
   isPending,
-  isAdmlcOrAdmc,
+  canEditAllStatuses,
 }: TicketEditFormProps) {
   const { t } = useI18n();
 
@@ -241,7 +241,7 @@ export function TicketEditForm({
         name="status"
         label={t('support.ticket.status')}
         placeholder={t('support.ticket.status')}
-        options={(isAdmlcOrAdmc
+        options={(canEditAllStatuses
           ? STATUS_OPTIONS
           : STATUS_OPTIONS.filter(
               (option) => option.value === RESOLVED_STATUS_CODE,
@@ -251,7 +251,7 @@ export function TicketEditForm({
           value: option.value,
         }))}
         valueOptions={
-          !isAdmlcOrAdmc
+          !canEditAllStatuses
             ? STATUS_OPTIONS.map((option) => ({
                 label: t(option.label),
                 value: option.value,
