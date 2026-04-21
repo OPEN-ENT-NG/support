@@ -8,7 +8,13 @@ import {
   useToast,
 } from '@edifice.io/react';
 import { IconCopy, IconExternalLink } from '@edifice.io/react/icons';
-import { Control, Controller, FieldErrors } from 'react-hook-form';
+import { useMemo } from 'react';
+import {
+  Control,
+  Controller,
+  FieldErrors,
+  useController,
+} from 'react-hook-form';
 import { useI18n } from '~/hooks/usei18n';
 import {
   ESCALATION_STATUS,
@@ -123,31 +129,32 @@ function ControlledSelect({
   isPending: boolean;
   onSubmit: () => void;
 }) {
+  const { field } = useController({ name, control, rules: { required } });
+
+  // Stabilise la référence de selectedValue pour éviter que le Select ne rappelle
+  // onValueChange à chaque re-render (le Select d'Edifice convertit tout changement
+  // de référence de selectedValue en appel à onValueChange via ses useEffect internes).
+  const selectedValue = useMemo(
+    () => (valueOptions ?? options).find((o) => o.value === field.value),
+    [field.value, valueOptions, options],
+  );
+
   return (
     <FormControl id={name} status={errors[name] ? 'invalid' : undefined}>
       <Label>{label}</Label>
-      <Controller
-        name={name}
-        control={control}
-        rules={{ required }}
-        render={({ field }) => (
-          <Select
-            block
-            size="md"
-            options={options}
-            selectedValue={(valueOptions ?? options).find(
-              (o) => o.value === field.value,
-            )}
-            placeholderOption={placeholder}
-            onValueChange={(value) => {
-              if (value !== field.value) {
-                field.onChange(value);
-                onSubmit();
-              }
-            }}
-            disabled={isPending}
-          />
-        )}
+      <Select
+        block
+        size="md"
+        options={options}
+        selectedValue={selectedValue}
+        placeholderOption={placeholder}
+        onValueChange={(value) => {
+          if (value !== field.value) {
+            field.onChange(value);
+            onSubmit();
+          }
+        }}
+        disabled={isPending}
       />
     </FormControl>
   );
@@ -167,6 +174,23 @@ export function TicketEditForm({
   canEditAllStatuses,
 }: TicketEditFormProps) {
   const { t } = useI18n();
+
+  const statusOptions = useMemo(
+    () =>
+      (canEditAllStatuses
+        ? STATUS_OPTIONS
+        : STATUS_OPTIONS.filter((o) => o.value === RESOLVED_STATUS_CODE)
+      ).map((o) => ({ label: t(o.label), value: o.value })),
+    [canEditAllStatuses, t],
+  );
+
+  const statusValueOptions = useMemo(
+    () =>
+      !canEditAllStatuses
+        ? STATUS_OPTIONS.map((o) => ({ label: t(o.label), value: o.value }))
+        : undefined,
+    [canEditAllStatuses, t],
+  );
 
   return (
     <Flex direction="column" gap="8" className="ps-16 pe-16 pt-12 pb-12 w-100">
@@ -241,23 +265,8 @@ export function TicketEditForm({
         name="status"
         label={t('support.ticket.status')}
         placeholder={t('support.ticket.status')}
-        options={(canEditAllStatuses
-          ? STATUS_OPTIONS
-          : STATUS_OPTIONS.filter(
-              (option) => option.value === RESOLVED_STATUS_CODE,
-            )
-        ).map((option) => ({
-          label: t(option.label),
-          value: option.value,
-        }))}
-        valueOptions={
-          !canEditAllStatuses
-            ? STATUS_OPTIONS.map((option) => ({
-                label: t(option.label),
-                value: option.value,
-              }))
-            : undefined
-        }
+        options={statusOptions}
+        valueOptions={statusValueOptions}
         control={control}
         required={t('support.ticket.form.status.required')}
         errors={errors}
