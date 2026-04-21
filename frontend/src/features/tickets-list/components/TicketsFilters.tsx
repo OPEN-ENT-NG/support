@@ -167,16 +167,14 @@ function TicketsSchoolFilter({
 
 function TicketsStatusFilter({ filters, onChange }: TicketsStatusFilterProps) {
   const { t } = useI18n();
-  const [isAllChecked, setIsAllChecked] = useState(filters.status.length === 0);
+  const isAllChecked = filters.status.length === 0;
 
   const handleSelectAll = () => {
-    setIsAllChecked((prev) => !prev);
     onChange({ ...filters, status: [] });
   };
 
   const handleStatusToggle = (value: string | number) => {
     const updated = toggleItem(filters.status, value as TicketApiCode, []);
-    setIsAllChecked(updated.length === 0);
     onChange({ ...filters, status: updated });
   };
 
