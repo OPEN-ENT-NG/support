@@ -1,0 +1,23 @@
+CREATE TABLE support.tickets(
+	id BIGSERIAL PRIMARY KEY,
+	owner VARCHAR(36) NOT NULL,
+	subject VARCHAR(255) NOT NULL,
+	description TEXT NOT NULL,
+	created TIMESTAMP NOT NULL DEFAULT NOW(),
+	modified TIMESTAMP NOT NULL DEFAULT NOW(),
+	category SMALLINT NOT NULL,
+	status SMALLINT NOT NULL,
+	school_id VARCHAR(36) NOT NULL,
+	CONSTRAINT ticket_owner_fk FOREIGN KEY(owner) REFERENCES support.users(id) ON UPDATE CASCADE
+);
+
+CREATE TABLE support.comments(
+	id BIGSERIAL PRIMARY KEY,
+	ticket_id BIGSERIAL NOT NULL,
+	owner VARCHAR(36) NOT NULL,
+	created TIMESTAMP NOT NULL DEFAULT NOW(),
+	modified TIMESTAMP NOT NULL DEFAULT NOW(),
+	content TEXT,
+	CONSTRAINT ticket_fk FOREIGN KEY(ticket_id) REFERENCES support.tickets(id) ON UPDATE CASCADE ON DELETE CASCADE,
+	CONSTRAINT comment_owner_fk FOREIGN KEY(owner) REFERENCES support.users(id) ON UPDATE CASCADE
+);

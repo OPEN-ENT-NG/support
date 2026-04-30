@@ -1,1 +1,0 @@
-CREATE TYPE support.comment_tuple AS (created TIMESTAMP, id BIGINT, content TEXT);

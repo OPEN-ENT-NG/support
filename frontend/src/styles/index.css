@@ -1,0 +1,54 @@
+.editor-container .ProseMirror[contenteditable='true'] {
+  min-height: 80px;
+}
+
+.border-bottom-light {
+  border-bottom: solid 1px #e4e4e4;
+}
+
+.ticket-attachment-box {
+  background-color: #fafafa;
+  border: 1px solid #f2f2f2;
+}
+
+.text-escalated {
+  color: #7dbf85;
+}
+
+.ticket-create-form {
+  max-width: 900px;
+}
+
+.ticket-sidebar {
+  flex: 0 0 25%;
+}
+
+.min-w-0 {
+  min-width: 0;
+}
+
+.search-bar button {
+  border-radius: 1.2rem;
+}
+
+.ticket-status-info {
+  background-color: var(--edifice-info-200) !important;
+  color: var(--edifice-info-800) !important;
+  border: none !important;
+}
+
+.ticket-status-warning {
+  background-color: var(--edifice-warning-200) !important;
+  color: var(--edifice-warning-800) !important;
+  border: none !important;
+}
+
+.ticket-status-success {
+  background-color: var(--edifice-success-200) !important;
+  color: var(--edifice-success-800) !important;
+  border: none !important;
+}
+
+.tickets-table-toolbar {
+  height: 35px;
+}
