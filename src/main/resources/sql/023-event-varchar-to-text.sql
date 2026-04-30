@@ -1,1 +1,0 @@
-ALTER TABLE support.tickets_histo ALTER COLUMN event TYPE TEXT;

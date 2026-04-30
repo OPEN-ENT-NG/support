@@ -3,36 +3,33 @@
 pipeline {
   agent any
 
-  environment {
-    NEXUS_SONATYPE_PASSWORD = credentials('nexus-sonatype-password')
-    NEXUS_ODE_PASSWORD = credentials('nexus-ode-password')
-  }
-  
   stages {
-    stage("Initialization") {
+    stage('Build frontend') {
       steps {
-        script {
-          def version = sh(returnStdout: true, script: 'docker compose run --rm maven mvn -Duser.home=/var/maven help:evaluate -Dexpression=project.version -q -DforceStdout')
-          buildName "${env.GIT_BRANCH.replace("origin/", "")}@${version}"
+        dir('frontend') {
+          sh './build.sh clean init build'
         }
       }
     }
-    stage('Build') {
+
+    stage('Copy front files') {
       steps {
-        checkout scm
-        sh './build.sh init clean install publish'
+        sh './copyFrontFiles.sh'
       }
     }
-    stage('Build image') {
-        steps {
-            sh 'edifice image --archs=linux/amd64 --force'
+    
+    stage('Build backend') {
+      steps {
+        dir('backend') {
+          sh './build.sh clean build publish'
         }
+      }
     }
-  }
-  post {
-    cleanup {
-      sh 'docker compose down'
+
+    stage('Finalize builds') {
+      steps {
+        sh 'rm -rf frontend/dist'
+      }
     }
   }
 }
-

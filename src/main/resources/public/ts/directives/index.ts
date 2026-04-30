@@ -1,1 +1,0 @@
-export * from './directive-label-share/directive-label-share';

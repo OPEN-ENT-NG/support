@@ -1,1 +1,0 @@
-ALTER TYPE support.comment_tuple ALTER ATTRIBUTE owner_name TYPE character varying(100);

@@ -1,0 +1,43 @@
+import { Flex, LoadingScreen, useEdificeClient } from '@edifice.io/react';
+import { QueryClient } from '@tanstack/react-query';
+import { TicketRead } from '~/features/ticket-read/TicketRead';
+
+import { ticketsQueryKeys } from '~/services/queries/tickets';
+import { getAttachmentById, getTicketById, getUserInfo } from '~/services/api';
+import { userQueryKeys } from '~/services/queries';
+/** Prefetch ticket data in React Query cache based on route param */
+export const loader =
+  (queryClient: QueryClient) =>
+  async ({ params }: { params: { ticketId?: string } }) => {
+    const ticketId = params.ticketId;
+    if (ticketId) {
+      const ticket = await queryClient.ensureQueryData({
+        queryKey: ticketsQueryKeys.byId(ticketId),
+        queryFn: () => getTicketById(ticketId),
+      });
+
+      await Promise.all([
+        queryClient.ensureQueryData({
+          queryKey: userQueryKeys.appsByUserId(),
+          queryFn: () => getUserInfo(),
+        }),
+        queryClient.ensureQueryData({
+          queryKey: ticketsQueryKeys.attachmentsById(String(ticket[0].id)),
+          queryFn: () => getAttachmentById(String(ticket[0].id)),
+        }),
+      ]);
+    }
+    return null;
+  };
+
+export const Component = () => {
+  const { init } = useEdificeClient();
+
+  if (!init) return <LoadingScreen position={false} />;
+
+  return (
+    <Flex direction="column" className="h-100">
+      <TicketRead />
+    </Flex>
+  );
+};
