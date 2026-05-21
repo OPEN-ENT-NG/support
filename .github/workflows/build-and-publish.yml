@@ -2,11 +2,21 @@ name: Build & Publish Fat Mod
 
 on:
   push:
-    branches: [main, master, develop]
+    branches:
+      - main
+      - master
+      - develop
+      - '*-patched'
+      - '*-patched-dev'
     tags: ['*']
   pull_request:
     branches: [main, master, develop]
   workflow_dispatch:
+    inputs:
+      entcore_version:
+        description: 'Version entcore (ex: 6.14.9-patched). Laissez vide pour utiliser la version du pom.xml.'
+        required: false
+        default: ''
 
 permissions:
   contents: write
@@ -40,7 +50,7 @@ jobs:
 
       - name: Install frontend dependencies
         working-directory: frontend
-        run: pnpm install
+        run: pnpm install --no-frozen-lockfile
 
       - name: Build frontend
         working-directory: frontend
@@ -62,7 +72,7 @@ jobs:
 
       - uses: actions/setup-java@v4
         with:
-          java-version: '11'
+          java-version: '8'
           distribution: temurin
           cache: maven
 
@@ -83,9 +93,49 @@ jobs:
             rmdir backend/src/main/resources/img 2>/dev/null || true
           fi
 
+      - name: Configure Maven pour GitHub Packages
+        run: |
+          mkdir -p ~/.m2
+          cat > ~/.m2/settings.xml << EOF
+          <settings>
+            <servers>
+              <server>
+                <id>github</id>
+                <username>$GITHUB_ACTOR</username>
+                <password>$GITHUB_TOKEN</password>
+              </server>
+            </servers>
+            <profiles>
+              <profile>
+                <id>github-packages</id>
+                <repositories>
+                  <repository>
+                    <id>github</id>
+                    <name>GitHub open-ent Packages</name>
+                    <url>https://maven.pkg.github.com/open-ent/entcore-v2</url>
+                    <releases><enabled>true</enabled></releases>
+                    <snapshots><enabled>true</enabled></snapshots>
+                  </repository>
+                </repositories>
+              </profile>
+            </profiles>
+            <activeProfiles>
+              <activeProfile>github-packages</activeProfile>
+            </activeProfiles>
+          </settings>
+          EOF
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_ACTOR: ${{ github.actor }}
+
       - name: Build fat JAR
         working-directory: backend
-        run: mvn clean package -DskipTests -B
+        run: |
+          ENTCORE_OPT=""
+          if [ -n "$ENTCORE_VERSION" ]; then ENTCORE_OPT="-DentCoreVersion=$ENTCORE_VERSION"; fi
+          mvn clean package -DskipTests -B $ENTCORE_OPT
+        env:
+          ENTCORE_VERSION: ${{ github.event.inputs.entcore_version }}
 
       - name: Run tests
         if: github.event_name == 'pull_request'
