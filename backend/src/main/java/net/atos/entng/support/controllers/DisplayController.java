@@ -20,7 +20,6 @@
 package net.atos.entng.support.controllers;
 
 import fr.wseduc.rs.Get;
-import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.http.BaseController;
 import io.vertx.core.Vertx;
@@ -45,22 +44,10 @@ public class DisplayController extends BaseController {
 		eventStore = EventStoreFactory.getFactory().getEventStore(Support.class.getSimpleName());
 	}
 
-    @Get(value = "")
+    @Get(value = "(/tickets(/new|/[^/]+))?", regex = true)
     @SecuredAction("support.view")
     public void view(final HttpServerRequest request) {
         renderView(request, new JsonObject(), "index.html", null);
         eventStore.createAndStoreEvent(SupportEvent.ACCESS.name(), request);
-    }
-
-    @Get(value = "/tickets/new")
-    @SecuredAction("support.view")
-    public void newTicket(final HttpServerRequest request) {
-        renderView(request, new JsonObject(), "index.html", null);
-    }
-
-    @Get(value = "/tickets/:ticketId")
-    @SecuredAction("support.view")
-    public void ticketDetails(final HttpServerRequest request) {
-        renderView(request, new JsonObject(), "index.html", null);
     }
 }
