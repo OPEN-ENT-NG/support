@@ -1,6 +1,6 @@
 {
   "name": "edifice-support",
-  "version": "4.0.3-dev.1",
+  "version": "4.0-separation-SNAPSHOTfeat-separation.1",
   "private": true,
   "license": "GPL-3.0",
   "author": "Edifice",
@@ -31,10 +31,10 @@
     ]
   },
   "dependencies": {
-    "@edifice.io/bootstrap": "develop",
-    "@edifice.io/client": "develop",
-    "@edifice.io/react": "develop",
-    "@edifice.io/utilities": "develop",
+    "@edifice.io/bootstrap": "feat-separation",
+    "@edifice.io/client": "feat-separation",
+    "@edifice.io/react": "feat-separation",
+    "@edifice.io/utilities": "feat-separation",
     "@react-spring/web": "9.7.5",
     "@tanstack/react-query": "5.90.21",
     "@uidotdev/usehooks": "2.4.1",
