@@ -8,6 +8,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Optional;
 import java.util.TimeZone;
 
 public class DateHelper {
@@ -43,11 +44,15 @@ public class DateHelper {
     }
 
     public static SimpleDateFormat getPsqlSimpleDateFormat() {
-        return new SimpleDateFormat(SQL_FORMAT);
+        SimpleDateFormat sdf = new SimpleDateFormat(SQL_FORMAT);
+        sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+        return sdf;
     }
 
     public static SimpleDateFormat getMongoSimpleDateFormat() {
-        return new SimpleDateFormat(MONGO_FORMAT);
+        SimpleDateFormat sdf = new SimpleDateFormat(MONGO_FORMAT);
+        sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+        return sdf;
     }
 
     /**
@@ -79,11 +84,12 @@ public class DateHelper {
         // create SimpleDateFormat object with input format
         SimpleDateFormat sdf = new SimpleDateFormat(format);
         // default system timezone if passed null or empty
-        if (timeZone == null || "".equalsIgnoreCase(timeZone.trim())) {
-            timeZone = Calendar.getInstance().getTimeZone().getID();
-        }
+        String effectiveTimeZone = Optional.ofNullable(timeZone)
+                                          .filter(tz -> !tz.trim().isEmpty())
+                                          .orElseGet(() -> Calendar.getInstance().getTimeZone().getID());
+
         // set timezone to SimpleDateFormat
-        sdf.setTimeZone(TimeZone.getTimeZone(timeZone));
+        sdf.setTimeZone(TimeZone.getTimeZone(effectiveTimeZone));
         try {
             Date parsedDate = parse(date);
             return sdf.format(parsedDate);
@@ -91,7 +97,5 @@ public class DateHelper {
             LOGGER.error("[Common@DateHelper::getDateString] Failed to parse date " + date, err);
             return date;
         }
-
-
     }
 }
