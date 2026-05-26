@@ -29,7 +29,7 @@
     </repositories>
 
     <properties>
-        <entCoreVersion>6.14-SNAPSHOT</entCoreVersion>
+        <entCoreVersion>6.14.9-patched</entCoreVersion>
         <junitVersion>4.10</junitVersion>
         <mockitoVersion>[2.0,3.0)</mockitoVersion>
         <powerMockVersion>2.0.2</powerMockVersion>
@@ -102,6 +102,12 @@
             <artifactId>gatling-charts-highcharts</artifactId>
             <version>${gatlingHighchartsVersion}</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>javax.xml.bind</groupId>
+            <artifactId>jaxb-api</artifactId>
+            <version>2.3.1</version>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
 </project>

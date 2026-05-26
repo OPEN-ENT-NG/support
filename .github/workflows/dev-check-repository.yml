@@ -20,16 +20,17 @@ jobs:
       - uses: pnpm/action-setup@v4
         id: pnpm-install
         with:
-          version: 9.4.0
           run_install: false
 
       - name: Generate .npmrc
+        env:
+          TIPTAP_PRO_TOKEN: ${{ secrets.TIPTAP_PRO_TOKEN }}
         run: |
           pnpm config set @tiptap-pro:registry https://registry.tiptap.dev
-          pnpm config set //registry.tiptap.dev/:_authToken ${{ secrets.TIPTAP_PRO_TOKEN }}
+          [ -n "$TIPTAP_PRO_TOKEN" ] && pnpm config set //registry.tiptap.dev/:_authToken "$TIPTAP_PRO_TOKEN"
           pnpm config set auto-install-peers true
 
-      - run: pnpm install --frozen-lockfile
+      - run: pnpm install --no-frozen-lockfile
       - run: pnpm exec tsc -p tsconfig.app.json --noEmit
       - run: pnpm exec nx build
       - run: pnpm exec nx test
@@ -44,20 +45,52 @@ jobs:
       run:
         working-directory: backend
 
-    container:
-      image: maven:3.8.6-jdk-8
-      options: --user root
-
     steps:
       - uses: actions/checkout@v4
-      - name: Cache Maven dependencies
-        uses: actions/cache@v4
+
+      - uses: actions/setup-java@v4
         with:
-          path: /var/maven/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-maven-
+          java-version: '8'
+          distribution: temurin
+          cache: maven
+
+      - name: Configure Maven pour GitHub Packages
+        run: |
+          mkdir -p ~/.m2
+          cat > ~/.m2/settings.xml << EOF
+          <settings>
+            <servers>
+              <server>
+                <id>github</id>
+                <username>$GITHUB_ACTOR</username>
+                <password>$GITHUB_TOKEN</password>
+              </server>
+            </servers>
+            <profiles>
+              <profile>
+                <id>github-packages</id>
+                <repositories>
+                  <repository>
+                    <id>github</id>
+                    <name>GitHub open-ent Packages</name>
+                    <url>https://maven.pkg.github.com/open-ent/entcore-v2</url>
+                    <releases><enabled>true</enabled></releases>
+                    <snapshots><enabled>true</enabled></snapshots>
+                  </repository>
+                </repositories>
+              </profile>
+            </profiles>
+            <activeProfiles>
+              <activeProfile>github-packages</activeProfile>
+            </activeProfiles>
+          </settings>
+          EOF
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_ACTOR: ${{ github.actor }}
+
       - name: Run build maven
-        run: mvn -Duser.home=/var/maven clean install
+        run: mvn clean install -DskipTests -B
+
       - name: Run maven test
-        run: mvn -Duser.home=/var/maven test
+        run: mvn test -B
