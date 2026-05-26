@@ -44,7 +44,7 @@ public class DisplayController extends BaseController {
 		eventStore = EventStoreFactory.getFactory().getEventStore(Support.class.getSimpleName());
 	}
 
-    @Get(value = "(/tickets(/new|/[^/]+))?", regex = true)
+    @Get(value = "/?(?:/tickets(?:/new|/[^/]+))?", regex = true)
     @SecuredAction("support.view")
     public void view(final HttpServerRequest request) {
         renderView(request, new JsonObject(), "index.html", null);
