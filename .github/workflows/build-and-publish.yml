@@ -170,9 +170,9 @@ jobs:
           GROUP_ID=$(mvn help:evaluate -Dexpression=project.groupId -q -DforceStdout)
           ARTIFACT_ID=$(mvn help:evaluate -Dexpression=project.artifactId -q -DforceStdout)
           VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
-          FAT_JAR="target/${ARTIFACT_ID}-${VERSION}-fat.jar"
+          FAT_JAR=$(ls target/*-fat.jar 2>/dev/null | head -1)
           echo "Publishing ${GROUP_ID}:${ARTIFACT_ID}:${VERSION}:fat"
-          if [ ! -f "${FAT_JAR}" ]; then
+          if [ -z "${FAT_JAR}" ]; then
             echo "::error::Fat JAR not found at ${FAT_JAR}"
             ls -la target/*.jar 2>/dev/null || echo "No JARs found in target/"
             exit 1
