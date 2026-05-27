@@ -47,9 +47,11 @@ export const Component = () => {
           </AppHeader>
         </div>
         <div
-          className={`flex-fill overflow-y-auto position-relative ${isTicketDetails ? ' mx-n16' : ''}`}
+          className={`flex-fill overflow-y-auto ${isTicketDetails ? ' mx-n16' : ''}`}
         >
-          <Outlet />
+          <div className="position-relative">
+            <Outlet />
+          </div>
         </div>
       </Layout>
     </Flex>
