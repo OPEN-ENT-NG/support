@@ -7,9 +7,10 @@ import {
   useDebounce,
 } from '@edifice.io/react';
 import { IconFilter } from '@edifice.io/react/icons';
-import { ChangeEvent, useEffect, useRef, useState } from 'react';
+import { ChangeEvent, useEffect, useMemo, useRef, useState } from 'react';
 
 const SEARCH_DEBOUNCE_MS = 300;
+const SCHOOLS_PAGE_SIZE = 50;
 
 import {
   School,
@@ -58,15 +59,39 @@ function TicketsSchoolFilter({
   const { t } = useI18n();
   const [noneSelected, setNoneSelected] = useState(false);
   const [schoolSearch, setSchoolSearch] = useState('');
+  const [displayCount, setDisplayCount] = useState(SCHOOLS_PAGE_SIZE);
+  const listRef = useRef<HTMLDivElement>(null);
 
   const isAllChecked = filters.schools.length === 0 && !noneSelected;
   const isIndeterminate = filters.schools.length > 0;
 
-  const visibleSchools = schoolSearch
-    ? schools.filter((s) =>
-        s.name.toLowerCase().includes(schoolSearch.toLowerCase()),
-      )
-    : schools;
+  const sortedSchools = useMemo(() => sortByKey(schools, 'name'), [schools]);
+
+  const visibleSchools = useMemo(
+    () =>
+      schoolSearch
+        ? sortedSchools.filter((s) =>
+            s.name.toLowerCase().includes(schoolSearch.toLowerCase()),
+          )
+        : sortedSchools,
+    [sortedSchools, schoolSearch],
+  );
+
+  const renderedSchools = visibleSchools.slice(0, displayCount);
+  const hasMore = displayCount < visibleSchools.length;
+
+  useEffect(() => {
+    setDisplayCount(SCHOOLS_PAGE_SIZE);
+    listRef.current?.scrollTo(0, 0);
+  }, [schoolSearch]);
+
+  const handleListScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    if (!hasMore) return;
+    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
+    if (scrollHeight - scrollTop - clientHeight < 40) {
+      setDisplayCount((prev) => prev + SCHOOLS_PAGE_SIZE);
+    }
+  };
 
   const handleSelectAll = () => {
     if (schoolSearch) {
@@ -112,8 +137,12 @@ function TicketsSchoolFilter({
 
   return (
     <Dropdown
+      placement="bottom-end"
       onToggle={(visible) => {
-        if (!visible) setSchoolSearch('');
+        if (!visible) {
+          setSchoolSearch('');
+          setDisplayCount(SCHOOLS_PAGE_SIZE);
+        }
       }}
     >
       <Dropdown.Trigger
@@ -143,8 +172,12 @@ function TicketsSchoolFilter({
           noResultsLabel={t('support.ticket.form.no.results')}
           onSearch={setSchoolSearch}
         />
-        <div style={{ height: '200px', overflowY: 'auto' }}>
-          {sortByKey(schools, 'name').map((school) => (
+        <div
+          ref={listRef}
+          style={{ maxHeight: '200px', overflowY: 'auto' }}
+          onScroll={handleListScroll}
+        >
+          {renderedSchools.map((school) => (
             <Dropdown.CheckboxItem
               key={school.id}
               model={
@@ -154,11 +187,15 @@ function TicketsSchoolFilter({
               }
               value={school.id}
               onChange={handleSchoolToggle}
-              searchValue={school.name}
             >
               {school.name}
             </Dropdown.CheckboxItem>
           ))}
+          {visibleSchools.length === 0 && schoolSearch && (
+            <div className="px-8 py-4 body-2 text-gray-700 text-center">
+              {t('support.ticket.form.no.results')}
+            </div>
+          )}
         </div>
       </Dropdown.Menu>
     </Dropdown>
@@ -179,7 +216,7 @@ function TicketsStatusFilter({ filters, onChange }: TicketsStatusFilterProps) {
   };
 
   return (
-    <Dropdown>
+    <Dropdown placement="bottom-end">
       <Dropdown.Trigger
         size="md"
         icon={<IconFilter />}
