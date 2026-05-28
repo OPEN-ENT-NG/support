@@ -174,7 +174,8 @@ function TicketsSchoolFilter({
         />
         <div
           ref={listRef}
-          style={{ maxHeight: '200px', overflowY: 'auto' }}
+          className="overflow-y-auto"
+          style={{ maxWidth: 'min(500px, 90vw)', maxHeight: '200px' }}
           onScroll={handleListScroll}
         >
           {renderedSchools.map((school) => (
@@ -188,7 +189,7 @@ function TicketsSchoolFilter({
               value={school.id}
               onChange={handleSchoolToggle}
             >
-              {school.name}
+              <span className="text-wrap text-break">{school.name}</span>
             </Dropdown.CheckboxItem>
           ))}
           {visibleSchools.length === 0 && schoolSearch && (

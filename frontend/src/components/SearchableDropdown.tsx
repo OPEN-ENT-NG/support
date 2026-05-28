@@ -100,7 +100,8 @@ export function SearchableDropdown({
           />
           <div
             ref={listRef}
-            style={{ maxHeight: '200px', overflowY: 'auto' }}
+            className="overflow-y-auto"
+            style={{ maxWidth: 'min(500px, 90vw)', maxHeight: '200px' }}
             onScroll={handleScroll}
           >
             {renderedOptions.map((opt) => (
@@ -112,7 +113,7 @@ export function SearchableDropdown({
                   }
                 }}
               >
-                {opt.label}
+                <span className="text-wrap text-break">{opt.label}</span>
               </Dropdown.Item>
             ))}
             {visibleOptions.length === 0 && search && (
