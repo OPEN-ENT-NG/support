@@ -29,7 +29,7 @@ pipeline {
     stage('Build backend') {
       steps {
         dir('backend') {
-            sh './build.sh clean build publish'
+            sh './build.sh init clean build publish'
         }
       }
     }
