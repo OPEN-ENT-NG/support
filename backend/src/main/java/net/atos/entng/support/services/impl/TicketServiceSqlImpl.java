@@ -176,7 +176,7 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 				String contentOfComment = newComment;
 				String[] elem = newComment.split(Pattern.quote("|"));
 				if (elem.length == JiraTicket.COMMENT_LENGTH) {
-					contentOfComment = " " + elem[0] + "|" + "\n" + elem[1] + "|" + "\n" + elem[2] + "|" + "\n" + "\n" + elem[3];
+                    contentOfComment = " " + elem[0] + "|" + "<br>" + elem[1] + "|" + "<br>" + elem[2] + "|" + "<br>" + "<br>" + elem[3];
 				}
 				JsonArray commentValues = new JsonArray();
 				commentValues.add(parseId(ticketId))

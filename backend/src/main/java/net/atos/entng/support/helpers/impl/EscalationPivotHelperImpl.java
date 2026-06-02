@@ -182,8 +182,8 @@ public class EscalationPivotHelperImpl implements EscalationPivotHelper {
                     break;
                 }
             }
-            if(!existing) {
-                commentsToAdd.add(rawComment);
+            if (!existing) {
+                commentsToAdd.add(rawComment.replaceAll("\\r?\\n", "<br>"));
             }
         }
         return commentsToAdd;
