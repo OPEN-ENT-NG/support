@@ -43,8 +43,18 @@ export function TicketCreateForm({
   useEffect(() => {
     if (schoolOptions.length === 1) {
       setSelectedSchool(schoolOptions[0].value);
+      setValue('school_id', schoolOptions[0].value, {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
+    } else {
+      setSelectedSchool('');
+      setValue('school_id', '', {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
     }
-  }, [schoolOptions]);
+  }, [schoolOptions, setValue]);
 
   const handleAttachmentsChange = (
     updater: (prev: TicketAttachment[]) => TicketAttachment[],
