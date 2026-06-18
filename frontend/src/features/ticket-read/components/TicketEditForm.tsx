@@ -45,7 +45,7 @@ type TicketEditFormProps = {
   userProfile?: string;
   categories: SelectOption[];
   schoolOptions: SelectOption[];
-  bugTrackerIssueId?: number;
+  bugTrackerIssueId?: number | string;
   bugTrackerIssueUrl?: string;
   isPending: boolean;
   canEditAllStatuses: boolean;
