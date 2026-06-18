@@ -100,6 +100,15 @@ export type BugTrackerAttachment = {
 
 export type BugTrackerIssueContent = {
   id: number;
+
+  // Some plateform are using a bugtracker different from Zendesk
+  // For example, PCN is using Pivot (IWS)
+  // The `issue` field contains the platform-specific issue data. Those data are used to render the issue details.
+  issue?: {
+    id_iws?: string;
+    statut_iws?: string;
+    status?: { name: string };
+  };
   custom_status_id: number;
   allow_attachments: boolean;
   allow_channelback: boolean;

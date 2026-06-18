@@ -101,7 +101,9 @@ export function TicketRead() {
             userProfile={userProfile?.profile}
             categories={categories}
             schoolOptions={schoolOptions}
-            bugTrackerIssueId={bugTrackerIssue?.id}
+            bugTrackerIssueId={
+              bugTrackerIssue?.content?.issue?.id_iws ?? bugTrackerIssue?.id // Display the bug tracker issue id if available
+            }
             bugTrackerIssueUrl={bugTrackerIssue?.content?.url
               ?.replace('/api/v2/tickets/', '/agent/tickets/')
               ?.replace('.json', '')}
