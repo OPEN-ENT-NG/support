@@ -46,6 +46,7 @@ import net.atos.entng.support.Issue;
 import net.atos.entng.support.Ticket;
 import net.atos.entng.support.enums.BugTracker;
 import net.atos.entng.support.enums.TicketHisto;
+import net.atos.entng.support.enums.TicketStatus;
 import net.atos.entng.support.model.Event;
 import net.atos.entng.support.services.EscalationService;
 import net.atos.entng.support.services.TicketServiceSql;
@@ -1056,6 +1057,17 @@ public class EscalationServiceZendeskImpl implements EscalationService {
 		});
 	}
 
+    /**
+     * A WAITING ENT ticket is forced to `open` in Zendesk on escalation; on sync-back `open` maps to
+     * OPENED, which would clobber the WAITING status the user deliberately left. Keep WAITING in that
+     * single case; every other Zendesk status is a real support action, so its corresponding ENT status wins.
+     */
+    public static TicketStatus resolveSyncedStatus(TicketStatus ticketStatus, ZendeskStatus issueStatus) {
+        return (ticketStatus == TicketStatus.WAITING && issueStatus == ZendeskStatus.open)
+                ? TicketStatus.WAITING
+                : issueStatus.correspondingStatus;
+    }
+
     private Future<Void> updateTicketHisto(ZendeskIssue issue, ZendeskStatus oldStatus, long lastUpdate) {
         Promise<Void> promise = Promise.promise();
 
@@ -1073,7 +1085,8 @@ public class EscalationServiceZendeskImpl implements EscalationService {
                     );
                 } else {
                     Long tId = new Long(ticket.id.get());
-                    Long tStatus = new Long(issue.status.correspondingStatus.status());
+                    final TicketStatus incoming = resolveSyncedStatus(ticket.status, issue.status);
+                    Long tStatus = new Long(incoming.status());
                     // Update the status
                     ticketServiceSql.updateTicketIssueUpdateDateAndStatus(tId, issue.updated_at, tStatus, res -> {
                         if (res.isLeft()) {
@@ -1148,7 +1161,7 @@ public class EscalationServiceZendeskImpl implements EscalationService {
                                 String updateEvent = update + additionnalInfoHisto;
                                 String tId1 = ticket.id.get().toString();
                                 ZendeskStatus newStatus = issue.status;
-                                int ticketStatus = newStatus.correspondingStatus.status();
+                                int ticketStatus = incoming.status();
                                 ticketServiceSql.createTicketHisto(
                                         tId1,
                                         updateEvent,
