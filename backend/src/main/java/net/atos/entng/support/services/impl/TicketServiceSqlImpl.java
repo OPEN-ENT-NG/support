@@ -150,54 +150,60 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 
 		JsonArray reopenTicketOnCommentValues = new JsonArray();
 
-		if(comment != null && !comment.trim().isEmpty()) {
-			JsonArray commentValues = new JsonArray();
-			commentValues.add(parseId(ticketId))
-				.add(user.getUserId())
-				.add(comment);
-			s.prepared(insertCommentQuery, commentValues);
+        boolean statusExplicitlySet = data.containsKey("status");
 
-			reopenTicketOnCommentValues
-					.add(TicketStatus.OPENED.status())
-					.add(parseId(ticketId))
-					.add(TicketStatus.RESOLVED.status())
-					.add(TicketStatus.CLOSED.status());
+        if (comment != null && !comment.trim().isEmpty()) {
+            JsonArray commentValues = new JsonArray();
+            commentValues.add(parseId(ticketId))
+                    .add(user.getUserId())
+                    .add(comment);
+            s.prepared(insertCommentQuery, commentValues);
 
-			s.prepared(reopenTicketOnComment, reopenTicketOnCommentValues);
+            if (!statusExplicitlySet) {
+                reopenTicketOnCommentValues
+                        .add(TicketStatus.OPENED.status())
+                        .add(parseId(ticketId))
+                        .add(TicketStatus.RESOLVED.status())
+                        .add(TicketStatus.CLOSED.status());
 
-			s.prepared(openTicketOnCommentFromOther, new JsonArray()
-					.add(TicketStatus.OPENED.status())
-					.add(parseId(ticketId))
-					.add(TicketStatus.NEW.status())
-					.add(user.getUserId()));
-		} else if ( comments.size() > 0 ) {
-			for(Object o : comments) {
-				String newComment = (String)o;
-				String contentOfComment = newComment;
-				String[] elem = newComment.split(Pattern.quote("|"));
-				if (elem.length == JiraTicket.COMMENT_LENGTH) {
+                s.prepared(reopenTicketOnComment, reopenTicketOnCommentValues);
+
+                s.prepared(openTicketOnCommentFromOther, new JsonArray()
+                        .add(TicketStatus.OPENED.status())
+                        .add(parseId(ticketId))
+                        .add(TicketStatus.NEW.status())
+                        .add(user.getUserId()));
+            }
+        } else if (comments.size() > 0) {
+            for (Object o : comments) {
+                String newComment = (String) o;
+                String contentOfComment = newComment;
+                String[] elem = newComment.split(Pattern.quote("|"));
+                if (elem.length == JiraTicket.COMMENT_LENGTH) {
                     contentOfComment = " " + elem[0] + "|" + "<br>" + elem[1] + "|" + "<br>" + elem[2] + "|" + "<br>" + "<br>" + elem[3];
-				}
-				JsonArray commentValues = new JsonArray();
-				commentValues.add(parseId(ticketId))
-						.add(user.getUserId())
-						.add(contentOfComment);
-				s.prepared(insertCommentQuery, commentValues);
-			}
+                }
+                JsonArray commentValues = new JsonArray();
+                commentValues.add(parseId(ticketId))
+                        .add(user.getUserId())
+                        .add(contentOfComment);
+                s.prepared(insertCommentQuery, commentValues);
+            }
 
-			reopenTicketOnCommentValues
-					.add(TicketStatus.OPENED.status())
-					.add(parseId(ticketId))
-					.add(TicketStatus.RESOLVED.status())
-					.add(TicketStatus.CLOSED.status());
-			s.prepared(reopenTicketOnComment, reopenTicketOnCommentValues);
+            if (!statusExplicitlySet) {
+                reopenTicketOnCommentValues
+                        .add(TicketStatus.OPENED.status())
+                        .add(parseId(ticketId))
+                        .add(TicketStatus.RESOLVED.status())
+                        .add(TicketStatus.CLOSED.status());
+                s.prepared(reopenTicketOnComment, reopenTicketOnCommentValues);
 
-			s.prepared(openTicketOnCommentFromOther, new JsonArray()
-					.add(TicketStatus.OPENED.status())
-					.add(parseId(ticketId))
-					.add(TicketStatus.NEW.status())
-					.add(user.getUserId()));
-		}
+                s.prepared(openTicketOnCommentFromOther, new JsonArray()
+                        .add(TicketStatus.OPENED.status())
+                        .add(parseId(ticketId))
+                        .add(TicketStatus.NEW.status())
+                        .add(user.getUserId()));
+            }
+        }
 
 		// 4. Insert attachments
 		JsonArray attachments = data.getJsonArray("attachments", null);
