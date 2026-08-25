@@ -29,6 +29,7 @@ import net.atos.entng.support.Issue;
 import net.atos.entng.support.Ticket;
 import net.atos.entng.support.enums.TicketHisto;
 import net.atos.entng.support.model.Event;
+import net.atos.entng.support.model.TicketFilterParams;
 import net.atos.entng.support.model.TicketModel;
 import net.atos.entng.support.zendesk.ZendeskComment;
 import org.entcore.common.service.CrudService;
@@ -70,9 +71,7 @@ public interface TicketServiceSql extends CrudService {
 																String school_id, String sortBy, String order, Integer nbTicketsPerPage,
 																JsonArray orderedStructures);
 
-	Future<JsonArray> listFilteredTickets(UserInfos user, Integer page, List<String> statuses, List<String> applicants,
-	                                      List<String> schoolIds, boolean allSchools, String sortBy, String order,
-	                                      Integer nbTicketsPerPage, String search);
+    Future<JsonArray> listFilteredTickets(UserInfos user, TicketFilterParams filterParams);
 
 	public void listMyTickets(UserInfos user, Integer page, List<String> statuses, String school_id, String sortBy, String order, Integer nbTicketsPerPage, Handler<Either<String, JsonArray>> handler);
 

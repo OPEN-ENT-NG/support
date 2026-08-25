@@ -97,6 +97,7 @@ export const ticketTableColumns: TicketTableColumn[] = [
   {
     id: 'profile',
     headerKey: 'support.ticket.table.profile',
+    sortBy: 'profile',
     cell: (ticket: Ticket) => <ProfileCell ticket={ticket} />,
     width: '75px',
   },

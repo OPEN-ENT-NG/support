@@ -40,6 +40,7 @@ import net.atos.entng.support.helpers.IModelHelper;
 import net.atos.entng.support.helpers.PromiseHelper;
 import net.atos.entng.support.helpers.TransactionHelper;
 import net.atos.entng.support.model.Event;
+import net.atos.entng.support.model.TicketFilterParams;
 import net.atos.entng.support.model.TicketModel;
 import net.atos.entng.support.model.TransactionElement;
 import net.atos.entng.support.services.TicketServiceSql;
@@ -394,10 +395,22 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
 	}
 
     @Override
-    public Future<JsonArray> listFilteredTickets(UserInfos user, Integer page, List<String> statuses, List<String> applicants, List<String> schoolIds, boolean allSchools, String sortBy, String order, Integer nbTicketsPerPage, String search) {
+    public Future<JsonArray> listFilteredTickets(UserInfos user, TicketFilterParams filterParams) {
+        Integer page = filterParams.getPage();
+        List<String> statuses = filterParams.getStatuses();
+        List<String> applicants = filterParams.getApplicants();
+        List<String> schoolIds = filterParams.getSchoolIds();
+        boolean allSchools = filterParams.isAllSchools();
+        String sortBy = filterParams.getSortBy();
+        String order = filterParams.getOrder();
+        Integer nbTicketsPerPage = filterParams.getNbTicketsPerPage();
+        String search = filterParams.getSearch();
+        JsonArray orderedProfileIds = filterParams.getOrderedProfileIds();
+
         Promise<JsonArray> promise = Promise.promise();
         StringBuilder query = new StringBuilder();
         JsonArray values = new JsonArray();
+        boolean sortByProfile = Objects.equals(sortBy, JiraTicket.PROFILE) && orderedProfileIds != null;
 
         query.append("SELECT t.*, u.username AS owner_name, ")
              .append("i.content")
@@ -407,8 +420,14 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
              .append(" COUNT(*) OVER() AS total_results")
              .append(" FROM support.tickets AS t")
              .append(" INNER JOIN support.users AS u ON t.owner = u.id")
-             .append(" LEFT JOIN support.bug_tracker_issues AS i ON t.id=i.ticket_id")
-             .append(" WHERE 1=1");
+             .append(" LEFT JOIN support.bug_tracker_issues AS i ON t.id=i.ticket_id");
+
+        if (sortByProfile) {
+            query.append(" JOIN UNNEST ").append(Sql.arrayPrepared(orderedProfileIds)).append(" WITH ORDINALITY arr(id,ord) ON t.owner = arr.id");
+            values.addAll(orderedProfileIds);
+        }
+
+        query.append(" WHERE 1=1");
 
         boolean oneApplicant = false;
         boolean applicantIsMe = true;
@@ -499,7 +518,9 @@ public class TicketServiceSqlImpl extends SqlCrudService implements TicketServic
             values.add("%" + search + "%").add("%" + search + "%").add(search).add("%" + search + "%");
         }
 
-        if (ALLOWED_SORT_BY_COLUMN.contains(sortBy)) {
+        if (sortByProfile) {
+            query.append(" ORDER BY arr.ord");
+        } else if (ALLOWED_SORT_BY_COLUMN.contains(sortBy)) {
             query.append(String.format(" ORDER BY t.%s", sortBy));
         } else {
             query.append(" ORDER BY t.modified");
