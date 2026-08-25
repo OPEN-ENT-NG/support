@@ -11,7 +11,8 @@ export type SortableTicketField =
   | 'modified'
   | 'event_count'
   | 'school_id'
-  | 'escalation_date';
+  | 'escalation_date'
+  | 'profile';
 
 export type TicketFiltersState = {
   search: string;

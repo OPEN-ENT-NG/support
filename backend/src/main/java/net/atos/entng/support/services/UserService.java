@@ -37,4 +37,12 @@ public interface UserService {
      */
     public Future<JsonArray> getUserIdsProfileOrdered(List<String> ownerIds);
 
+    /**
+     * For the given structures, get all user ids ordered by profile name
+     *
+     * @param structureIds structures to scope the search to
+     * @return {Future<JsonArray>} list of userIds ordered
+     */
+    Future<JsonArray> getStructureUserIdsProfileOrdered(List<String> structureIds);
+
 }

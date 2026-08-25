@@ -57,6 +57,7 @@ import net.atos.entng.support.helpers.PromiseHelper;
 import net.atos.entng.support.helpers.RequestHelper;
 import net.atos.entng.support.helpers.UserInfosHelper;
 import net.atos.entng.support.model.I18nConfig;
+import net.atos.entng.support.model.TicketFilterParams;
 import net.atos.entng.support.services.EscalationService;
 import net.atos.entng.support.services.ServiceFactory;
 import net.atos.entng.support.services.TicketService;
@@ -646,8 +647,37 @@ public class TicketController extends ControllerHelper {
 
         return ticketService.listStructureChildren(structuresToResolve).compose(structureChildren -> {
             List<String> resolvedSchoolIds = getStructureIds(structureChildren);
-            return ticketServiceSql.listFilteredTickets(user, page, statuses, applicants, resolvedSchoolIds, allSchools,
-                                                        sortBy, order, nbTicketsPerPage, search);
+
+            TicketFilterParams.Builder filterParamsBuilder = TicketFilterParams.builder()
+                    .page(page)
+                    .statuses(statuses)
+                    .applicants(applicants)
+                    .schoolIds(resolvedSchoolIds)
+                    .allSchools(allSchools)
+                    .sortBy(sortBy)
+                    .order(order)
+                    .nbTicketsPerPage(nbTicketsPerPage)
+                    .search(search);
+
+            if (JiraTicket.PROFILE.equals(sortBy)) {
+                return userService.getStructureUserIdsProfileOrdered(resolvedSchoolIds)
+                        .compose(orderedOwners -> {
+                            List<String> profileIds = orderedOwners
+                                    .stream()
+                                    .filter(JsonObject.class::isInstance)
+                                    .map(JsonObject.class::cast)
+                                    .map(owner -> owner.getString(JiraTicket.ID))
+                                    .collect(Collectors.toList());
+                            JsonArray profileIdsArray = new JsonArray(profileIds);
+
+                            return ticketServiceSql.listFilteredTickets(
+                                    user,
+                                    filterParamsBuilder.orderedProfileIds(profileIdsArray).build()
+                            );
+                        });
+            }
+
+            return ticketServiceSql.listFilteredTickets(user, filterParamsBuilder.build());
         });
     }
 

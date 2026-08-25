@@ -73,4 +73,22 @@ public class UserServiceDirectoryImpl implements UserService {
 		return promise.future();
 	}
 
+	@Override
+	public Future<JsonArray> getStructureUserIdsProfileOrdered(List<String> structureIds) {
+		Promise<JsonArray> promise = Promise.promise();
+
+		String query = " MATCH (u:User)-[:IN]->(pg:ProfileGroup)-[:HAS_PROFILE]->(profile:Profile), " +
+				" (pg)-[:DEPENDS]->(s:Structure) " +
+				" WHERE s.id IN {structureIds} " +
+				" WITH profile, u " +
+				" ORDER BY profile.name " +
+				" RETURN distinct u.id as id ";
+		JsonObject params = new JsonObject().put("structureIds", structureIds);
+		neo4j.execute(query, params, Neo4jResult.validResultHandler(PromiseHelper.handler(promise,
+				String.format("[Minibadge@%s::getStructureUserIdsProfileOrdered] Fail to get structure users ordered by profile",
+						this.getClass().getSimpleName()))));
+
+		return promise.future();
+	}
+
 }
