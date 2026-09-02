@@ -43,4 +43,33 @@ public class EscalationServiceZendeskImplTest {
             );
         }
     }
+
+    @Test
+    public void encodeFilename_withSimpleName_isUnchanged() {
+        assertEquals("simple.pdf", EscalationServiceZendeskImpl.encodeFilename("simple.pdf"));
+    }
+
+    @Test
+    public void encodeFilename_withSpaces_encodesAsPercent20() {
+        assertEquals(
+                "report%20final.pdf",
+                EscalationServiceZendeskImpl.encodeFilename("report final.pdf")
+        );
+    }
+
+    @Test
+    public void encodeFilename_withReservedQueryCharacters_percentEncodesThem() {
+        assertEquals(
+                "invoice%262024%23draft.pdf",
+                EscalationServiceZendeskImpl.encodeFilename("invoice&2024#draft.pdf")
+        );
+    }
+
+    @Test
+    public void encodeFilename_withPlusSign_encodesAsPercent2B() {
+        assertEquals(
+                "plus%2Bsign.txt",
+                EscalationServiceZendeskImpl.encodeFilename("plus+sign.txt")
+        );
+    }
 }
