@@ -39,6 +39,8 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import net.atos.entng.support.Attachment;
 import net.atos.entng.support.Comment;
 import net.atos.entng.support.GridFSAttachment;
@@ -303,7 +305,7 @@ public class EscalationServiceZendeskImpl implements EscalationService {
 
                     return zendeskClient.request(new RequestOptions()
                                     .setMethod(HttpMethod.POST)
-                                    .setURI("/api/v2/uploads.json?filename=" + filename)
+                                    .setURI("/api/v2/uploads.json?filename=" + encodeFilename(filename))
                                     .addHeader(HttpHeaders.CONTENT_TYPE, contentType))
                             .compose(req -> req.send(data))
                             .compose(response -> {
@@ -320,6 +322,14 @@ public class EscalationServiceZendeskImpl implements EscalationService {
                                 return attachment;
                             }).onFailure(t -> log.error("[Support] Zendesk upload request failed", t));
                 });
+    }
+
+    public static String encodeFilename(String filename) {
+        try {
+            return URLEncoder.encode(filename, "UTF-8").replace("+", "%20");
+        } catch (UnsupportedEncodingException e) {
+            return filename;
+        }
     }
 
     private void createIssue(ZendeskIssue issue, Handler<Either<String, ZendeskIssue>> handler) {
