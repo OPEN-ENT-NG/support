@@ -88,8 +88,10 @@ export function SearchableDropdown({
           block
           disabled={disabled}
           label={
-            sortedOptions.find((o) => o.value === selectedValue)?.label ??
-            placeholder
+            <span className="text-truncate min-w-0">
+              {sortedOptions.find((o) => o.value === selectedValue)?.label ??
+                placeholder}
+            </span>
           }
         />
         <Dropdown.Menu>
