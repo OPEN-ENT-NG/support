@@ -99,6 +99,11 @@ public class JiraTicket {
     public static final String STRUCTURES = "structures";
     public static final String APPS = "apps";
     public static final String ADDRESS = "address";
+    public static final String FUNCTIONS = "functions";
+    public static final String CODE = "code";
+    public static final String FUNCTIONNAME = "functionName";
+    public static final String SCOPE = "scope";
+    public static final String STRUCTUREEXTERNALIDS = "structureExternalIds";
 
     // Registers
     public static final String BIRTHDAY = "birthDay";

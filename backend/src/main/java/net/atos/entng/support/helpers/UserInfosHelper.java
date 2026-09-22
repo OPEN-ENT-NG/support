@@ -5,7 +5,9 @@ import io.vertx.core.json.JsonObject;
 import net.atos.entng.support.constants.JiraTicket;
 import org.entcore.common.user.UserInfos;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -37,7 +39,46 @@ public class UserInfosHelper {
                 .put(JiraTicket.GROUPSIDS, userInfos.getGroupsIds())
                 .put(JiraTicket.CLASSES, userInfos.getClasses())
                 .put(JiraTicket.STRUCTURES, userInfos.getStructures())
-                .put(JiraTicket.APPS, getObjectJSONArray(userInfos.getApps(),UserInfosHelper::getUserAppsJSON));
+                .put(JiraTicket.APPS, getObjectJSONArray(userInfos.getApps(), UserInfosHelper::getUserAppsJSON))
+                .put(JiraTicket.FUNCTIONS, getUserFunctionsJSON(userInfos.getFunctions()));
+    }
+
+    /**
+     * Serializes the user functions for the workers.
+     *
+     * @param functions user functions, indexed by function code
+     * @return a JSON object indexed by function code, empty when the user has no function
+     */
+    public static JsonObject getUserFunctionsJSON(Map<String, UserInfos.Function> functions) {
+        JsonObject result = new JsonObject();
+        if (functions == null) {
+            return result;
+        }
+        functions.forEach((code, function) -> result.put(code, new JsonObject()
+                .put(JiraTicket.CODE, function.getCode())
+                .put(JiraTicket.FUNCTIONNAME, function.getFunctionName())
+                .put(JiraTicket.SCOPE, function.getScope() != null ? new JsonArray(function.getScope()) : null)
+                .put(JiraTicket.STRUCTUREEXTERNALIDS, function.getStructureExternalIds() != null ?
+                        new JsonArray(function.getStructureExternalIds()) : null)));
+        return result;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static Map<String, UserInfos.Function> getUserFunctionsFromJSON(JsonObject oFunctions) {
+        Map<String, UserInfos.Function> functions = new HashMap<>();
+        oFunctions.forEach(entry -> {
+            JsonObject function = (JsonObject) entry.getValue();
+            UserInfos.Function userFunction = new UserInfos.Function();
+            userFunction.setCode(function.getString(JiraTicket.CODE));
+            userFunction.setFunctionName(function.getString(JiraTicket.FUNCTIONNAME));
+            // Scope may be null (for example when SUPER_ADMIN). getJsonArray returns null, not def, in that case
+            JsonArray scope = function.getJsonArray(JiraTicket.SCOPE);
+            userFunction.setScope(scope != null ? scope.getList() : null);
+            JsonArray structureExternalIds = function.getJsonArray(JiraTicket.STRUCTUREEXTERNALIDS);
+            userFunction.setStructureExternalIds(structureExternalIds != null ? structureExternalIds.getList() : null);
+            functions.put(entry.getKey(), userFunction);
+        });
+        return functions;
     }
 
     @SuppressWarnings("unchecked")
@@ -64,6 +105,7 @@ public class UserInfosHelper {
         user.setClasses(infos.getJsonArray(JiraTicket.CLASSES, new JsonArray()).getList());
         user.setStructures(infos.getJsonArray(JiraTicket.STRUCTURES, new JsonArray()).getList());
         user.setApps(getObjectsFromJsonArray(infos.getJsonArray(JiraTicket.APPS, new JsonArray()), UserInfosHelper::getUserAppsFromJSON));
+        user.setFunctions(getUserFunctionsFromJSON(infos.getJsonObject(JiraTicket.FUNCTIONS, new JsonObject())));
         return user;
     }
 
