@@ -10,6 +10,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import net.atos.entng.support.constants.JiraTicket;
+import net.atos.entng.support.enums.BugTracker;
 import net.atos.entng.support.helpers.CSVHelper;
 import net.atos.entng.support.helpers.UserInfosHelper;
 import net.atos.entng.support.model.ExportFile;
@@ -55,7 +56,9 @@ public class TicketExportWorker extends BusModBase implements Handler<Message<Js
     }
 
     private Future<Void> initTicketExportWoker(StorageFactory storageFactory) {
-        ticketServiceSql = new TicketServiceSqlImpl(null);
+        BugTracker bugTrackerType = BugTracker.valueOf(
+                config.getString("bug-tracker-name", BugTracker.ZENDESK.toString()).toUpperCase());
+        ticketServiceSql = new TicketServiceSqlImpl(bugTrackerType);
         ticketService = new TicketServiceImpl(ticketServiceSql);
 
         Storage storage = storageFactory.getStorage();
