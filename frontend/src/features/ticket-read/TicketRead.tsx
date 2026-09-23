@@ -8,7 +8,8 @@ import {
 import { IconArrowLeft } from '@edifice.io/react/icons';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTicketFormOptions, useUserScope } from '~/hooks';
-import { TicketComment, TicketEvent } from '~/models';
+import { TicketCategory } from '~/hooks/useTicketCategories';
+import { Ticket, TicketComment, TicketEvent } from '~/models';
 import { useUserProfile } from '~/services/queries';
 import {
   useBugTrackerIssue,
@@ -46,6 +47,26 @@ function sortTimelineItems(
   ].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 }
 
+// If the user relies on Support Pivot to create tickets, the ticket's category may not be in the list of categories
+// This function ensures that ticket's category is display even if it is not in the list of categories.
+function withTicketCategory(
+  categories: TicketCategory[],
+  ticket: Ticket,
+): TicketCategory[] {
+  const isListed = categories.some(
+    (category) => category.value === ticket.category,
+  );
+  if (!ticket.category || isListed) {
+    return categories;
+  }
+
+  const ticketCategory: TicketCategory = {
+    label: ticket.category_label ?? ticket.category,
+    value: ticket.category,
+  };
+  return [...categories, ticketCategory];
+}
+
 export function TicketRead() {
   const { lg } = useBreakpoint();
   const { ticketId } = useParams();
@@ -70,6 +91,7 @@ export function TicketRead() {
   const canEditAllStatuses = scope === null || scope.includes(ticket.school_id);
 
   const timelineItems = sortTimelineItems(events, comments);
+  const categoryOptions = withTicketCategory(categories, ticket);
 
   const handleCancelClick = () => {
     navigate('/');
@@ -99,7 +121,7 @@ export function TicketRead() {
             errors={errors}
             ticket={ticket}
             userProfile={userProfile?.profile}
-            categories={categories}
+            categories={categoryOptions}
             schoolOptions={schoolOptions}
             bugTrackerIssueId={
               bugTrackerIssue?.content?.issue?.id_iws ?? bugTrackerIssue?.id // Display the bug tracker issue id if available
