@@ -6,6 +6,7 @@ import net.atos.entng.support.helpers.EscalationPivotHelper;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
+import org.apache.commons.text.StringEscapeUtils;
 
 import java.text.DateFormat;
 import java.text.Format;
@@ -18,6 +19,14 @@ import java.util.regex.Pattern;
 public class EscalationPivotHelperImpl implements EscalationPivotHelper {
 
     private final Logger log = LoggerFactory.getLogger(EscalationPivotHelperImpl.class);
+
+    // A tag starts with a letter after '<' or '</', so plain text such as "3 < 5" is left untouched
+    private static final Pattern HTML_TAG_PATTERN = Pattern.compile("</?[a-zA-Z][^>]*>");
+    private static final String ATTACHMENTS_BLOCK_REGEX = "(?s)<div class=\"attachments\">.*?</div>";
+    private static final String LINE_BREAK_REGEX = "(?i)<br\\s*/?>";
+    private static final String BLOCK_END_REGEX = "(?i)</(p|div|li|h[1-6]|blockquote|pre)>";
+    private static final String TRAILING_WHITESPACE_REGEX = "\\s+$";
+    private static final char NON_BREAKING_SPACE = '\u00A0';
 
     public EscalationPivotHelperImpl() {
 
@@ -67,15 +76,37 @@ public class EscalationPivotHelperImpl implements EscalationPivotHelper {
             for( Object o : comments) {
                 if (!(o instanceof JsonObject)) continue;
                 JsonObject comment = (JsonObject) o;
+                String origContent = toPlainText(comment.getString("content"));
                 String content = getDateFormatted(comment.getString("created"), true)
                         + " | " + comment.getString("owner_name")
                         + " | " + getDateFormatted(comment.getString("created"), false)
-                        + " | " + comment.getString("content");
-                String origContent = comment.getString("content");
+                        + " | " + origContent;
                 finalComments.add(hasToSerialize(origContent) ? content : origContent);
             }
         }
         return finalComments;
+    }
+
+    /**
+     * Convert an HTML comment (rich editor) to plain text, as expected by the pivot format.
+     * Since the React rich editor, comments are stored as HTML, but they are sent to IWS inside
+     * a mail made of "key=value" lines, which only carried plain text before.
+     * Plain text content (no HTML tag) is returned unchanged.
+     * @param content comment content, HTML or plain text
+     * @return plain text content
+     */
+    private String toPlainText(final String content) {
+        if (content == null || !HTML_TAG_PATTERN.matcher(content).find()) {
+            return content;
+        }
+        String text = content
+                .replaceAll(ATTACHMENTS_BLOCK_REGEX, "")
+                .replaceAll(LINE_BREAK_REGEX, "\n")
+                .replaceAll(BLOCK_END_REGEX, "\n");
+        text = HTML_TAG_PATTERN.matcher(text).replaceAll("");
+        return StringEscapeUtils.unescapeHtml4(text)
+                .replace(NON_BREAKING_SPACE, ' ')
+                .replaceAll(TRAILING_WHITESPACE_REGEX, "");
     }
 
     /**
