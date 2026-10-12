@@ -16,7 +16,7 @@ function StatusCell({ ticket }: { ticket: Ticket }) {
   return (
     <Badge
       className={TICKET_STATUS_CLASS[ticket.status]}
-      variant={{ type: 'beta' }}
+      variant={{ type: 'appVersion' }}
     >
       {t(getTicketStatusText(ticket.status))}
     </Badge>
