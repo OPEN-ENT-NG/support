@@ -77,7 +77,7 @@ function CopyableInput({
       <Label>{label}</Label>
       <Flex gap="8" align="center">
         <Input
-          className="flex-grow-1"
+          className="flex-grow-1 min-w-0"
           size="md"
           type={type}
           value={value}

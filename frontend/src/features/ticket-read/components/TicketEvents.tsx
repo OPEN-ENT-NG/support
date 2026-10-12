@@ -52,7 +52,7 @@ export function TicketEvent({ event }: TicketEventProps) {
             <Badge
               className={TICKET_STATUS_CLASS[event.status]}
               variant={{
-                type: 'beta',
+                type: 'appVersion',
               }}
             >
               {t(getTicketStatusText(event.status))}
