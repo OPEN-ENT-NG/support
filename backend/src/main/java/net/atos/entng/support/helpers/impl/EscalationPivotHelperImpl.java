@@ -6,7 +6,7 @@ import net.atos.entng.support.helpers.EscalationPivotHelper;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
-import org.apache.commons.text.StringEscapeUtils;
+import org.apache.commons.lang3.StringEscapeUtils;
 
 import java.text.DateFormat;
 import java.text.Format;
