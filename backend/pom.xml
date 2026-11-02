@@ -92,12 +92,6 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.powermock</groupId>
-      <artifactId>powermock-module-testng</artifactId>
-      <version>${powerMockVersion}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>io.gatling.highcharts</groupId>
       <artifactId>gatling-charts-highcharts</artifactId>
       <version>${gatlingHighchartsVersion}</version>
